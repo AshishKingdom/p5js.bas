@@ -45,7 +45,7 @@ p5Canvas.fill = _RGB(0, 0, 0)
 p5Canvas.strokeWeight = 0
 
 DIM a
-a = setup
+a = p5.setup
 
 DO
     IF frameRate THEN _LIMIT frameRate
