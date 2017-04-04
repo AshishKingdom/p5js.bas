@@ -359,6 +359,30 @@ END SUB
 SUB loopDisable ()
     p5Loop = 0
 END SUB
+FUNCTION day ()
+    day = VAL(LEFT$(DATE$, 2))
+END FUNCTION
+
+FUNCTION month ()
+    month = VAL(MID$(DATE$, 4, 2))
+END FUNCTION
+
+FUNCTION year ()
+    year = VAL(RIGHT$(DATE$, 4))
+END FUNCTION
+
+FUNCTION hour ()
+    hour = VAL(LEFT$(TIME$, 2))
+END FUNCTION
+
+FUNCTION minute ()
+    minute = VAL(MID$(TIME$, 4, 2))
+END FUNCTION
+
+FUNCTION seconds ()
+    seconds = VAL(RIGHT$(TIME$, 2))
+END SUB
+
 'comment these below to see simple demo
 'FUNCTION p5.setup ()
 'createCanvas 400, 400
