@@ -1,10 +1,8 @@
-'p5js.bas by Fellippe Heitor & Ashish Kushwaha
+'p5js.bas by Fellippe & Ashish
 'Copyright <c> 2017-18
 'Last update 4/4/2017
 
-
-
-FUNCTION p5js.noise## (x AS _FLOAT, y AS _FLOAT, z AS _FLOAT)
+FUNCTION Noise## (x AS _FLOAT, y AS _FLOAT, z AS _FLOAT)
 STATIC Setup AS _BYTE
 STATIC perlin() AS _FLOAT
 STATIC PERLIN_YWRAPB AS _FLOAT, PERLIN_YWRAP AS _FLOAT
@@ -86,13 +84,13 @@ FOR o = 1 TO perlin_octaves
     IF yf >= 1.0 THEN yi = yi + 1: yf = yf - 1
     IF zf >= 1.0 THEN zi = zi + 1: zf = zf - 1
 NEXT
-p5js.noise## = r
+Noise## = r
 END FUNCTION
 
-FUNCTION p5js.map## (value##, minRange##, maxRange##, newMinRange##, newMaxRange##)
-map## = ((value## - minRange##) / (maxRange## - minRange##)) * (newMaxRange## - newMinRange##) + newMinRange##
+FUNCTION Map## (value##, minRange##, maxRange##, newMinRange##, newMaxRange##)
+Map## = ((value## - minRange##) / (maxRange## - minRange##)) * (newMaxRange## - newMinRange##) + newMinRange##
 END FUNCTION
-   
+
 SUB beginShape (__type)
 shapeAllow = -1
 shapeType = __type
@@ -236,10 +234,22 @@ NEXT
 END SUB
 
 SUB drawEllipse (x, y, xr, yr)
+IF p5Canvas.noFill AND p5Canvas.noStroke THEN EXIT SUB
 FOR i = 0 TO TWO_PI STEP .005
     xx = xr * COS(i) + x
     yy = yr * SIN(i) + y
+    IF NOT p5Canvas.noFill THEN LINE (x, y)-(xx, yy), p5Canvas.fill
     IF p5Canvas.noStroke THEN CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.fill ELSE CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.stroke
 NEXT
 IF p5Canvas.noFill THEN ELSE PAINT (x, y), p5Canvas.fill, p5Canvas.stroke
+END SUB
+
+SUB gatherMouseData ()
+WHILE _MOUSEINPUT: WEND
+P5Mouse.x = _MOUSEX
+P5Mouse.y = _MOUSEY
+P5Mouse.LB = _MOUSEBUTTON(1)
+P5Mouse.RB = _MOUSEBUTTON(2)
+P5Mouse.MB = _MOUSEBUTTON(3)
+P5Mouse.wheel = _MOUSEWHEEL
 END SUB
