@@ -1,4 +1,4 @@
-'p5js.bm by Fellippe Heitor & Ashish Kushwaha
+'p5js.bas by Fellippe Heitor & Ashish Kushwaha
 'Copyright <c> 2017-18
 'Last update 4/4/2017
 
