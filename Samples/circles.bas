@@ -9,7 +9,7 @@ FUNCTION p5.setup
 END FUNCTION
 
 FUNCTION p5.draw
-    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGBA32(0, 0, 0, 25), BF
+    backgroundBA 0 , 25
     drawEllipse _MOUSEX, _MOUSEY, 30, 30
 END FUNCTION
 
