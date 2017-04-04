@@ -32,7 +32,9 @@ DIM SHARED p5Canvas AS __canvasSettings
 'begin shape related variables
 DIM SHARED FirstVertex AS vertex, avgVertex AS vertex, PreviousVertex AS vertex, vertexCount AS LONG
 DIM SHARED shapeAllow AS _BYTE, shapeType AS INTEGER, shapeInit AS _BYTE
-
+'loops and NoLoops
+DIM SHARED p5Loop AS _BYTE
+p5Loop = -1 'default is true
 'mouse
 DIM SHARED P5MouseTimer AS INTEGER
 P5MouseTimer = _FREETIMER
@@ -49,7 +51,7 @@ a = p5.setup
 
 DO
     IF frameRate THEN _LIMIT frameRate
-    a = p5.draw
+     IF p5Loop THEN a = p5.draw
     _DISPLAY
 LOOP
 
@@ -349,7 +351,14 @@ END SUB
 SUB backgroundBA (b%, a%)
 LINE (0, 0)-(_WIDTH, _HEIGHT), _RGBA32(b%, b%, b%, a%), BF
 END SUB
+                                
+SUB loopEnable ()
+    p5Loop = -1
+END SUB
 
+SUB loopDisable ()
+    p5Loop = 0
+END SUB
 'comment these below to see simple demo
 'FUNCTION p5.setup ()
 'createCanvas 400, 400
