@@ -328,7 +328,6 @@ FOR i = 0 TO TWO_PI STEP .005
     IF NOT p5Canvas.noFill THEN LINE (x, y)-(xx, yy), p5Canvas.fill
     IF p5Canvas.noStroke THEN CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.fill ELSE CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.stroke
 NEXT
-IF p5Canvas.noFill THEN ELSE PAINT (x, y), p5Canvas.fill, p5Canvas.stroke
 END SUB
 
 SUB gatherMouseData ()
