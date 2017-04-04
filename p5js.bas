@@ -38,10 +38,10 @@ DIM SHARED P5MouseTimer AS INTEGER
 P5MouseTimer = _FREETIMER
 ON TIMER(P5MouseTimer, .013) gatherMouseData
 TIMER(P5MouseTimer) ON
-
+framrRate = 30 'default is 30 frames per second
 'default settings
-p5Canvas.stroke = _RGB(255, 255, 255) 'white
-p5Canvas.fill = _RGB(0, 0, 0)
+p5Canvas.stroke = _RGB32(255, 255, 255) 'white
+p5Canvas.fill = _RGB32(0, 0, 0)
 p5Canvas.strokeWeight = 0
 
 DIM a
