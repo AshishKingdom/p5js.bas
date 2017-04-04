@@ -44,6 +44,7 @@ p5Canvas.stroke = _RGB(255, 255, 255) 'white
 p5Canvas.fill = _RGB(0, 0, 0)
 p5Canvas.strokeWeight = 0
 
+DIM a
 a = setup
 
 DO
@@ -280,7 +281,11 @@ SUB CircleFill (CX AS LONG, CY AS LONG, R AS LONG, C AS LONG)
 
 END SUB
 
-SUB drawLine (x1, y1, x2, y2)
+SUB drawLine (x1 AS _FLOAT, y1 AS _FLOAT, x2 AS _FLOAT, y2 AS _FLOAT)
+    DIM dx AS _FLOAT, dy AS _FLOAT, d AS _FLOAT
+    DIM dxx AS _FLOAT, dyy AS _FLOAT
+    DIM i AS _FLOAT
+
     dx = x2 - x1
     dy = y2 - y1
     d = SQR(dx * dx + dy * dy)
@@ -291,7 +296,10 @@ SUB drawLine (x1, y1, x2, y2)
     NEXT
 END SUB
 
-SUB drawEllipse (x, y, xr, yr)
+SUB drawEllipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
+    DIM i AS _FLOAT
+    DIM xx AS _FLOAT, yy AS _FLOAT
+
     IF p5Canvas.noFill AND p5Canvas.noStroke THEN EXIT SUB
     FOR i = 0 TO TWO_PI STEP .005
         xx = xr * COS(i) + x
