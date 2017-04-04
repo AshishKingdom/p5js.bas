@@ -1,6 +1,6 @@
 '$include:'..\p5js.bas'
 
-FUNCTION setup
+FUNCTION p5.setup
     createCanvas 600, 600
     strokeWeight 2
     stroke 255, 255, 255
