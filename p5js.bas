@@ -9,7 +9,8 @@ CONST QUARTER_PI = 0.785398163397448
 CONST P5_POINTS = 1
 CONST P5_LINES = 2
 CONST P5_CLOSE = -3
-
+CONST P5_RADIAN = 4
+CONST P5_DEGREE = 5
 CONST true = -1, false = NOT true
 
 'p5 Global Variables
@@ -26,9 +27,11 @@ TYPE vector
     y AS _FLOAT
     z AS _FLOAT
 END TYPE
-
+'frame rate
 DIM SHARED frameRate AS SINGLE
-
+'angle mode
+DIM SHARED p5_Angle_Mode AS INTEGER
+p5_Angle_Mode = P5_RADIAN
 'canvas settings related variables
 DIM SHARED p5Canvas AS p5canvasSettings
 
@@ -545,6 +548,22 @@ SUB vector.mult (v AS vector, n AS _FLOAT)
     v.z = v.z * n
 END SUB
 
+FUNCTION degrees## (r##)
+    degrees## = r## * (180 / _PI)
+END FUNCTION
+
+FUNCTION radians## (d##)
+    radians## = d## * (_PI / 180)
+END FUNCTION
+
+FUNCTION p5.sin## (angle##)
+    IF p5_Angle_Mode = P5_RADIAN THEN p5.sin## = SIN(angle##) ELSE p5.sin = SIN(radians(angle##))
+END FUNCTION
+
+SUB angleMode (kind)
+    IF kind = P5_RADIAN THEN p5_Angle_Mode = P5_RADIAN
+    IF kind = P5_DEGREE THEN p5_Angle_Mode = P5_DEGREE
+END SUB
 'comment these below to see a simple demo
 'FUNCTION p5setup ()
 'createCanvas 400, 400
