@@ -1,3 +1,4 @@
+'$include:'../p5js.bas'
 FUNCTION p5setup ()
     createCanvas 400, 400
     DIM strings$(1)
