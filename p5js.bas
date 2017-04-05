@@ -455,6 +455,24 @@ SUB vector.add (v1 AS vector, v2 AS vector)
     v1.z = v1.z + v2.z
 END SUB
 
+SUB vector.addB (v1 AS vector, x2 AS _FLOAT, y2 AS _FLOAT, z2 AS _FLOAT)
+    v1.x = v1.x + x2
+    v1.y = v1.y + y2
+    v1.z = v1.z + z2
+END SUB
+
+SUB vector.sub (v1 AS vector, v2 AS vector)
+    v1.x = v1.x - v2.x
+    v1.y = v1.y - v2.y
+    v1.z = v1.z - v2.z
+END SUB
+
+SUB vector.subB (v1 AS vector, x2 AS _FLOAT, y2 AS _FLOAT, z2 AS _FLOAT)
+    v1.x = v1.x - x2
+    v1.y = v1.y - y2
+    v1.z = v1.z - z2
+END SUB
+
 SUB vector.limit (v AS vector, max##)
     mSq = vector.magSq(v)
     IF mSq > max## * max## THEN
