@@ -362,10 +362,11 @@ SUB ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
     FOR i = 0 TO TWO_PI STEP .005
         xx = xr * COS(i) + x
         yy = yr * SIN(i) + y
-        IF p5Canvas.noStroke THEN CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.fill ELSE CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+        IF NOT p5Canvas.noFill THEN LINE (x, y)-(xx, yy), p5Canvas.fill
+        IF NOT p5Canvas.noStroke THEN CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.stroke
     NEXT
 
-    IF NOT p5Canvas.noFill THEN PAINT (x, y), p5Canvas.fill, p5Canvas.stroke
+    '  IF NOT p5Canvas.noFill THEN PAINT (x, y), p5Canvas.fill, p5Canvas.stroke
     _DEST 0
     _PUTIMAGE (0, 0), tempImage
     _FREEIMAGE tempImage
@@ -498,11 +499,11 @@ SUB vector.subB (v1 AS vector, x2 AS _FLOAT, y2 AS _FLOAT, z2 AS _FLOAT)
     v1.z = v1.z - z2
 END SUB
 
-SUB vector.limit (v AS vector, max##)
+SUB vector.limit (v AS vector, __max##)
     mSq = vector.magSq(v)
-    IF mSq > max## * max## THEN
+    IF mSq > __max## * __max## THEN
         vector.div v, SQR(mSq)
-        vector.mult v, max##
+        vector.mult v, __max##
     END IF
 END SUB
 
@@ -557,7 +558,7 @@ FUNCTION radians## (d##)
     radians## = d## * (_PI / 180)
 END FUNCTION
 
-FUNCTION p5.sin## (angle##)
+FUNCTION p5sin## (angle##)
     IF p5_Angle_Mode = P5_RADIAN THEN p5.sin## = SIN(angle##) ELSE p5.sin = SIN(radians(angle##))
 END FUNCTION
 
@@ -565,7 +566,19 @@ SUB angleMode (kind)
     IF kind = P5_RADIAN THEN p5_Angle_Mode = P5_RADIAN
     IF kind = P5_DEGREE THEN p5_Angle_Mode = P5_DEGREE
 END SUB
-'comment these below to see a simple demo
+
+FUNCTION min## (a##, b##)
+    IF a## < b## THEN min## = a## ELSE min## = b##
+END FUNCTION
+
+FUNCTION max## (a##, b##)
+    IF a## > b## THEN max## = a## ELSE max## = b##
+END FUNCTION
+
+FUNCTION constrain## (n##, low##, high##)
+    constrain## = max(min(n##, high##), low##)
+END FUNCTION
+'uncomment these below to see a simple demo
 'FUNCTION p5setup ()
 'createCanvas 400, 400
 'strokeWeight 2
