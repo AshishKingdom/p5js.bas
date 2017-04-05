@@ -346,8 +346,8 @@ END SUB
 SUB p5point (x AS _FLOAT, y AS _FLOAT)
     IF p5Canvas.noStroke THEN EXIT SUB
 
-    '  PSET (x, y), p5Canvas.stroke
-    CircleFill x, y, p5Canvas.strokeWeight, p5Canvas.stroke
+    PSET (x, y), p5Canvas.stroke
+    ' CircleFill x, y, p5Canvas.strokeWeight, p5Canvas.stroke
 END SUB
 
 SUB ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
@@ -588,13 +588,16 @@ FUNCTION dist## (x1##, y1##, x2##, y2##)
     dist## = SQR(dx## * dx## + dy## * dy##)
 END FUNCTION
 
-'* Calculates a number between two numbers at a specific increment. The amt
-'* parameter is the amount to interpolate between the two values where 0.0
-'* equal to the first point, 0.1 is very near the first point, 0.5 is
-'* half-way in between, etc. The lerp function is convenient for creating
-'* motion along a straight path and for drawing dotted lines.
 FUNCTION lerp## (start##, stp##, amt##)
     lerp## = amt## * (stp## - start##) + start##
+END FUNCTION
+
+FUNCTION mag## (x##, y##)
+    mag## = _HYPOT(x##, y##)
+END FUNCTION
+
+FUNCTION sq## (n##)
+    sq## = n## * n##
 END FUNCTION
 'uncomment these below to see a simple demo
 'FUNCTION p5setup ()
@@ -607,4 +610,8 @@ END FUNCTION
 'backgroundBA 0, 30
 'ellipse _MOUSEX, _MOUSEY, 20, 20
 'END FUNCTION
+
+
+
+
 
