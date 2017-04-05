@@ -346,7 +346,8 @@ END SUB
 SUB p5point (x AS _FLOAT, y AS _FLOAT)
     IF p5Canvas.noStroke THEN EXIT SUB
 
-    PSET (x, y), p5Canvas.stroke
+    '  PSET (x, y), p5Canvas.stroke
+    CircleFill x, y, p5Canvas.strokeWeight, p5Canvas.stroke
 END SUB
 
 SUB ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
