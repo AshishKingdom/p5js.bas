@@ -35,6 +35,7 @@ DIM SHARED p5Canvas AS p5canvasSettings
 'begin shape related variables
 DIM SHARED FirstVertex AS vector, avgVertex AS vector, PreviousVertex AS vector, vertexCount AS LONG
 DIM SHARED shapeAllow AS _BYTE, shapeType AS LONG, shapeInit AS _BYTE
+DIM SHARED tempShapeImage AS LONG
 
 'loops and NoLoops
 DIM SHARED p5Loop AS _BYTE
@@ -165,6 +166,9 @@ FUNCTION map## (value##, minRange##, maxRange##, newMinRange##, newMaxRange##)
 END FUNCTION
 
 SUB beginShape (kind AS LONG)
+    tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
+    _DEST tempShapeImage
+    CLS , 0
     shapeAllow = true
     shapeType = kind
 END SUB
@@ -174,7 +178,7 @@ SUB vertex (x, y)
         IF shapeType = P5_POINTS THEN
             CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.stroke
         ELSEIF shapeType = P5_LINES THEN
-            IF p5Canvas.noStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(x, y), p5Canvas.fill ELSE drawLine PreviousVertex.x, PreviousVertex.y, x, y
+            IF p5Canvas.noStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(x, y), p5Canvas.fill ELSE p5line PreviousVertex.x, PreviousVertex.y, x, y
         END IF
     END IF
     IF shapeAllow AND NOT shapeInit THEN
@@ -197,7 +201,7 @@ END SUB
 SUB endShape (closed)
     'did we have to close?
     IF closed = P5_CLOSE AND shapeType = P5_LINES THEN
-        IF p5Canvas.noStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(FirstVertex.x, FirstVertex.y), p5Canvas.fill ELSE drawLine PreviousVertex.x, PreviousVertex.y, FirstVertex.x, FirstVertex.y
+        IF p5Canvas.noStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(FirstVertex.x, FirstVertex.y), p5Canvas.fill ELSE p5line PreviousVertex.x, PreviousVertex.y, FirstVertex.x, FirstVertex.y
     END IF
 
     'filling the color
@@ -207,6 +211,11 @@ SUB endShape (closed)
         IF p5Canvas.noStroke THEN PAINT (avgVertex.x, avgVertex.y), p5Canvas.fill, p5Canvas.fill ELSE PAINT (avgVertex.x, avgVertex.y), p5Canvas.fill, p5Canvas.stroke
 
     END IF
+
+    'place shape onto main canvas
+    _DEST 0
+    _PUTIMAGE (0, 0), tempShapeImage
+    _FREEIMAGE tempShapeImage
 
     'it's time to reset all varibles!!
     shapeAllow = false
@@ -316,7 +325,7 @@ SUB CircleFill (CX AS LONG, CY AS LONG, R AS LONG, C AS LONG)
 
 END SUB
 
-SUB drawLine (x1 AS _FLOAT, y1 AS _FLOAT, x2 AS _FLOAT, y2 AS _FLOAT)
+SUB p5line (x1 AS _FLOAT, y1 AS _FLOAT, x2 AS _FLOAT, y2 AS _FLOAT)
     DIM dx AS _FLOAT, dy AS _FLOAT, d AS _FLOAT
     DIM dxx AS _FLOAT, dyy AS _FLOAT
     DIM i AS _FLOAT
@@ -331,25 +340,32 @@ SUB drawLine (x1 AS _FLOAT, y1 AS _FLOAT, x2 AS _FLOAT, y2 AS _FLOAT)
     NEXT
 END SUB
 
-SUB drawEllipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
-    DIM i AS _FLOAT
+SUB ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
+    DIM i AS _FLOAT, tempImage AS LONG
     DIM xx AS _FLOAT, yy AS _FLOAT
 
     IF p5Canvas.noFill AND p5Canvas.noStroke THEN EXIT SUB
+
+    tempImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
+    _DEST tempImage
+    CLS , 0
     FOR i = 0 TO TWO_PI STEP .005
         xx = xr * COS(i) + x
         yy = yr * SIN(i) + y
-        IF NOT p5Canvas.noFill THEN LINE (x, y)-(xx, yy), p5Canvas.fill
         IF p5Canvas.noStroke THEN CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.fill ELSE CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.stroke
     NEXT
+
+    IF NOT p5Canvas.noFill THEN PAINT (x, y), p5Canvas.fill, p5Canvas.stroke
+    _DEST 0
+    _PUTIMAGE (0, 0), tempImage
+    _FREEIMAGE tempImage
 END SUB
 
 SUB gatherMouseData ()
     DIM a AS _BYTE
-    STATIC p5lastMouseWheel#
 
     'Mouse input (optimization by Luke Ceddia):
-    IF TIMER - p5lastMouseWheel# > 1 THEN p5mouseWheel = 0
+    p5mouseWheel = 0
     IF _MOUSEINPUT THEN
         p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
         IF _MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 THEN
@@ -365,7 +381,6 @@ SUB gatherMouseData ()
 
     IF p5mouseWheel THEN
         a = mouseWheel
-        p5lastMouseWheel# = TIMER
     END IF
 
     IF mouseButton1 THEN
@@ -533,5 +548,5 @@ END SUB
 
 'FUNCTION p5draw ()
 'backgroundBA 0, 30
-'drawEllipse _MOUSEX, _MOUSEY, 20, 20
+'ellipse _MOUSEX, _MOUSEY, 20, 20
 'END FUNCTION

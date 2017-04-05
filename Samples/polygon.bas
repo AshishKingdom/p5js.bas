@@ -40,5 +40,7 @@ FUNCTION mouseClicked
 END FUNCTION
 
 FUNCTION mouseWheel
-    strokeWeight p5Canvas.stroke + p5mouseWheel
+    strokeWeight p5Canvas.strokeWeight + p5mouseWheel
+
+    IF p5Canvas.strokeWeight < 1 THEN strokeWeight 1
 END FUNCTION
