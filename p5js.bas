@@ -16,7 +16,7 @@ CONST true = -1, false = NOT true
 TYPE p5canvasSettings
     stroke AS _UNSIGNED LONG
     fill AS _UNSIGNED LONG
-    strokeWeight AS INTEGER
+    strokeWeight AS _FLOAT
     noStroke AS _BYTE
     noFill AS _BYTE
 END TYPE
@@ -230,44 +230,44 @@ SUB endShape (closed)
     avgVertex.y = 0
 END SUB
 
-SUB fill (r%, g%, b%)
+SUB fill (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     p5Canvas.noFill = false
-    p5Canvas.fill = _RGB32(r%, g%, b%)
+    p5Canvas.fill = _RGB32(r, g, b)
 END SUB
 
-SUB fillA (r%, g%, b%, a%)
+SUB fillA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     p5Canvas.noFill = false
-    p5Canvas.fill = _RGBA32(r%, g%, b%, a%)
+    p5Canvas.fill = _RGBA32(r, g, b, a)
 END SUB
 
-SUB fillB (b%)
+SUB fillB (b AS _FLOAT)
     p5Canvas.noFill = false
-    p5Canvas.fill = _RGB32(b%, b%, b%)
+    p5Canvas.fill = _RGB32(b, b, b)
 END SUB
 
-SUB fillBA (b%, a%)
+SUB fillBA (b AS _FLOAT, a AS _FLOAT)
     p5Canvas.noFill = false
-    p5Canvas.fill = _RGB32(b%, b%, b%)
+    p5Canvas.fill = _RGBA32(b, b, b, a)
 END SUB
 
-SUB stroke (r%, g%, b%)
+SUB stroke (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     p5Canvas.noStroke = false
-    p5Canvas.stroke = _RGB32(r%, g%, b%)
+    p5Canvas.stroke = _RGB32(r, g, b)
 END SUB
 
-SUB strokeA (r%, g%, b%, a%)
+SUB strokeA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     p5Canvas.noStroke = false
-    p5Canvas.stroke = _RGBA32(b%, b%, b%, a%)
+    p5Canvas.stroke = _RGBA32(r, g, b, a)
 END SUB
 
-SUB strokeB (b%)
+SUB strokeB (b AS _FLOAT)
     p5Canvas.noStroke = false
-    p5Canvas.stroke = _RGBA32(r%, g%, b%, a%)
+    p5Canvas.stroke = _RGB32(b, b, b)
 END SUB
 
-SUB strokeBA (b%, a%)
+SUB strokeBA (b AS _FLOAT, a AS _FLOAT)
     p5Canvas.noStroke = false
-    p5Canvas.stroke = _RGBA32(r%, g%, b%, a%)
+    p5Canvas.stroke = _RGBA32(b, b, b, a)
 END SUB
 
 SUB noFill ()
@@ -278,8 +278,8 @@ SUB noStroke ()
     p5Canvas.noStroke = true
 END SUB
 
-SUB strokeWeight (a%)
-    p5Canvas.strokeWeight = a%
+SUB strokeWeight (a AS _FLOAT)
+    p5Canvas.strokeWeight = a
 END SUB
 
 SUB CircleFill (CX AS LONG, CY AS LONG, R AS LONG, C AS LONG)
@@ -338,6 +338,12 @@ SUB p5line (x1 AS _FLOAT, y1 AS _FLOAT, x2 AS _FLOAT, y2 AS _FLOAT)
         dxx = dxx + dx / d
         dyy = dyy + dy / d
     NEXT
+END SUB
+
+SUB p5point (x AS _FLOAT, y AS _FLOAT)
+    IF p5Canvas.noStroke THEN EXIT SUB
+
+    PSET (x, y), p5Canvas.stroke
 END SUB
 
 SUB ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
@@ -416,20 +422,20 @@ SUB gatherMouseData ()
     END IF
 END SUB
 
-SUB background (r%, g%, b%)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGB32(r%, g%, b%), BF
+SUB background (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
+    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGB32(r, g, b), BF
 END SUB
 
-SUB backgroundA (r%, g%, b%, a%)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGBA32(r%, g%, b%, a%), BF
+SUB backgroundA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
+    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGBA32(r, g, b, a), BF
 END SUB
 
-SUB backgroundB (b%)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGB32(b%, b%, b%), BF
+SUB backgroundB (b AS _FLOAT)
+    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGB32(b, b, b), BF
 END SUB
 
-SUB backgroundBA (b%, a%)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGBA32(b%, b%, b%, a%), BF
+SUB backgroundBA (b AS _FLOAT, a AS _FLOAT)
+    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGBA32(b, b, b, a), BF
 END SUB
                                 
 SUB doLoop ()
@@ -437,7 +443,7 @@ SUB doLoop ()
 END SUB
 
 SUB noLoop ()
-    p5Loop = 0
+    p5Loop = false
 END SUB
 
 FUNCTION day& ()
