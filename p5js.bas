@@ -3,6 +3,8 @@
 'Last update 4/4/2017
 
 'p5 constant
+RANDOMIZE TIMER
+
 CONST TWO_PI = 6.283185307179586
 CONST HALF_PI = 1.570796326794897
 CONST QUARTER_PI = 0.785398163397448
@@ -602,6 +604,21 @@ END FUNCTION
 FUNCTION sq## (n##)
     sq## = n## * n##
 END FUNCTION
+
+FUNCTION random2d## (mn##, mx##)
+    IF mn## > mx## THEN
+        tmp## = mn##
+        mn## = mx##
+        mx## = tmp##
+    END IF
+    random2d## = RND * (mx## - mn##) + mn##
+END FUNCTION
+
+FUNCTION join$ (str_array$(), sep$)
+    FOR i = 0 TO UBOUND(str_array$)
+        join$ = join$ + str_array$(i) + sep$
+    NEXT
+END FUNCTION
 'uncomment these below to see a simple demo
 'FUNCTION p5setup ()
 'createCanvas 400, 400
@@ -613,8 +630,5 @@ END FUNCTION
 'backgroundBA 0, 30
 'ellipse _MOUSEX, _MOUSEY, 20, 20
 'END FUNCTION
-
-
-
 
 
