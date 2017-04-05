@@ -446,12 +446,12 @@ SUB noLoop ()
     p5Loop = false
 END SUB
 
-FUNCTION day& ()
-    day& = VAL(LEFT$(DATE$, 2))
+FUNCTION month& ()
+    month& = VAL(LEFT$(DATE$, 2))
 END FUNCTION
 
-FUNCTION month& ()
-    month& = VAL(MID$(DATE$, 4, 2))
+FUNCTION day& ()
+    day& = VAL(MID$(DATE$, 4, 2))
 END FUNCTION
 
 FUNCTION year& ()
