@@ -567,16 +567,35 @@ SUB angleMode (kind)
     IF kind = P5_DEGREE THEN p5_Angle_Mode = P5_DEGREE
 END SUB
 
+'Calculate minimum value between two value
 FUNCTION min## (a##, b##)
     IF a## < b## THEN min## = a## ELSE min## = b##
 END FUNCTION
 
+'Calculate maximum value between two value
 FUNCTION max## (a##, b##)
     IF a## > b## THEN max## = a## ELSE max## = b##
 END FUNCTION
 
+'* Constrains a value between a minimum and maximum value.
 FUNCTION constrain## (n##, low##, high##)
     constrain## = max(min(n##, high##), low##)
+END FUNCTION
+
+' * Calculates the distance between two points.
+FUNCTION dist## (x1##, y1##, x2##, y2##)
+    IF x2## > x1## THEN dx## = x2## - x1## ELSE dx## = x1## - x2##
+    IF y2## > y1## THEN dy## = y2## - y1## ELSE dy## = y1## - y2##
+    dist## = SQR(dx## * dx## + dy## * dy##)
+END FUNCTION
+
+'* Calculates a number between two numbers at a specific increment. The amt
+'* parameter is the amount to interpolate between the two values where 0.0
+'* equal to the first point, 0.1 is very near the first point, 0.5 is
+'* half-way in between, etc. The lerp function is convenient for creating
+'* motion along a straight path and for drawing dotted lines.
+FUNCTION lerp## (start##, stp##, amt##)
+    lerp## = amt## * (stp## - start##) + start##
 END FUNCTION
 'uncomment these below to see a simple demo
 'FUNCTION p5setup ()
