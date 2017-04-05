@@ -13,7 +13,7 @@ CONST P5_CLOSE = -3
 CONST true = -1, false = NOT true
 
 'p5 Global Variables
-TYPE __canvasSettings
+TYPE p5canvasSettings
     stroke AS _UNSIGNED LONG
     fill AS _UNSIGNED LONG
     strokeWeight AS INTEGER
@@ -30,7 +30,7 @@ END TYPE
 DIM SHARED frameRate AS SINGLE
 
 'canvas settings related variables
-DIM SHARED p5Canvas AS __canvasSettings
+DIM SHARED p5Canvas AS p5canvasSettings
 
 'begin shape related variables
 DIM SHARED FirstVertex AS vector, avgVertex AS vector, PreviousVertex AS vector, vertexCount AS LONG
@@ -40,15 +40,17 @@ DIM SHARED shapeAllow AS _BYTE, shapeType AS LONG, shapeInit AS _BYTE
 DIM SHARED p5Loop AS _BYTE
 p5Loop = true 'default is true
 
-'mouse variables
-DIM SHARED mouseIsPressed AS _BYTE, p5.mouseWheel AS INTEGER
+'mouse consts and variables
+CONST LEFT = 1, RIGHT = 2, CENTER = 3
+DIM SHARED mouseIsPressed AS _BYTE, p5mouseWheel AS INTEGER
 DIM SHARED mouseButton1 AS _BYTE, mouseButton2 AS _BYTE
+DIM SHARED mouseButton AS _BYTE
 
 'mouse query timer
-DIM SHARED p5.MouseTimer AS INTEGER
-p5.MouseTimer = _FREETIMER
-ON TIMER(p5.MouseTimer, .008) gatherMouseData
-TIMER(p5.MouseTimer) ON
+DIM SHARED p5MouseTimer AS INTEGER
+p5MouseTimer = _FREETIMER
+ON TIMER(p5MouseTimer, .008) gatherMouseData
+TIMER(p5MouseTimer) ON
 
 'default settings
 SCREEN _NEWIMAGE(300, 300, 32)
@@ -58,11 +60,11 @@ p5Canvas.strokeWeight = 0
 frameRate = 30
 
 DIM a AS _BYTE
-a = p5.setup
+a = p5setup
 
 DO
     IF frameRate THEN _LIMIT frameRate
-    IF p5Loop THEN a = p5.draw
+    IF p5Loop THEN a = p5draw
     _DISPLAY
 LOOP
 
@@ -74,15 +76,15 @@ SUB createCanvas (w AS INTEGER, h AS INTEGER)
 END SUB
 
 FUNCTION noise## (x AS _FLOAT, y AS _FLOAT, z AS _FLOAT)
-    STATIC p5.NoiseSetup AS _BYTE
+    STATIC p5NoiseSetup AS _BYTE
     STATIC perlin() AS _FLOAT
     STATIC PERLIN_YWRAPB AS _FLOAT, PERLIN_YWRAP AS _FLOAT
     STATIC PERLIN_ZWRAPB AS _FLOAT, PERLIN_ZWRAP AS _FLOAT
     STATIC PERLIN_SIZE AS _FLOAT, perlin_octaves AS _FLOAT
     STATIC perlin_amp_falloff AS _FLOAT
 
-    IF NOT p5.NoiseSetup THEN
-        p5.NoiseSetup = true
+    IF NOT p5NoiseSetup THEN
+        p5NoiseSetup = true
 
         PERLIN_YWRAPB = 4
         PERLIN_YWRAP = INT(1 * (2 ^ PERLIN_YWRAPB))
@@ -344,53 +346,57 @@ END SUB
 
 SUB gatherMouseData ()
     DIM a AS _BYTE
+    STATIC p5lastMouseWheel#
 
     'Mouse input (optimization by Luke Ceddia):
-    p5.mouseWheel = 0
+    IF TIMER - p5lastMouseWheel# > 1 THEN p5mouseWheel = 0
     IF _MOUSEINPUT THEN
-        p5.mouseWheel = p5.mouseWheel + _MOUSEWHEEL
-        IF (_MOUSEBUTTON(1) OR _MOUSEBUTTON(2)) = mouseIsPressed THEN
+        p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
+        IF _MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 THEN
             DO WHILE _MOUSEINPUT
-                p5.mouseWheel = p5.mouseWheel + _MOUSEWHEEL
-                IF NOT (_MOUSEBUTTON(1) OR _MOUSEBUTTON(2)) = mouseIsPressed THEN EXIT DO
+                p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
+                IF NOT (_MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2) THEN EXIT DO
             LOOP
         END IF
         mouseButton1 = _MOUSEBUTTON(1)
-        mouseButton1 = _MOUSEBUTTON(2)
+        mouseButton2 = _MOUSEBUTTON(2)
     END IF
     WHILE _MOUSEINPUT: WEND
 
-    IF p5.mouseWheel THEN
-        a = mouseWheel(p5.mouseWheel)
+    IF p5mouseWheel THEN
+        a = mouseWheel
+        p5lastMouseWheel# = TIMER
     END IF
 
     IF mouseButton1 THEN
+        mouseButton = LEFT
         IF NOT mouseIsPressed THEN
             mouseIsPressed = true
-            a = mousePressed(1)
+            a = mousePressed
         ELSE
-            a = mouseDragged(1)
+            a = mouseDragged
         END IF
     ELSE
-        IF mouseIsPressed THEN
+        IF mouseIsPressed AND mouseButton = LEFT THEN
             mouseIsPressed = false
-            a = mouseReleased(1)
-            a = mouseClicked(1)
+            a = mouseReleased
+            a = mouseClicked
         END IF
     END IF
 
     IF mouseButton2 THEN
+        mouseButton = RIGHT
         IF NOT mouseIsPressed THEN
             mouseIsPressed = true
-            a = mousePressed(2)
+            a = mousePressed
         ELSE
-            a = mouseDragged(2)
+            a = mouseDragged
         END IF
     ELSE
-        IF mouseIsPressed THEN
+        IF mouseIsPressed AND mouseButton = RIGHT THEN
             mouseIsPressed = false
-            a = mouseReleased(2)
-            a = mouseClicked(2)
+            a = mouseReleased
+            a = mouseClicked
         END IF
     END IF
 END SUB
@@ -501,13 +507,13 @@ SUB vector.mult (v AS vector, n AS _FLOAT)
 END SUB
 
 'comment these below to see a simple demo
-'FUNCTION p5.setup ()
+'FUNCTION p5setup ()
 'createCanvas 400, 400
 'strokeWeight 2
 'fill 255, 0, 0
 'END FUNCTION
 
-'FUNCTION p5.draw ()
+'FUNCTION p5draw ()
 'backgroundBA 0, 30
 'drawEllipse _MOUSEX, _MOUSEY, 20, 20
 'END FUNCTION
