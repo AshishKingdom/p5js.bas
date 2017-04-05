@@ -353,20 +353,19 @@ END SUB
 SUB ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
     DIM i AS _FLOAT, tempImage AS LONG
     DIM xx AS _FLOAT, yy AS _FLOAT
-
     IF p5Canvas.noFill AND p5Canvas.noStroke THEN EXIT SUB
 
     tempImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
     _DEST tempImage
     CLS , 0
-    FOR i = 0 TO TWO_PI STEP .005
+    FOR i = 0 TO TWO_PI STEP .0025
         xx = xr * COS(i) + x
         yy = yr * SIN(i) + y
-        IF NOT p5Canvas.noFill THEN LINE (x, y)-(xx, yy), p5Canvas.fill
-        IF NOT p5Canvas.noStroke THEN CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+        IF p5Canvas.noStroke THEN CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.fill ELSE CircleFill xx, yy, p5Canvas.strokeWeight / 2, p5Canvas.stroke
     NEXT
-
-    '  IF NOT p5Canvas.noFill THEN PAINT (x, y), p5Canvas.fill, p5Canvas.stroke
+    IF NOT p5Canvas.noFill THEN
+        IF p5Canvas.noStroke THEN PAINT (x, y), p5Canvas.fill, p5Canvas.fill ELSE PAINT (x, y), p5Canvas.fill, p5Canvas.stroke
+    END IF
     _DEST 0
     _PUTIMAGE (0, 0), tempImage
     _FREEIMAGE tempImage
@@ -608,3 +607,4 @@ END FUNCTION
 'backgroundBA 0, 30
 'ellipse _MOUSEX, _MOUSEY, 20, 20
 'END FUNCTION
+
