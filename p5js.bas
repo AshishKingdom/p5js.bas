@@ -373,6 +373,89 @@ SUB ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
     _FREEIMAGE tempImage
 END SUB
 
+'draw a triangle by joining 3 differents location
+SUB p5triangle (x1##, y1##, x2##, y2##, x3##, y3##)
+    IF p5Canvas.noFill AND p5anvas.nostroke THEN EXIT SUB
+    bc& = p5Canvas.stroke
+    p5Canvas.stroke = p5Canvas.fill
+    p5line x1##, y1##, x2##, y2##
+    p5line x2##, y2##, x3##, y3##
+    p5line x3##, y3##, x1##, y1##
+    p5Canvas.stroke = bc&
+    IF NOT p5Canvas.noStroke THEN
+        p5line x1##, y1##, x2##, y2##
+        p5line x2##, y2##, x3##, y3##
+        p5line x3##, y3##, x1##, y1##
+    END IF
+    IF NOT p5Canvas.noFill THEN
+        avgX## = (x1## + x2## + x3##) / 3
+        avgY## = (y1## + y2## + y3##) / 3
+        IF p5Canvas.noStroke THEN PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.fill ELSE PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.stroke
+    END IF
+END SUB
+
+'draw a triangle by joining 3 different angles from the center point with
+'a given size
+SUB p5triangleA (centerX##, centerY##, ang1##, ang2##, ang3##, size##)
+    pi## = _PI
+    IF ang1## < pi## THEN x1## = size## * COS(ang1##) + centerX##: y1## = size## * SIN(ang1##) + centerY##
+    IF ang2## < pi## THEN x2## = size## * COS(ang2##) + centerX##: y2## = size## * SIN(ang2##) + centerY##
+    IF ang3## < pi## THEN x3## = size## * COS(ang3##) + centerX##: y3## = size## * SIN(ang3##) + centerY##
+    IF p5Canvas.noFill AND p5anvas.nostroke THEN EXIT SUB
+    bc& = p5Canvas.stroke
+    p5Canvas.stroke = p5Canvas.fill
+    p5line x1##, y1##, x2##, y2##
+    p5line x2##, y2##, x3##, y3##
+    p5line x3##, y3##, x1##, y1##
+    p5Canvas.stroke = bc&
+    IF NOT p5Canvas.noStroke THEN
+        p5line x1##, y1##, x2##, y2##
+        p5line x2##, y2##, x3##, y3##
+        p5line x3##, y3##, x1##, y1##
+    END IF
+    IF NOT p5Canvas.noFill THEN
+        avgX## = (x1## + x2## + x3##) / 3
+        avgY## = (y1## + y2## + y3##) / 3
+        IF p5Canvas.noStroke THEN PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.fill ELSE PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.stroke
+    END IF
+END SUB
+
+'draws a rectangle
+SUB p5rect (x1##, y1##, width##, height##)
+    IF p5Canvas.noFill AND p5anvas.nostroke THEN EXIT SUB
+    IF NOT p5Canvas.noFill THEN LINE (x1##, y1##)-STEP(width##, height##), p5Canvas.fill, BF
+    IF NOT p5Canvas.noStroke THEN
+        FOR i = 0 TO p5Canvas.strokeWeight
+            LINE (x1## + i, y1## + i)-(x1## + width## - i, y1## + height## - i), p5Canvas.stroke, B
+        NEXT
+    END IF
+    IF NOT p5Canvas.noFill THEN
+        IF p5Canvas.noStroke THEN PAINT (x1## + (width## / 2), y1## + (height## / 2)), p5Canvas.fill, p5Canvas.fill ELSE PAINT (x1## + (width## / 2), y1## + (height## / 2)), p5Canvas.fill, p5Canvas.stroke
+    END IF
+END SUB
+
+'draws a quadilateral
+SUB p5quad (x1##, y1##, x2##, y2##, x3##, y3##, x4##, y4##)
+    IF p5Canvas.noFill AND p5anvas.nostroke THEN EXIT SUB
+    bc& = p5Canvas.stroke
+    p5Canvas.stroke = p5Canvas.fill
+    p5line x1##, y1##, x2##, y2##
+    p5line x2##, y2##, x3##, y3##
+    p5line x3##, y3##, x4##, y4##
+    p5line x4##, y4##, x1##, y1##
+    p5Canvas.stroke = bc&
+    IF NOT p5Canvas.noStroke THEN
+        p5line x1##, y1##, x2##, y2##
+        p5line x2##, y2##, x3##, y3##
+        p5line x3##, y3##, x4##, y4##
+        p5line x4##, y4##, x1##, y1##
+    END IF
+    IF NOT p5Canvas.noFill THEN
+        avgX## = (x1## + x2## + x3## + x4##) / 4
+        avgY## = (y1## + y2## + y3## + y4##) / 4
+        IF p5Canvas.noStroke THEN PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.fill ELSE PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.stroke
+    END IF
+END SUB
 SUB gatherMouseData ()
     DIM a AS _BYTE
 
@@ -630,5 +713,3 @@ END FUNCTION
 'backgroundBA 0, 30
 'ellipse _MOUSEX, _MOUSEY, 20, 20
 'END FUNCTION
-
-
