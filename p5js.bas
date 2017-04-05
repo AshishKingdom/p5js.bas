@@ -558,9 +558,12 @@ FUNCTION radians## (d##)
 END FUNCTION
 
 FUNCTION p5sin## (angle##)
-    IF p5_Angle_Mode = P5_RADIAN THEN p5.sin## = SIN(angle##) ELSE p5.sin = SIN(radians(angle##))
+    IF p5_Angle_Mode = P5_RADIAN THEN p5.sin## = SIN(angle##) ELSE p5.sin## = SIN(radians(angle##))
 END FUNCTION
 
+FUNCTION p5cos## (angle##)
+    IF p5_Angle_Mode = P5_RADIAN THEN p5.cos## = COS(angle##) ELSE p5.cos## = COS(radians(angle##))
+END FUNCTION
 SUB angleMode (kind)
     IF kind = P5_RADIAN THEN p5_Angle_Mode = P5_RADIAN
     IF kind = P5_DEGREE THEN p5_Angle_Mode = P5_DEGREE
