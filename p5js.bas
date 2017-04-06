@@ -52,7 +52,7 @@ p5Loop = true 'default is true
 'mouse consts and variables
 CONST LEFT = 1, RIGHT = 2, CENTER = 3
 DIM SHARED mouseIsPressed AS _BYTE, p5mouseWheel AS INTEGER
-DIM SHARED mouseButton1 AS _BYTE, mouseButton2 AS _BYTE
+DIM SHARED mouseButton1 AS _BYTE, mouseButton2 AS _BYTE, mouseButton3 AS _BYTE
 DIM SHARED mouseButton AS _BYTE
 
 'mouse query timer
@@ -523,14 +523,15 @@ SUB gatherMouseData ()
 
     IF _MOUSEINPUT THEN
         p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
-        IF _MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 THEN
+        IF _MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 AND _MOUSEBUTTON(3) = mouseButton3 THEN
             DO WHILE _MOUSEINPUT
                 p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
-                IF NOT (_MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2) THEN EXIT DO
+                IF NOT (_MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 AND _MOUSEBUTTON(3) = mouseButton3) THEN EXIT DO
             LOOP
         END IF
         mouseButton1 = _MOUSEBUTTON(1)
         mouseButton2 = _MOUSEBUTTON(2)
+        mouseButton3 = _MOUSEBUTTON(3)
     END IF
 
     WHILE _MOUSEINPUT: WEND
@@ -570,6 +571,23 @@ SUB gatherMouseData ()
             a = mouseClicked
         END IF
     END IF
+
+    IF mouseButton3 THEN
+        mouseButton = CENTER
+        IF NOT mouseIsPressed THEN
+            mouseIsPressed = true
+            a = mousePressed
+        ELSE
+            a = mouseDragged
+        END IF
+    ELSE
+        IF mouseIsPressed AND mouseButton = CENTER THEN
+            mouseIsPressed = false
+            a = mouseReleased
+            a = mouseClicked
+        END IF
+    END IF
+
 END SUB
 
 SUB background (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
