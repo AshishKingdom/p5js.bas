@@ -1,6 +1,6 @@
 'p5js.bas by Fellippe & Ashish
 'Open source - based on p5.js (https://p5js.org/)
-'Last update 4/4/2017
+'Last update 4/6/2017
 
 'p5 constant
 RANDOMIZE TIMER
@@ -29,11 +29,14 @@ TYPE vector
     y AS _FLOAT
     z AS _FLOAT
 END TYPE
+
 'frame rate
 DIM SHARED frameRate AS SINGLE
+
 'angle mode
-DIM SHARED p5_Angle_Mode AS INTEGER
-p5_Angle_Mode = P5_RADIAN
+DIM SHARED p5angleMode AS INTEGER
+p5angleMode = P5_RADIAN
+
 'canvas settings related variables
 DIM SHARED p5Canvas AS p5canvasSettings
 
@@ -170,10 +173,20 @@ FUNCTION map## (value##, minRange##, maxRange##, newMinRange##, newMaxRange##)
     map## = ((value## - minRange##) / (maxRange## - minRange##)) * (newMaxRange## - newMinRange##) + newMinRange##
 END FUNCTION
 
-SUB beginShape (kind AS LONG)
+SUB internalp5makeTempImage
     tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
     _DEST tempShapeImage
-    CLS , 0
+    CLS , 0 'make it transparent
+END SUB
+
+SUB internalp5displayTempImage
+    _DEST 0
+    _PUTIMAGE (0, 0), tempShapeImage
+    _FREEIMAGE tempShapeImage
+END SUB
+
+SUB beginShape (kind AS LONG)
+    internalp5makeTempImage
     shapeAllow = true
     shapeType = kind
 END SUB
@@ -218,9 +231,7 @@ SUB endShape (closed)
     END IF
 
     'place shape onto main canvas
-    _DEST 0
-    _PUTIMAGE (0, 0), tempShapeImage
-    _FREEIMAGE tempShapeImage
+    internalp5displayTempImage
 
     'it's time to reset all varibles!!
     shapeAllow = false
@@ -238,49 +249,59 @@ END SUB
 SUB fill (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     p5Canvas.noFill = false
     p5Canvas.fill = _RGB32(r, g, b)
+    COLOR , p5Canvas.fill 'fill also affects text
 END SUB
 
 SUB fillA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     p5Canvas.noFill = false
     p5Canvas.fill = _RGBA32(r, g, b, a)
+    COLOR , p5Canvas.fill 'fill also affects text
 END SUB
 
 SUB fillB (b AS _FLOAT)
     p5Canvas.noFill = false
     p5Canvas.fill = _RGB32(b, b, b)
+    COLOR , p5Canvas.fill 'fill also affects text
 END SUB
 
 SUB fillBA (b AS _FLOAT, a AS _FLOAT)
     p5Canvas.noFill = false
     p5Canvas.fill = _RGBA32(b, b, b, a)
+    COLOR , p5Canvas.fill 'fill also affects text
 END SUB
 
 SUB stroke (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     p5Canvas.noStroke = false
     p5Canvas.stroke = _RGB32(r, g, b)
+    COLOR p5Canvas.stroke 'stroke also affects text
 END SUB
 
 SUB strokeA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     p5Canvas.noStroke = false
     p5Canvas.stroke = _RGBA32(r, g, b, a)
+    COLOR p5Canvas.stroke 'stroke also affects text
 END SUB
 
 SUB strokeB (b AS _FLOAT)
     p5Canvas.noStroke = false
     p5Canvas.stroke = _RGB32(b, b, b)
+    COLOR p5Canvas.stroke 'stroke also affects text
 END SUB
 
 SUB strokeBA (b AS _FLOAT, a AS _FLOAT)
     p5Canvas.noStroke = false
     p5Canvas.stroke = _RGBA32(b, b, b, a)
+    COLOR p5Canvas.stroke 'stroke also affects text
 END SUB
 
 SUB noFill ()
     p5Canvas.noFill = true
+    COLOR , 0 'fill also affects text
 END SUB
 
 SUB noStroke ()
     p5Canvas.noStroke = true
+    COLOR 0 'stroke also affects text
 END SUB
 
 SUB strokeWeight (a AS _FLOAT)
@@ -335,6 +356,8 @@ SUB p5line (x1 AS _FLOAT, y1 AS _FLOAT, x2 AS _FLOAT, y2 AS _FLOAT)
     DIM dxx AS _FLOAT, dyy AS _FLOAT
     DIM i AS _FLOAT
 
+    internalp5makeTempImage
+
     dx = x2 - x1
     dy = y2 - y1
     d = SQR(dx * dx + dy * dy)
@@ -343,23 +366,23 @@ SUB p5line (x1 AS _FLOAT, y1 AS _FLOAT, x2 AS _FLOAT, y2 AS _FLOAT)
         dxx = dxx + dx / d
         dyy = dyy + dy / d
     NEXT
+
+    internalp5displayTempImage
 END SUB
 
 SUB p5point (x AS _FLOAT, y AS _FLOAT)
     IF p5Canvas.noStroke THEN EXIT SUB
 
     PSET (x, y), p5Canvas.stroke
-    ' CircleFill x, y, p5Canvas.strokeWeight, p5Canvas.stroke
 END SUB
 
 SUB ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
-    DIM i AS _FLOAT, tempImage AS LONG
+    DIM i AS _FLOAT
     DIM xx AS _FLOAT, yy AS _FLOAT
     IF p5Canvas.noFill AND p5Canvas.noStroke THEN EXIT SUB
 
-    tempImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
-    _DEST tempImage
-    CLS , 0
+    internalp5makeTempImage
+
     FOR i = 0 TO TWO_PI STEP .0025
         xx = xr * COS(i) + x
         yy = yr * SIN(i) + y
@@ -368,20 +391,25 @@ SUB ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
     IF NOT p5Canvas.noFill THEN
         IF p5Canvas.noStroke THEN PAINT (x, y), p5Canvas.fill, p5Canvas.fill ELSE PAINT (x, y), p5Canvas.fill, p5Canvas.stroke
     END IF
-    _DEST 0
-    _PUTIMAGE (0, 0), tempImage
-    _FREEIMAGE tempImage
+
+    internalp5displayTempImage
 END SUB
 
 'draw a triangle by joining 3 differents location
 SUB p5triangle (x1##, y1##, x2##, y2##, x3##, y3##)
-    IF p5Canvas.noFill AND p5anvas.nostroke THEN EXIT SUB
-    bc& = p5Canvas.stroke
+    IF p5Canvas.noFill AND p5Canvas.noStroke THEN EXIT SUB
+
+    DIM bc AS _UNSIGNED LONG
+
+    internalp5makeTempImage
+
+    bc = p5Canvas.stroke
     p5Canvas.stroke = p5Canvas.fill
     p5line x1##, y1##, x2##, y2##
     p5line x2##, y2##, x3##, y3##
     p5line x3##, y3##, x1##, y1##
-    p5Canvas.stroke = bc&
+    p5Canvas.stroke = bc
+
     IF NOT p5Canvas.noStroke THEN
         p5line x1##, y1##, x2##, y2##
         p5line x2##, y2##, x3##, y3##
@@ -392,37 +420,52 @@ SUB p5triangle (x1##, y1##, x2##, y2##, x3##, y3##)
         avgY## = (y1## + y2## + y3##) / 3
         IF p5Canvas.noStroke THEN PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.fill ELSE PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.stroke
     END IF
+
+    internalp5displayTempImage
 END SUB
 
 'draw a triangle by joining 3 different angles from the center point with
 'a given size
 SUB p5triangleA (centerX##, centerY##, ang1##, ang2##, ang3##, size##)
-    pi## = _PI
-    IF ang1## < pi## THEN x1## = size## * COS(ang1##) + centerX##: y1## = size## * SIN(ang1##) + centerY##
-    IF ang2## < pi## THEN x2## = size## * COS(ang2##) + centerX##: y2## = size## * SIN(ang2##) + centerY##
-    IF ang3## < pi## THEN x3## = size## * COS(ang3##) + centerX##: y3## = size## * SIN(ang3##) + centerY##
+
+    DIM bc AS _UNSIGNED LONG
+
+    internalp5makeTempImage
+
+    IF ang1## < _PI THEN x1## = size## * COS(ang1##) + centerX##: y1## = size## * SIN(ang1##) + centerY##
+    IF ang2## < _PI THEN x2## = size## * COS(ang2##) + centerX##: y2## = size## * SIN(ang2##) + centerY##
+    IF ang3## < _PI THEN x3## = size## * COS(ang3##) + centerX##: y3## = size## * SIN(ang3##) + centerY##
+
     IF p5Canvas.noFill AND p5anvas.nostroke THEN EXIT SUB
-    bc& = p5Canvas.stroke
+
+    bc = p5Canvas.stroke
     p5Canvas.stroke = p5Canvas.fill
     p5line x1##, y1##, x2##, y2##
     p5line x2##, y2##, x3##, y3##
     p5line x3##, y3##, x1##, y1##
-    p5Canvas.stroke = bc&
+    p5Canvas.stroke = bc
+
     IF NOT p5Canvas.noStroke THEN
         p5line x1##, y1##, x2##, y2##
         p5line x2##, y2##, x3##, y3##
         p5line x3##, y3##, x1##, y1##
     END IF
+
     IF NOT p5Canvas.noFill THEN
         avgX## = (x1## + x2## + x3##) / 3
         avgY## = (y1## + y2## + y3##) / 3
         IF p5Canvas.noStroke THEN PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.fill ELSE PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.stroke
     END IF
+
+    internalp5displayTempImage
 END SUB
 
 'draws a rectangle
 SUB p5rect (x1##, y1##, width##, height##)
     IF p5Canvas.noFill AND p5anvas.nostroke THEN EXIT SUB
+
+    internalp5makeTempImage
+
     IF NOT p5Canvas.noFill THEN LINE (x1##, y1##)-STEP(width##, height##), p5Canvas.fill, BF
     IF NOT p5Canvas.noStroke THEN
         FOR i = 0 TO p5Canvas.strokeWeight
@@ -432,35 +475,49 @@ SUB p5rect (x1##, y1##, width##, height##)
     IF NOT p5Canvas.noFill THEN
         IF p5Canvas.noStroke THEN PAINT (x1## + (width## / 2), y1## + (height## / 2)), p5Canvas.fill, p5Canvas.fill ELSE PAINT (x1## + (width## / 2), y1## + (height## / 2)), p5Canvas.fill, p5Canvas.stroke
     END IF
+
+    internalp5displayTempImage
+
 END SUB
 
 'draws a quadilateral
 SUB p5quad (x1##, y1##, x2##, y2##, x3##, y3##, x4##, y4##)
     IF p5Canvas.noFill AND p5anvas.nostroke THEN EXIT SUB
-    bc& = p5Canvas.stroke
+
+    DIM bc AS _UNSIGNED LONG
+
+    internalp5makeTempImage
+
+    bc = p5Canvas.stroke
     p5Canvas.stroke = p5Canvas.fill
     p5line x1##, y1##, x2##, y2##
     p5line x2##, y2##, x3##, y3##
     p5line x3##, y3##, x4##, y4##
     p5line x4##, y4##, x1##, y1##
-    p5Canvas.stroke = bc&
+    p5Canvas.stroke = bc
+
     IF NOT p5Canvas.noStroke THEN
         p5line x1##, y1##, x2##, y2##
         p5line x2##, y2##, x3##, y3##
         p5line x3##, y3##, x4##, y4##
         p5line x4##, y4##, x1##, y1##
     END IF
+
     IF NOT p5Canvas.noFill THEN
         avgX## = (x1## + x2## + x3## + x4##) / 4
         avgY## = (y1## + y2## + y3## + y4##) / 4
         IF p5Canvas.noStroke THEN PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.fill ELSE PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.stroke
     END IF
+
+    internalp5displayTempImage
 END SUB
+
 SUB gatherMouseData ()
     DIM a AS _BYTE
 
     'Mouse input (optimization by Luke Ceddia):
     p5mouseWheel = 0
+
     IF _MOUSEINPUT THEN
         p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
         IF _MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 THEN
@@ -472,6 +529,7 @@ SUB gatherMouseData ()
         mouseButton1 = _MOUSEBUTTON(1)
         mouseButton2 = _MOUSEBUTTON(2)
     END IF
+
     WHILE _MOUSEINPUT: WEND
 
     IF p5mouseWheel THEN
@@ -596,7 +654,8 @@ FUNCTION vector.magSq## (v AS vector)
 END FUNCTION
 
 SUB vector.fromAngle (v AS vector, __angle##)
-    angle## = _D2R(__angle##)
+    IF p5angleMode = P5_DEGREE THEN angle## = _D2R(__angle##)
+
     v.x = COS(angle##)
     v.y = SIN(angle##)
 END SUB
@@ -643,15 +702,15 @@ FUNCTION radians## (d##)
 END FUNCTION
 
 FUNCTION p5sin## (angle##)
-    IF p5_Angle_Mode = P5_RADIAN THEN p5.sin## = SIN(angle##) ELSE p5.sin## = SIN(radians(angle##))
+    IF p5angleMode = P5_RADIAN THEN p5.sin## = SIN(angle##) ELSE p5.sin## = SIN(radians(angle##))
 END FUNCTION
 
 FUNCTION p5cos## (angle##)
-    IF p5_Angle_Mode = P5_RADIAN THEN p5.cos## = COS(angle##) ELSE p5.cos## = COS(radians(angle##))
+    IF p5angleMode = P5_RADIAN THEN p5.cos## = COS(angle##) ELSE p5.cos## = COS(radians(angle##))
 END FUNCTION
+
 SUB angleMode (kind)
-    IF kind = P5_RADIAN THEN p5_Angle_Mode = P5_RADIAN
-    IF kind = P5_DEGREE THEN p5_Angle_Mode = P5_DEGREE
+    p5angleMode = kind
 END SUB
 
 'Calculate minimum value between two value
@@ -676,6 +735,12 @@ FUNCTION dist## (x1##, y1##, x2##, y2##)
     dist## = SQR(dx## * dx## + dy## * dy##)
 END FUNCTION
 
+FUNCTION distB## (v1 AS vector, v2 AS vector)
+    IF v2.x## > v1.x## THEN dx## = v2.x## - v1.x## ELSE dx## = v1.x## - v2.x##
+    IF v2.y## > v1.y## THEN dy## = v2.y## - v1.y## ELSE dy## = v1.y## - v2.y##
+    distB## = SQR(dx## * dx## + dy## * dy##)
+END FUNCTION
+
 FUNCTION lerp## (start##, stp##, amt##)
     lerp## = amt## * (stp## - start##) + start##
 END FUNCTION
@@ -698,10 +763,11 @@ FUNCTION random2d## (mn##, mx##)
 END FUNCTION
 
 FUNCTION join$ (str_array$(), sep$)
-    FOR i = 0 TO UBOUND(str_array$)
+    FOR i = LBOUND(str_array$) TO UBOUND(str_array$)
         join$ = join$ + str_array$(i) + sep$
     NEXT
 END FUNCTION
+
 'uncomment these below to see a simple demo
 'FUNCTION p5setup ()
 'createCanvas 400, 400
