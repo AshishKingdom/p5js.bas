@@ -1,3 +1,4 @@
+DIM SHARED Size
 '$include:'..\p5js.bas'
 
 FUNCTION p5setup
