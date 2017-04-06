@@ -173,15 +173,19 @@ FUNCTION map## (value##, minRange##, maxRange##, newMinRange##, newMaxRange##)
 END FUNCTION
 
 SUB internalp5makeTempImage
-    tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
-    _DEST tempShapeImage
-    CLS , 0 'make it transparent
+    IF NOT shapeAllow THEN
+        tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
+        _DEST tempShapeImage
+        CLS , 0 'make it transparent
+    END IF
 END SUB
 
 SUB internalp5displayTempImage
-    _DEST 0
-    _PUTIMAGE (0, 0), tempShapeImage
-    _FREEIMAGE tempShapeImage
+    IF NOT shapeAllow THEN
+        _DEST 0
+        _PUTIMAGE (0, 0), tempShapeImage
+        _FREEIMAGE tempShapeImage
+    END IF
 END SUB
 
 SUB beginShape (kind AS LONG)
@@ -229,9 +233,6 @@ SUB endShape (closed)
 
     END IF
 
-    'place shape onto main canvas
-    internalp5displayTempImage
-
     'it's time to reset all varibles!!
     shapeAllow = false
     shapeType = 0
@@ -243,6 +244,9 @@ SUB endShape (closed)
     vertexCount = 0
     avgVertex.x = 0
     avgVertex.y = 0
+
+    'place shape onto main canvas
+    internalp5displayTempImage
 END SUB
 
 SUB fill (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
