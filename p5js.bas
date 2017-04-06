@@ -105,7 +105,6 @@ FUNCTION noise## (x AS _FLOAT, y AS _FLOAT, z AS _FLOAT)
         perlin_amp_falloff = 0.5
 
         REDIM perlin(PERLIN_SIZE + 1) AS _FLOAT
-        RANDOMIZE TIMER
         DIM i AS _FLOAT
         FOR i = 0 TO PERLIN_SIZE + 1
             perlin(i) = RND
