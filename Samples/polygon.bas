@@ -8,19 +8,20 @@ FUNCTION p5setup
     createCanvas 600, 600
     stroke 255, 255, 255
     strokeWeight 2
-    fill 255, 0, 0
     frameRate = 40
 END FUNCTION
 
 FUNCTION p5draw
     backgroundB 0
 
+    noFill
     IF di <= 2 THEN
         _PRINTSTRING (0, 0), "Click away..."
     ELSE
         _PRINTSTRING (0, 0), "Your mouse wheel can control the stroke weight..."
     END IF
 
+    fill 255, 0, 0
     beginShape P5_LINES
     FOR i = 1 TO 100
         IF dots(i).x > 0 AND dots(i).y > 0 THEN
