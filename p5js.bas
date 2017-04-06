@@ -638,6 +638,11 @@ FUNCTION seconds& ()
     seconds& = VAL(RIGHT$(TIME$, 2))
 END SUB
 
+SUB createVector (v AS vector, x AS _FLOAT, y AS _FLOAT)
+    v.x = x
+    v.y = y
+END SUB
+
 SUB vector.add (v1 AS vector, v2 AS vector)
     v1.x = v1.x + v2.x
     v1.y = v1.y + v2.y
