@@ -22,13 +22,13 @@ FUNCTION p5draw
     END IF
 
     fill 255, 0, 0
-    beginShape P5_LINES
+    beginShape p5LINES
     FOR i = 1 TO 100
         IF dots(i).x > 0 AND dots(i).y > 0 THEN
             vertex dots(i).x, dots(i).y
         END IF
-    NEXT
-    endShape P5_CLOSE
+NEXT
+endShape p5CLOSE
 END FUNCTION
 
 FUNCTION mouseClicked
