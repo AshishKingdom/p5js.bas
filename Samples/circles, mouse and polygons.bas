@@ -17,11 +17,11 @@ FUNCTION p5draw
     prevfill = p5Canvas.fill
     fill 150, 0, 200
 
-    beginShape P5_LINES
+    beginShape p5LINES
     vertex 300, 0
     vertex 600, 600
     vertex 0, 600
-    endShape P5_CLOSE
+    endShape p5CLOSE
 
     p5Canvas.fill = prevfill
 END FUNCTION
