@@ -1,6 +1,6 @@
 REDIM SHARED clicks(100) AS c, totalClicks AS LONG
 
-'$include:'p5js.bas'
+'$include:'..\p5js.bas'
 
 TYPE c
     pos AS vector
@@ -24,7 +24,7 @@ FUNCTION p5draw
             CASE CENTER: fill 0, 255, 0
             CASE RIGHT: fill 0, 255, 255
         END SELECT
-        ellipse clicks(i).pos.x, clicks(i).pos.y, 20, 20
+        p5ellipse clicks(i).pos.x, clicks(i).pos.y, 20, 20
     NEXT
 
     'add color reference to the bottom

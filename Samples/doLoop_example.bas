@@ -10,7 +10,7 @@ FUNCTION p5draw ()
     backgroundBA 0, 30
 
     fill 255, 0, 0
-    ellipse _MOUSEX, _MOUSEY, 30, 30
+    p5ellipse _MOUSEX, _MOUSEY, 30, 30
 
     noFill
     _PRINTSTRING (10, _HEIGHT - _FONTHEIGHT), "Click to toggle the p5draw loop on/off."

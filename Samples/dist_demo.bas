@@ -13,8 +13,8 @@ FUNCTION p5draw ()
     p5line 50, 350, _MOUSEX, _MOUSEY
 
     fillB 0
-    ellipse 50, 350, 10, 10
-    ellipse _MOUSEX, _MOUSEY, 10, 10
+    p5ellipse 50, 350, 10, 10
+    p5ellipse _MOUSEX, _MOUSEY, 10, 10
 
     d = dist(50, 350, _MOUSEX, _MOUSEY)
     noFill

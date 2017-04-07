@@ -18,7 +18,7 @@ FUNCTION p5draw
         fill 255, 0, 0
     END IF
 
-    ellipse mx, my, Size, Size
+    p5ellipse mx, my, Size, Size
 END FUNCTION
 
 FUNCTION mouseClicked

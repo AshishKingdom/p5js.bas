@@ -21,7 +21,7 @@ FUNCTION p5draw ()
     xm = _MOUSEX
     xc = constrain(xm, 100, 300)
     fillB 50
-    ellipse xm, 100, 20, 20
+    p5ellipse xm, 100, 20, 20
     fillB 100
-    ellipse xc, 300, 20, 20
+    p5ellipse xc, 300, 20, 20
 END FUNCTION

@@ -12,7 +12,7 @@ END FUNCTION
 
 FUNCTION p5draw
     backgroundBA 0, 25
-    ellipse _MOUSEX, _MOUSEY, Size, Size
+    p5ellipse _MOUSEX, _MOUSEY, Size, Size
 
     prevfill = p5Canvas.fill
     fill 150, 0, 200

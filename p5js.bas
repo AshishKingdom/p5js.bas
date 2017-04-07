@@ -379,7 +379,7 @@ SUB p5point (x AS _FLOAT, y AS _FLOAT)
     PSET (x, y), p5Canvas.stroke
 END SUB
 
-SUB ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
+SUB p5ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
     DIM i AS _FLOAT
     DIM xx AS _FLOAT, yy AS _FLOAT
     IF p5Canvas.noFill AND p5Canvas.noStroke THEN EXIT SUB

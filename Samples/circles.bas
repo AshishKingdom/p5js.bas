@@ -10,6 +10,6 @@ END FUNCTION
 
 FUNCTION p5draw
     backgroundBA 0, 25
-    ellipse _MOUSEX, _MOUSEY, 30, 30
+    p5ellipse _MOUSEX, _MOUSEY, 30, 30
 END FUNCTION
 
