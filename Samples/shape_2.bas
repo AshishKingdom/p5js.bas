@@ -9,7 +9,7 @@ FUNCTION p5setup ()
 END FUNCTION
 
 FUNCTION p5draw ()
-    beginShape P5_LINES
+    beginShape p5LINES
     vertex 196, 18
     vertex 154, 151
     vertex 22, 193
@@ -19,6 +19,6 @@ FUNCTION p5draw ()
     vertex 238, 232
     vertex 368, 193
     vertex 239, 151
-    endShape P5_CLOSE
+    endShape p5CLOSE
     noLoop
 END FUNCTION
