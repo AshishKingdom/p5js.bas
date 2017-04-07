@@ -8,11 +8,11 @@ RANDOMIZE TIMER
 CONST TWO_PI = 6.283185307179586
 CONST HALF_PI = 1.570796326794897
 CONST QUARTER_PI = 0.785398163397448
-CONST P5_POINTS = 1
-CONST P5_LINES = 2
-CONST P5_CLOSE = -3
-CONST P5_RADIAN = 4
-CONST P5_DEGREE = 5
+CONST p5POINTS = 1
+CONST p5LINES = 2
+CONST p5CLOSE = -3
+CONST p5RADIAN = 4
+CONST p5DEGREE = 5
 CONST true = -1, false = NOT true
 
 'p5 Global Variables
@@ -35,7 +35,7 @@ DIM SHARED frameRate AS SINGLE
 
 'angle mode
 DIM SHARED p5angleMode AS INTEGER
-p5angleMode = P5_RADIAN
+p5angleMode = p5RADIAN
 
 'canvas settings related variables
 DIM SHARED p5Canvas AS p5canvasSettings
@@ -196,9 +196,9 @@ END SUB
 
 SUB vertex (x, y)
     IF shapeInit THEN
-        IF shapeType = P5_POINTS THEN
+        IF shapeType = p5POINTS THEN
             CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.stroke
-        ELSEIF shapeType = P5_LINES THEN
+        ELSEIF shapeType = p5LINES THEN
             IF p5Canvas.noStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(x, y), p5Canvas.fill ELSE p5line PreviousVertex.x, PreviousVertex.y, x, y
         END IF
     END IF
@@ -206,7 +206,7 @@ SUB vertex (x, y)
         FirstVertex.x = x
         FirstVertex.y = y
         shapeInit = true
-        IF shapeType = P5_POINTS THEN
+        IF shapeType = p5POINTS THEN
             CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.stroke
         END IF
         FirstVertex.x = x
@@ -221,12 +221,12 @@ END SUB
 
 SUB endShape (closed)
     'did we have to close?
-    IF closed = P5_CLOSE AND shapeType = P5_LINES THEN
+    IF closed = p5CLOSE AND shapeType = p5LINES THEN
         IF p5Canvas.noStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(FirstVertex.x, FirstVertex.y), p5Canvas.fill ELSE p5line PreviousVertex.x, PreviousVertex.y, FirstVertex.x, FirstVertex.y
     END IF
 
     'filling the color
-    IF NOT p5Canvas.noFill AND shapeType = P5_LINES AND closed = P5_CLOSE THEN
+    IF NOT p5Canvas.noFill AND shapeType = p5LINES AND closed = p5CLOSE THEN
         avgVertex.x = avgVertex.x / vertexCount
         avgVertex.y = avgVertex.y / vertexCount
         IF p5Canvas.noStroke THEN PAINT (avgVertex.x, avgVertex.y), p5Canvas.fill, p5Canvas.fill ELSE PAINT (avgVertex.x, avgVertex.y), p5Canvas.fill, p5Canvas.stroke
@@ -680,7 +680,7 @@ FUNCTION vector.magSq## (v AS vector)
 END FUNCTION
 
 SUB vector.fromAngle (v AS vector, __angle##)
-    IF p5angleMode = P5_DEGREE THEN angle## = _D2R(__angle##)
+    IF p5angleMode = p5DEGREE THEN angle## = _D2R(__angle##)
 
     v.x = COS(angle##)
     v.y = SIN(angle##)
@@ -728,11 +728,11 @@ FUNCTION radians## (d##)
 END FUNCTION
 
 FUNCTION p5sin## (angle##)
-    IF p5angleMode = P5_RADIAN THEN p5.sin## = SIN(angle##) ELSE p5.sin## = SIN(radians(angle##))
+    IF p5angleMode = p5RADIAN THEN p5.sin## = SIN(angle##) ELSE p5.sin## = SIN(radians(angle##))
 END FUNCTION
 
 FUNCTION p5cos## (angle##)
-    IF p5angleMode = P5_RADIAN THEN p5.cos## = COS(angle##) ELSE p5.cos## = COS(radians(angle##))
+    IF p5angleMode = p5RADIAN THEN p5.cos## = COS(angle##) ELSE p5.cos## = COS(radians(angle##))
 END FUNCTION
 
 SUB angleMode (kind)
