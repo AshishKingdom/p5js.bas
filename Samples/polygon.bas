@@ -16,9 +16,9 @@ FUNCTION p5draw
 
     noFill
     IF di <= 2 THEN
-        _PRINTSTRING (0, 0), "Click away..."
+        text "Click away...", 0, 0
     ELSE
-        _PRINTSTRING (0, 0), "Your mouse wheel can control the stroke weight..."
+        text "Your mouse wheel can control the stroke weight...", 0, 0
     END IF
 
     fill 255, 0, 0
@@ -27,8 +27,8 @@ FUNCTION p5draw
         IF dots(i).x > 0 AND dots(i).y > 0 THEN
             vertex dots(i).x, dots(i).y
         END IF
-NEXT
-endShape p5CLOSE
+    NEXT
+    endShape p5CLOSE
 END FUNCTION
 
 FUNCTION mouseClicked

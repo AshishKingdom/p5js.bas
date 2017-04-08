@@ -8,7 +8,8 @@ FUNCTION p5setup ()
     strings$(1) = "Rocks!"
     message$ = join(strings$(), " ")
 
-    PRINT message$
+    textAlign CENTER
+    text message$, _WIDTH / 2, _HEIGHT / 2
 
     noLoop
 END FUNCTION

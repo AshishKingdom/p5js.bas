@@ -16,8 +16,8 @@ FUNCTION p5draw ()
     p5line rightWall, 0, rightWall, 400
 
     noStroke
-    'xm is just the _MOUSEX, while
-    'xc is the _MOUSEX but constrained to the "walls"
+    'xm is just the _MOUSEX value, while
+    'xc is the _MOUSEX value but constrained to the "walls"
     xm = _MOUSEX
     xc = constrain(xm, 100, 300)
     fillB 50

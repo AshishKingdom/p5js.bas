@@ -31,25 +31,25 @@ FUNCTION p5draw
     strokeB 255
     noFill
     IF totalClicks >= 0 THEN
-        _PRINTSTRING (0, 0), STR$(totalClicks + 1)
+        text STR$(totalClicks + 1), 0, 0
     ELSE
-        _PRINTSTRING (0, 0), "Click away..."
+        text "Click away...", 0, 0
     END IF
 
     fill 255, 0, 0
-    _PRINTSTRING (15, _HEIGHT - _FONTHEIGHT), "Left"
+    text "Left", 15, _HEIGHT - _FONTHEIGHT
 
     fill 0, 255, 0
     strokeB 0
-    _PRINTSTRING (60, _HEIGHT - _FONTHEIGHT), "Middle"
+    text "Middle", 60, _HEIGHT - _FONTHEIGHT
 
     fill 0, 255, 255
     strokeB 0
-    _PRINTSTRING (120, _HEIGHT - _FONTHEIGHT), "Right"
+    text "Right", 120, _HEIGHT - _FONTHEIGHT
 
     noFill
     strokeB 255
-    _PRINTSTRING (175, _HEIGHT - _FONTHEIGHT), "Wheel to change strokeWeight"
+    text "Wheel to change strokeWeight", 175, _HEIGHT - _FONTHEIGHT
 
 END FUNCTION
 

@@ -21,18 +21,16 @@ FUNCTION p5draw
     p5ellipse mx, my, Size, Size
 END FUNCTION
 
-FUNCTION mouseClicked
+FUNCTION mouseDragged
+    mx = _MOUSEX
+    my = _MOUSEY
+    dragged = true
+
     IF mouseButton = LEFT THEN
         fill 0, 255, 0
     ELSEIF mouseButton = RIGHT THEN
         fill 255, 0, 0
     END IF
-END FUNCTION
-
-FUNCTION mouseDragged
-    mx = _MOUSEX
-    my = _MOUSEY
-    dragged = true
 END FUNCTION
 
 FUNCTION mouseWheel
