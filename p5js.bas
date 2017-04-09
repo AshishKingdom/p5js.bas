@@ -10,7 +10,7 @@ CONST HALF_PI = 1.570796326794897
 CONST QUARTER_PI = 0.785398163397448
 CONST p5POINTS = 1
 CONST p5LINES = 2
-CONST p5CLOSE = -3
+CONST p5CLOSE = 3
 CONST p5RADIAN = 4
 CONST p5DEGREE = 5
 
@@ -480,22 +480,33 @@ SUB p5triangle (x1##, y1##, x2##, y2##, x3##, y3##)
 
     internalp5makeTempImage
 
-    bc = p5Canvas.stroke
-    p5Canvas.stroke = p5Canvas.fill
-    p5line x1##, y1##, x2##, y2##
-    p5line x2##, y2##, x3##, y3##
-    p5line x3##, y3##, x1##, y1##
-    p5Canvas.stroke = bc
-
-    IF NOT p5Canvas.doStroke THEN
+    IF p5Canvas.doStroke THEN
         p5line x1##, y1##, x2##, y2##
         p5line x2##, y2##, x3##, y3##
         p5line x3##, y3##, x1##, y1##
+    ELSE
+        p5Canvas.strokeA = p5Canvas.fill
+        p5Canvas.doStroke = true
+        p5line x1##, y1##, x2##, y2##
+        p5line x2##, y2##, x3##, y3##
+        p5line x3##, y3##, x1##, y1##
+        noStroke
     END IF
-    IF NOT p5Canvas.doFill THEN
+
+    IF p5Canvas.doFill THEN
         avgX## = (x1## + x2## + x3##) / 3
+        IF avgX## > _WIDTH - 1 THEN avgX## = _WIDTH - 1
+        IF avgX## < 0 THEN avgX## = 0
+
         avgY## = (y1## + y2## + y3##) / 3
-        IF p5Canvas.doStroke THEN PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.fill ELSE PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.stroke
+        IF avgY## > _HEIGHT - 1 THEN avgY## = _HEIGHT - 1
+        IF avgY## < 0 THEN avgY## = 0
+
+        IF p5Canvas.doStroke THEN
+            PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.stroke
+        ELSE
+            PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.fill
+        END IF
         _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
     END IF
 
@@ -504,39 +515,36 @@ END SUB
 
 'draw a triangle by joining 3 different angles from the center point with
 'a given size
-SUB p5triangleA (centerX##, centerY##, ang1##, ang2##, ang3##, size##)
+SUB p5triangleB (centerX##, centerY##, __ang1##, __ang2##, __ang3##, size##)
+    DIM x1##, y1##, x2##, y2##, x3##, y3##
+    DIM ang1##, ang2##, ang3##
 
-    DIM bc AS _UNSIGNED LONG
-
-    internalp5makeTempImage
-
-    IF ang1## < _PI THEN x1## = size## * COS(ang1##) + centerX##: y1## = size## * SIN(ang1##) + centerY##
-    IF ang2## < _PI THEN x2## = size## * COS(ang2##) + centerX##: y2## = size## * SIN(ang2##) + centerY##
-    IF ang3## < _PI THEN x3## = size## * COS(ang3##) + centerX##: y3## = size## * SIN(ang3##) + centerY##
-
-    IF p5Canvas.doFill AND p5anvas.dostroke THEN EXIT SUB
-
-    bc = p5Canvas.stroke
-    p5Canvas.stroke = p5Canvas.fill
-    p5line x1##, y1##, x2##, y2##
-    p5line x2##, y2##, x3##, y3##
-    p5line x3##, y3##, x1##, y1##
-    p5Canvas.stroke = bc
-
-    IF NOT p5Canvas.doStroke THEN
-        p5line x1##, y1##, x2##, y2##
-        p5line x2##, y2##, x3##, y3##
-        p5line x3##, y3##, x1##, y1##
+    IF p5angleMode = p5RADIAN THEN
+        ang1## = __ang1##
+        ang2## = __ang2##
+        ang3## = __ang3##
+    ELSE
+        ang1## = _D2R(__ang1##)
+        ang2## = _D2R(__ang2##)
+        ang3## = _D2R(__ang3##)
     END IF
 
-    IF NOT p5Canvas.doFill THEN
-        avgX## = (x1## + x2## + x3##) / 3
-        avgY## = (y1## + y2## + y3##) / 3
-        IF p5Canvas.doStroke THEN PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.fill ELSE PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.stroke
-        _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+    IF ang1## < _PI THEN
+        x1## = centerX## - size## * COS(ang1##)
+        y1## = centerY## + size## * SIN(ang1##)
     END IF
 
-    internalp5displayTempImage
+    IF ang2## < _PI THEN
+        x2## = centerX## - size## * COS(ang2##)
+        y2## = centerY## - size## * SIN(ang2##)
+    END IF
+
+    IF ang3## < _PI THEN
+        x3## = centerX## + size## * COS(ang3##)
+        y3## = centerY## - size## * SIN(ang3##)
+    END IF
+
+    p5triangle x1##, y1##, x2##, y2##, x3##, y3##
 END SUB
 
 'draws a rectangle
@@ -768,7 +776,7 @@ FUNCTION vector.magSq## (v AS vector)
 END FUNCTION
 
 SUB vector.fromAngle (v AS vector, __angle##)
-    IF p5angleMode = p5DEGREE THEN angle## = _D2R(__angle##)
+    IF p5angleMode = p5DEGREE THEN angle## = _D2R(__angle##) ELSE angle## = __angle##
 
     v.x = COS(angle##)
     v.y = SIN(angle##)
@@ -807,42 +815,52 @@ SUB vector.mult (v AS vector, n AS _FLOAT)
     v.z = v.z * n
 END SUB
 
-FUNCTION degrees## (r##)
-    degrees## = r## * (180 / _PI)
-END FUNCTION
+'Use QB64's builtin _R2D
+'FUNCTION degrees## (r##)
+'    degrees## = r## * (180 / _PI)
+'END FUNCTION
 
-FUNCTION radians## (d##)
-    radians## = d## * (_PI / 180)
-END FUNCTION
+'Use QB64's builtin _D2R
+'FUNCTION radians## (d##)
+'    radians## = d## * (_PI / 180)
+'END FUNCTION
 
 FUNCTION p5sin## (angle##)
-    IF p5angleMode = p5RADIAN THEN p5.sin## = SIN(angle##) ELSE p5.sin## = SIN(radians(angle##))
+    IF p5angleMode = p5RADIAN THEN
+        p5.sin## = SIN(angle##)
+    ELSE
+        p5.sin## = SIN(_D2R(angle##))
+    END IF
 END FUNCTION
 
 FUNCTION p5cos## (angle##)
-    IF p5angleMode = p5RADIAN THEN p5.cos## = COS(angle##) ELSE p5.cos## = COS(radians(angle##))
+    IF p5angleMode = p5RADIAN THEN
+        p5.cos## = COS(angle##)
+    ELSE
+        p5.cos## = COS(_D2R(angle##))
+    END IF
 END FUNCTION
 
 SUB angleMode (kind)
     p5angleMode = kind
 END SUB
 
-'Calculate minimum value between two value
+'Calculate minimum value between two values
 FUNCTION min## (a##, b##)
     IF a## < b## THEN min## = a## ELSE min## = b##
 END FUNCTION
 
-'Calculate maximum value between two value
+'Calculate maximum value between two values
 FUNCTION max## (a##, b##)
     IF a## > b## THEN max## = a## ELSE max## = b##
 END FUNCTION
 
-'* Constrains a value between a minimum and maximum value.
+'Constrain a value between a minimum and maximum value.
 FUNCTION constrain## (n##, low##, high##)
     constrain## = max(min(n##, high##), low##)
 END FUNCTION
 
-' * Calculates the distance between two points.
+'Calculate the distance between two points.
 FUNCTION dist## (x1##, y1##, x2##, y2##)
     IF x2## > x1## THEN dx## = x2## - x1## ELSE dx## = x1## - x2##
     IF y2## > y1## THEN dy## = y2## - y1## ELSE dy## = y1## - y2##
@@ -882,14 +900,14 @@ FUNCTION join$ (str_array$(), sep$)
     NEXT
 END FUNCTION
 
-'uncomment these below to see a simple demo
+'uncomment these lines below to see a simple demo
 'FUNCTION p5setup ()
-'createCanvas 400, 400
-'strokeWeight 2
-'fill 255, 0, 0
+'    createCanvas 400, 400
+'    strokeWeight 2
+'    fill 255, 0, 0
 'END FUNCTION
 
 'FUNCTION p5draw ()
-'backgroundBA 0, 30
-'ellipse _MOUSEX, _MOUSEY, 20, 20
+'    backgroundBA 0, 30
+'    p5ellipse _MOUSEX, _MOUSEY, 20, 20
 'END FUNCTION
