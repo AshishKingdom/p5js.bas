@@ -36,6 +36,8 @@ TYPE new_p5Canvas
     doFill AS _BYTE
     textAlign AS _BYTE
     rectMode AS _BYTE
+    xOffset AS _FLOAT
+    yOffset AS _FLOAT
 END TYPE
 
 TYPE vector
@@ -61,7 +63,7 @@ DIM SHARED shapeAllow AS _BYTE, shapeType AS LONG, shapeInit AS _BYTE
 DIM SHARED tempShapeImage AS LONG
 
 'loops and NoLoops
-DIM SHARED p5Loop AS _BYTE
+DIM SHARED p5Loop AS _BYTE, p5frameCount AS _UNSIGNED LONG
 p5Loop = true 'default is true
 
 'mouse consts and variables
@@ -88,20 +90,21 @@ TIMER(p5InputTimer) ON
 createCanvas 640, 400
 _TITLE "p5js.bas - Untitled sketch"
 _ICON
-stroke 0, 0, 0 'white
-fill 255, 255, 255
+stroke 0, 0, 0
+fill 255, 255, 255 'white
 strokeWeight 1
+backgroundB 240
 textAlign LEFT
 rectMode CORNER
 frameRate = 30
 
 DIM a AS _BYTE 'dummy variable used to call functions that may not be there
 a = p5setup
-a = p5draw 'run the p5draw function at least once (in case noLoop was used in p5setup)
+callDrawLoop 'run the p5draw function at least once (in case noLoop was used in p5setup)
 
 DO
     IF frameRate THEN _LIMIT frameRate
-    IF p5Loop THEN a = p5draw
+    IF p5Loop THEN callDrawLoop
     _DISPLAY
 LOOP
 
@@ -231,7 +234,13 @@ SUB beginShape (kind AS LONG)
     shapeType = kind
 END SUB
 
-SUB vertex (x, y)
+SUB vertex (__x AS _FLOAT, __y AS _FLOAT)
+
+    DIM x AS _FLOAT, y AS _FLOAT
+
+    x = __x + p5Canvas.xOffset
+    y = __y + p5Canvas.yOffset
+
     IF shapeInit THEN
         IF shapeType = p5POINTS THEN
             IF p5Canvas.doStroke THEN CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.stroke
@@ -294,7 +303,12 @@ SUB textAlign (position AS _BYTE)
     p5Canvas.textAlign = position
 END SUB
 
-SUB text (t$, x AS _FLOAT, y AS _FLOAT)
+SUB text (t$, __x AS _FLOAT, __y AS _FLOAT)
+    DIM x AS _FLOAT, y AS _FLOAT
+
+    x = __x + p5Canvas.xOffset
+    y = __y + p5Canvas.yOffset
+
     SELECT CASE p5Canvas.textAlign
         CASE LEFT
             _PRINTSTRING (x, y), t$
@@ -382,9 +396,27 @@ SUB pop
 END SUB
 
 SUB redraw
-    DIM a AS _BYTE
-    a = p5draw
+    callDrawLoop
 END SUB
+
+SUB callDrawLoop
+    DIM a AS _BYTE, xOffsetBackup AS _FLOAT, yOffsetBackup AS _FLOAT
+
+    p5frameCount = p5frameCount + 1
+
+    'calls to translate() are reverted after the draw loop
+    xOffsetBackup = p5Canvas.xOffset
+    yOffsetBackup = p5Canvas.yOffset
+
+    a = p5draw
+
+    p5Canvas.xOffset = xOffsetBackup
+    p5Canvas.yOffset = yOffsetBackup
+END SUB
+
+FUNCTION frameCount~&
+    frameCount~& = p5frameCount
+END FUNCTION
 
 SUB noFill ()
     p5Canvas.doFill = false
@@ -402,6 +434,11 @@ SUB strokeWeight (a AS _FLOAT)
     ELSE
         p5Canvas.strokeWeight = a
     END IF
+END SUB
+
+SUB translate (xoff AS _FLOAT, yoff AS _FLOAT)
+    p5Canvas.xOffset = p5Canvas.xOffset + xoff
+    p5Canvas.yOffset = p5Canvas.yOffset + yoff
 END SUB
 
 SUB CircleFill (CX AS LONG, CY AS LONG, R AS LONG, C AS _UNSIGNED LONG)
@@ -470,12 +507,18 @@ SUB RoundRectFill (x AS _FLOAT, y AS _FLOAT, x1 AS _FLOAT, y1 AS _FLOAT, r AS _F
     LOOP
 END SUB
 
-SUB p5line (x1 AS _FLOAT, y1 AS _FLOAT, x2 AS _FLOAT, y2 AS _FLOAT)
+SUB p5line (__x1 AS _FLOAT, __y1 AS _FLOAT, __x2 AS _FLOAT, __y2 AS _FLOAT)
+    DIM x1 AS _FLOAT, y1 AS _FLOAT, x2 AS _FLOAT, y2 AS _FLOAT
     DIM dx AS _FLOAT, dy AS _FLOAT, d AS _FLOAT
     DIM dxx AS _FLOAT, dyy AS _FLOAT
     DIM i AS _FLOAT
 
     IF NOT p5Canvas.doStroke THEN EXIT SUB
+
+    x1 = __x1 + p5Canvas.xOffset
+    y1 = __y1 + p5Canvas.yOffset
+    x2 = __x2 + p5Canvas.xOffset
+    y2 = __y2 + p5Canvas.xOffset
 
     dx = x2 - x1
     dy = y2 - y1
@@ -490,14 +533,18 @@ END SUB
 SUB p5point (x AS _FLOAT, y AS _FLOAT)
     IF NOT p5Canvas.doStroke THEN EXIT SUB
 
-    PSET (x, y), p5Canvas.strokeA
+    PSET (x + p5Canvas.xOffset, y + p5Canvas.yOffset), p5Canvas.strokeA
 END SUB
 
-SUB p5ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
+SUB p5ellipse (__x AS _FLOAT, __y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
     DIM i AS _FLOAT
+    DIM x AS _FLOAT, y AS _FLOAT
     DIM xx AS _FLOAT, yy AS _FLOAT
 
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+
+    x = __x + p5Canvas.xOffset
+    y = __y + p5Canvas.yOffset
 
     IF p5Canvas.doStroke THEN
         IF xr <> yr THEN
@@ -520,7 +567,7 @@ SUB p5ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
     ELSE
         'no fill
         DIM tempColor~&
-        tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke) - 1, _BLUE32(p5Canvas.stroke) - 1)
+        IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
         IF xr <> yr THEN
             CIRCLE (x, y), xr - p5Canvas.strokeWeight / 2, tempColor~&, , , xr / yr
             PAINT (x, y), tempColor~&, tempColor~&
@@ -532,10 +579,18 @@ SUB p5ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
 END SUB
 
 'draw a triangle by joining 3 differents location
-SUB p5triangle (x1##, y1##, x2##, y2##, x3##, y3##)
+SUB p5triangle (__x1##, __y1##, __x2##, __y2##, __x3##, __y3##)
+    DIM x1##, y1##, x2##, y2##, x3##, y3##
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
 
     DIM bc AS _UNSIGNED LONG
+
+    x1## = __x1## + p5Canvas.xOffset
+    y1## = __y1## + p5Canvas.yOffset
+    x2## = __x2## + p5Canvas.xOffset
+    y2## = __y2## + p5Canvas.yOffset
+    x3## = __x3## + p5Canvas.xOffset
+    y3## = __y3## + p5Canvas.yOffset
 
     internalp5makeTempImage
 
@@ -574,9 +629,13 @@ END SUB
 
 'draw a triangle by joining 3 different angles from the center point with
 'a given size
-SUB p5triangleB (centerX##, centerY##, __ang1##, __ang2##, __ang3##, size##)
+SUB p5triangleB (__centerX##, __centerY##, __ang1##, __ang2##, __ang3##, size##)
     DIM x1##, y1##, x2##, y2##, x3##, y3##
     DIM ang1##, ang2##, ang3##
+    DIM centerX##, centerY##
+
+    centerX## = __centerX## + p5Canvas.xOffset
+    centerY## = __centerY## + p5Canvas.yOffset
 
     IF p5angleMode = p5RADIAN THEN
         ang1## = __ang1##
@@ -607,27 +666,37 @@ SUB p5triangleB (centerX##, centerY##, __ang1##, __ang2##, __ang3##, size##)
 END SUB
 
 'draws a rectangle
-SUB p5rect (x##, y##, width##, height##)
+SUB p5rect (x##, y##, __width##, __height##)
+    DIM width##, height##
+
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+
+    width## = __width##
+    height## = __height##
 
     internalp5makeTempImage
 
     IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CORNERS THEN
         'default mode
-        x1## = x##
-        y1## = y##
+        x1## = x## + p5Canvas.xOffset
+        y1## = y## + p5Canvas.yOffset
+
+        IF p5Canvas.rectMode = CORNERS THEN
+            width## = width## + p5Canvas.xOffset
+            height## = height## + p5Canvas.yOffset
+        END IF
     ELSEIF p5Canvas.rectMode = CENTER THEN
-        x1## = x## - width## / 2
-        y1## = y## - height## / 2
+        x1## = x## - width## / 2 + p5Canvas.xOffset
+        y1## = y## - height## / 2 + p5Canvas.yOffset
     END IF
 
     DIM tempColor~&
-    tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke) - 1, _BLUE32(p5Canvas.stroke) - 1)
+    IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
 
     IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CENTER THEN
         IF p5Canvas.doStroke THEN
-            LINE (x1## - INT(p5Canvas.strokeWeight / 2), y1## - INT(p5Canvas.strokeWeight / 2))-(x1## + width## + INT(p5Canvas.strokeWeight / 2), y1## + height## + INT(p5Canvas.strokeWeight / 2)), p5Canvas.strokeA, BF
-            LINE (x1## + INT(p5Canvas.strokeWeight / 2), y1## + INT(p5Canvas.strokeWeight / 2))-(x1## + width## - INT(p5Canvas.strokeWeight / 2), y1## + height## - INT(p5Canvas.strokeWeight / 2)), tempColor~&, BF
+            LINE (x1## - _CEIL(p5Canvas.strokeWeight / 2), y1## - _CEIL(p5Canvas.strokeWeight / 2))-(x1## + width## + _CEIL(p5Canvas.strokeWeight / 2) - 1, y1## + height## + _CEIL(p5Canvas.strokeWeight / 2) - 1), p5Canvas.strokeA, BF
+            LINE (x1## + _CEIL(p5Canvas.strokeWeight / 2), y1## + _CEIL(p5Canvas.strokeWeight / 2))-(x1## + width## - _CEIL(p5Canvas.strokeWeight / 2) - 1, y1## + height## - _CEIL(p5Canvas.strokeWeight / 2) - 1), tempColor~&, BF
             _CLEARCOLOR tempColor~&
         END IF
 
@@ -642,8 +711,8 @@ SUB p5rect (x##, y##, width##, height##)
     ELSE
         'CORNERS - consider width and height values as coordinates instead
         IF p5Canvas.doStroke THEN
-            LINE (x1## - INT(p5Canvas.strokeWeight / 2), y1## - INT(p5Canvas.strokeWeight / 2))-(width## + INT(p5Canvas.strokeWeight / 2), height## + INT(p5Canvas.strokeWeight / 2)), p5Canvas.strokeA, BF
-            LINE (x1## + INT(p5Canvas.strokeWeight / 2), y1## + INT(p5Canvas.strokeWeight / 2))-(width## - INT(p5Canvas.strokeWeight / 2), height## - INT(p5Canvas.strokeWeight / 2)), tempColor~&, BF
+            LINE (x1## - _CEIL(p5Canvas.strokeWeight / 2), y1## - _CEIL(p5Canvas.strokeWeight / 2))-(width## + _CEIL(p5Canvas.strokeWeight / 2) - 1, height## + _CEIL(p5Canvas.strokeWeight / 2) - 1), p5Canvas.strokeA, BF
+            LINE (x1## + _CEIL(p5Canvas.strokeWeight / 2), y1## + _CEIL(p5Canvas.strokeWeight / 2))-(width## - _CEIL(p5Canvas.strokeWeight / 2) - 1, height## - _CEIL(p5Canvas.strokeWeight / 2) - 1), tempColor~&, BF
             _CLEARCOLOR tempColor~&
         END IF
 
@@ -661,29 +730,39 @@ SUB p5rect (x##, y##, width##, height##)
 END SUB
 
 'draws a rectangle with rounded corners (r## is the amount)
-SUB p5rectB (x##, y##, width##, height##, r##)
+SUB p5rectB (x##, y##, __width##, __height##, r##)
+    DIM width##, height##
+
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+
+    width## = __width##
+    height## = __height##
 
     internalp5makeTempImage
 
     IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CORNERS THEN
         'default mode
-        x1## = x##
-        y1## = y##
+        x1## = x## + p5Canvas.xOffset
+        y1## = y## + p5Canvas.yOffset
+
+        IF p5Canvas.rectMode = CORNERS THEN
+            width## = width## + p5Canvas.xOffset
+            height## = height## + p5Canvas.yOffset
+        END IF
     ELSEIF p5Canvas.rectMode = CENTER THEN
-        x1## = x## - width## / 2
-        y1## = y## - height## / 2
+        x1## = x## - width## / 2 + p5Canvas.xOffset
+        y1## = y## - height## / 2 + p5Canvas.yOffset
     END IF
 
     DIM tempColor~&
-    tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke) - 1, _BLUE32(p5Canvas.stroke) - 1)
+    IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
 
     IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CENTER THEN
         IF p5Canvas.doStroke THEN
-            RoundRectFill x1## - INT(p5Canvas.strokeWeight / 2), y1## - INT(p5Canvas.strokeWeight / 2), x1## + width## + INT(p5Canvas.strokeWeight / 2), y1## + height## + INT(p5Canvas.strokeWeight / 2), r##, p5Canvas.stroke
+            RoundRectFill x1## - _CEIL(p5Canvas.strokeWeight / 2), y1## - _CEIL(p5Canvas.strokeWeight / 2), x1## + width## + _CEIL(p5Canvas.strokeWeight / 2), y1## + height## + _CEIL(p5Canvas.strokeWeight / 2), r##, p5Canvas.stroke
             _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
 
-            RoundRectFill x1## + INT(p5Canvas.strokeWeight / 2), y1## + INT(p5Canvas.strokeWeight / 2), x1## + width## - INT(p5Canvas.strokeWeight / 2), y1## + height## - INT(p5Canvas.strokeWeight / 2), r##, tempColor~&
+            RoundRectFill x1## + _CEIL(p5Canvas.strokeWeight / 2), y1## + _CEIL(p5Canvas.strokeWeight / 2), x1## + width## - _CEIL(p5Canvas.strokeWeight / 2), y1## + height## - _CEIL(p5Canvas.strokeWeight / 2), r##, tempColor~&
             _CLEARCOLOR tempColor~&
         END IF
 
@@ -699,10 +778,10 @@ SUB p5rectB (x##, y##, width##, height##, r##)
     ELSE
         'CORNERS - consider width and height values as coordinates instead
         IF p5Canvas.doStroke THEN
-            RoundRectFill x1## - INT(p5Canvas.strokeWeight / 2), y1## - INT(p5Canvas.strokeWeight / 2), width## + INT(p5Canvas.strokeWeight / 2), height## + INT(p5Canvas.strokeWeight / 2), r##, p5Canvas.stroke
+            RoundRectFill x1## - _CEIL(p5Canvas.strokeWeight / 2), y1## - _CEIL(p5Canvas.strokeWeight / 2), width## + _CEIL(p5Canvas.strokeWeight / 2), height## + _CEIL(p5Canvas.strokeWeight / 2), r##, p5Canvas.stroke
             _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
 
-            RoundRectFill x1## + INT(p5Canvas.strokeWeight / 2), y1## + INT(p5Canvas.strokeWeight / 2), width## - INT(p5Canvas.strokeWeight / 2), height## - INT(p5Canvas.strokeWeight / 2), r##, tempColor~&
+            RoundRectFill x1## + _CEIL(p5Canvas.strokeWeight / 2), y1## + _CEIL(p5Canvas.strokeWeight / 2), width## - _CEIL(p5Canvas.strokeWeight / 2), height## - _CEIL(p5Canvas.strokeWeight / 2), r##, tempColor~&
             _CLEARCOLOR tempColor~&
         END IF
 
@@ -725,7 +804,18 @@ SUB rectMode (mode AS _BYTE)
 END SUB
 
 'draws a quadrilateral
-SUB p5quad (x1##, y1##, x2##, y2##, x3##, y3##, x4##, y4##)
+SUB p5quad (__x1##, __y1##, __x2##, __y2##, __x3##, __y3##, __x4##, __y4##)
+    DIM x1##, y1##, x2##, y2##, x3##, y3##, x4##, y4##
+
+    x1## = __x1## + p5Canvas.xOffset
+    y1## = __y1## + p5Canvas.yOffset
+    x2## = __x2## + p5Canvas.xOffset
+    y2## = __y2## + p5Canvas.yOffset
+    x3## = __x3## + p5Canvas.xOffset
+    y3## = __y3## + p5Canvas.yOffset
+    x4## = __x4## + p5Canvas.xOffset
+    y4## = __y4## + p5Canvas.yOffset
+
     beginShape p5LINES
     vertex x1##, y1##
     vertex x2##, y2##
