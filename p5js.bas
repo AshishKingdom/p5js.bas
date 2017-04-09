@@ -419,6 +419,29 @@ SUB CircleFill (CX AS LONG, CY AS LONG, R AS LONG, C AS _UNSIGNED LONG)
 
 END SUB
 
+SUB RoundRectFill (x AS _FLOAT, y AS _FLOAT, x1 AS _FLOAT, y1 AS _FLOAT, r AS _FLOAT, c AS _UNSIGNED LONG)
+    'This sub from _vincent at the #qb64 chatroom on freenode.net
+    LINE (x, y + r)-(x1, y1 - r), c, BF
+
+    a = r
+    b = 0
+    e = -a
+
+    DO WHILE a >= b
+        LINE (x + r - b, y + r - a)-(x1 - r + b, y + r - a), c, BF
+        LINE (x + r - a, y + r - b)-(x1 - r + a, y + r - b), c, BF
+        LINE (x + r - b, y1 - r + a)-(x1 - r + b, y1 - r + a), c, BF
+        LINE (x + r - a, y1 - r + b)-(x1 - r + a, y1 - r + b), c, BF
+
+        b = b + 1
+        e = e + b + b
+        IF e > 0 THEN
+            a = a - 1
+            e = e - a - a
+        END IF
+    LOOP
+END SUB
+
 SUB p5line (x1 AS _FLOAT, y1 AS _FLOAT, x2 AS _FLOAT, y2 AS _FLOAT)
     DIM dx AS _FLOAT, dy AS _FLOAT, d AS _FLOAT
     DIM dxx AS _FLOAT, dyy AS _FLOAT
@@ -469,7 +492,7 @@ SUB p5ellipse (x AS _FLOAT, y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
     ELSE
         'no fill
         DIM tempColor~&
-        tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
+        tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke) - 1, _BLUE32(p5Canvas.stroke) - 1)
         IF xr <> yr THEN
             CIRCLE (x, y), xr - p5Canvas.strokeWeight / 2, tempColor~&, , , xr / yr
             PAINT (x, y), tempColor~&, tempColor~&
@@ -556,15 +579,10 @@ SUB p5triangleB (centerX##, centerY##, __ang1##, __ang2##, __ang3##, size##)
 END SUB
 
 'draws a rectangle
-SUB p5rect (x##, y##, __width##, __height##)
+SUB p5rect (x##, y##, width##, height##)
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
 
-    DIM width##, height##
-
     internalp5makeTempImage
-
-    width## = __width##
-    height## = __height##
 
     IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CORNERS THEN
         'default mode
@@ -576,7 +594,7 @@ SUB p5rect (x##, y##, __width##, __height##)
     END IF
 
     DIM tempColor~&
-    tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
+    tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke) - 1, _BLUE32(p5Canvas.stroke) - 1)
 
     IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CENTER THEN
         IF p5Canvas.doStroke THEN
@@ -587,11 +605,11 @@ SUB p5rect (x##, y##, __width##, __height##)
 
         IF p5Canvas.doFill THEN
             IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
-                LINE (x1##, y1##)-STEP(width##, height##), tempColor~&, BF
+                LINE (x1##, y1##)-STEP(width## - 1, height## - 1), tempColor~&, BF
                 _CLEARCOLOR tempColor~&
             END IF
 
-            LINE (x1##, y1##)-STEP(width##, height##), p5Canvas.fillA, BF
+            LINE (x1##, y1##)-STEP(width## - 1, height## - 1), p5Canvas.fillA, BF
         END IF
     ELSE
         'CORNERS - consider width and height values as coordinates instead
@@ -608,6 +626,66 @@ SUB p5rect (x##, y##, __width##, __height##)
             END IF
 
             LINE (x1##, y1##)-(width##, height##), p5Canvas.fillA, BF
+        END IF
+    END IF
+
+    internalp5displayTempImage
+END SUB
+
+'draws a rectangle with rounded corners (r## is the amount)
+SUB p5rectB (x##, y##, width##, height##, r##)
+    IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+
+    internalp5makeTempImage
+
+    IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CORNERS THEN
+        'default mode
+        x1## = x##
+        y1## = y##
+    ELSEIF p5Canvas.rectMode = CENTER THEN
+        x1## = x## - width## / 2
+        y1## = y## - height## / 2
+    END IF
+
+    DIM tempColor~&
+    tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke) - 1, _BLUE32(p5Canvas.stroke) - 1)
+
+    IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CENTER THEN
+        IF p5Canvas.doStroke THEN
+            RoundRectFill x1## - INT(p5Canvas.strokeWeight / 2), y1## - INT(p5Canvas.strokeWeight / 2), x1## + width## + INT(p5Canvas.strokeWeight / 2), y1## + height## + INT(p5Canvas.strokeWeight / 2), r##, p5Canvas.stroke
+            _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+
+            RoundRectFill x1## + INT(p5Canvas.strokeWeight / 2), y1## + INT(p5Canvas.strokeWeight / 2), x1## + width## - INT(p5Canvas.strokeWeight / 2), y1## + height## - INT(p5Canvas.strokeWeight / 2), r##, tempColor~&
+            _CLEARCOLOR tempColor~&
+        END IF
+
+        IF p5Canvas.doFill THEN
+            IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
+                RoundRectFill x1##, y1##, x1## + width## - 1, height##, r##, tempColor~&
+                _CLEARCOLOR tempColor~&
+            END IF
+
+            RoundRectFill x1##, y1##, x1## + width## - 1, y1## + height## - 1, r##, p5Canvas.fill
+            _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+        END IF
+    ELSE
+        'CORNERS - consider width and height values as coordinates instead
+        IF p5Canvas.doStroke THEN
+            RoundRectFill x1## - INT(p5Canvas.strokeWeight / 2), y1## - INT(p5Canvas.strokeWeight / 2), width## + INT(p5Canvas.strokeWeight / 2), height## + INT(p5Canvas.strokeWeight / 2), r##, p5Canvas.stroke
+            _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+
+            RoundRectFill x1## + INT(p5Canvas.strokeWeight / 2), y1## + INT(p5Canvas.strokeWeight / 2), width## - INT(p5Canvas.strokeWeight / 2), height## - INT(p5Canvas.strokeWeight / 2), r##, tempColor~&
+            _CLEARCOLOR tempColor~&
+        END IF
+
+        IF p5Canvas.doFill THEN
+            IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
+                RoundRectFill x1##, y1##, width##, height##, r##, tempColor~&
+                _CLEARCOLOR tempColor~&
+            END IF
+
+            RoundRectFill x1##, y1##, width##, height##, r##, p5Canvas.fill
+            _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
         END IF
     END IF
 
