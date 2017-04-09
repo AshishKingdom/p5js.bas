@@ -25,8 +25,8 @@ CONST RADIANS = 4
 CONST DEGREES = 5
 CONST CORNER = 6
 CONST CORNERS = 7
-CONST p5rgb = 8
-CONST p5hsb = 9
+CONST p5RGB = 8
+CONST p5HSB = 9
 
 'boolean constants
 CONST true = -1, false = NOT true
@@ -52,6 +52,8 @@ TYPE new_p5Canvas
     rectMode AS _BYTE
     xOffset AS _FLOAT
     yOffset AS _FLOAT
+    colorMode AS INTEGER
+    angleMode AS INTEGER
 END TYPE
 
 TYPE vector
@@ -62,12 +64,6 @@ END TYPE
 
 'frame rate
 DIM SHARED frameRate AS SINGLE
-
-'angle mode
-DIM SHARED p5colorMode AS INTEGER
-p5colorMode = p5rgb
-DIM SHARED p5angleMode AS INTEGER
-p5angleMode = RADIANS
 
 'canvas settings related variables
 DIM SHARED p5Canvas AS new_p5Canvas, pushState AS LONG
@@ -119,6 +115,9 @@ textAlign LEFT
 textSize 16 'default builtin font
 rectMode CORNER
 frameRate = 30
+colorMode p5RGB
+angleMode RADIANS
+doLoop
 
 DIM a AS _BYTE 'dummy variable used to call functions that may not be there
 a = p5setup
@@ -423,7 +422,7 @@ END FUNCTION
 
 SUB fill (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     p5Canvas.doFill = true
-    IF p5colorMode = p5hsb THEN p5Canvas.fill = hsb(r, g, b, 255) ELSE p5Canvas.fill = _RGB32(r, g, b)
+    IF p5Canvas.colorMode = p5HSB THEN p5Canvas.fill = hsb(r, g, b, 255) ELSE p5Canvas.fill = _RGB32(r, g, b)
     p5Canvas.fillA = p5Canvas.fill
     p5Canvas.fillAlpha = 255
     COLOR , p5Canvas.fill 'fill also affects text
@@ -431,8 +430,13 @@ END SUB
 
 SUB fillA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     p5Canvas.doFill = true
-    IF p5colorMode = p5hsb THEN p5Canvas.fill = hsb(r, g, b, a) ELSE p5Canvas.fill = _RGB32(r, g, b)
-    IF p5colorMode = p5hsb THEN p5Canvas.fillA = hsb(r, g, b, a) ELSE p5Canvas.fillA = _RGBA32(r, g, b, a)
+    IF p5Canvas.colorMode = p5HSB THEN
+        p5Canvas.fill = hsb(r, g, b, a)
+        p5Canvas.fillA = hsb(r, g, b, a)
+    ELSE
+        p5Canvas.fill = _RGB32(r, g, b)
+        p5Canvas.fillA = _RGBA32(r, g, b, a)
+    END IF
     p5Canvas.fillAlpha = constrain(a, 0, 255)
     COLOR , p5Canvas.fillA 'fill also affects text
 END SUB
@@ -455,15 +459,22 @@ END SUB
 
 SUB stroke (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     p5Canvas.doStroke = true
-    IF p5colorMode = p5hsb THEN p5Canvas.stroke = hsb(r, g, b, 255) ELSE p5Canvas.stroke = _RGB32(r, g, b)
+    IF p5Canvas.colorMode = p5HSB THEN p5Canvas.stroke = hsb(r, g, b, 255) ELSE p5Canvas.stroke = _RGB32(r, g, b)
     p5Canvas.strokeA = p5Canvas.stroke
+    p5Canvas.strokeAlpha = 255
     COLOR p5Canvas.stroke 'stroke also affects text
 END SUB
 
 SUB strokeA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     p5Canvas.doStroke = true
-    IF p5colorMode = p5hsb THEN p5Canvas.stroke = hsb(r, g, b, a) ELSE p5Canvas.stroke = _RGB32(r, g, b)
-    IF p5colorMode = p5hsb THEN p5Canvas.strokeA = hsb(r, g, b, a) ELSE p5Canvas.strokeA = _RGBA32(r, g, b, a)
+    IF p5Canvas.colorMode = p5HSB THEN
+        p5Canvas.stroke = hsb(r, g, b, a)
+        p5Canvas.strokeA = hsb(r, g, b, a)
+    ELSE
+        p5Canvas.stroke = _RGB32(r, g, b)
+        p5Canvas.strokeA = _RGBA32(r, g, b, a)
+    END IF
+
     p5Canvas.strokeAlpha = constrain(a, 0, 255)
     COLOR p5Canvas.strokeA 'stroke also affects text
 END SUB
@@ -473,7 +484,7 @@ SUB strokeB (b AS _FLOAT)
     p5Canvas.stroke = _RGB32(b, b, b)
     p5Canvas.strokeA = p5Canvas.stroke
     p5Canvas.strokeAlpha = 255
-    COLOR p5Canvas.stroke 'stroke also affects text
+    COLOR p5Canvas.strokeA 'stroke also affects text
 END SUB
 
 SUB strokeBA (b AS _FLOAT, a AS _FLOAT)
@@ -739,7 +750,7 @@ SUB p5triangleB (__centerX##, __centerY##, __ang1##, __ang2##, __ang3##, size##)
     centerX## = __centerX## + p5Canvas.xOffset
     centerY## = __centerY## + p5Canvas.yOffset
 
-    IF p5angleMode = RADIANS THEN
+    IF p5Canvas.angleMode = RADIANS THEN
         ang1## = __ang1##
         ang2## = __ang2##
         ang3## = __ang3##
@@ -1020,14 +1031,19 @@ SUB gatherInput ()
 END SUB
 
 SUB background (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
-    IF p5colorMode = p5hsb THEN p5Canvas.backColor = hsb(r, g, b, 255) ELSE p5Canvas.backColor = _RGB32(r, g, b)
+    IF p5Canvas.colorMode = p5HSB THEN p5Canvas.backColor = hsb(r, g, b, 255) ELSE p5Canvas.backColor = _RGB32(r, g, b)
     p5Canvas.backColorAlpha = 255
     LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColor, BF
 END SUB
 
 SUB backgroundA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
-    IF p5colorMode = p5hsb THEN p5Canvas.backColor = hsb(r, g, b, a) ELSE p5Canvas.backColor = _RGB32(r, g, b)
-    IF p5colorMode = p5hsb THEN p5Canvas.backColor = hsb(r, g, b, a) ELSE p5Canvas.backColorA = _RGBA32(r, g, b, a)
+    IF p5Canvas.colorMode = p5HSB THEN
+        p5Canvas.backColor = hsb(r, g, b, a)
+        p5Canvas.backColor = hsb(r, g, b, a)
+    ELSE
+        p5Canvas.backColor = _RGB32(r, g, b)
+        p5Canvas.backColorA = _RGBA32(r, g, b, a)
+    END IF
     p5Canvas.backColorAlpha = constrain(a, 0, 255)
     LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
 END SUB
@@ -1119,7 +1135,7 @@ FUNCTION vector.magSq## (v AS vector)
 END FUNCTION
 
 SUB vector.fromAngle (v AS vector, __angle##)
-    IF p5angleMode = DEGREES THEN angle## = _D2R(__angle##) ELSE angle## = __angle##
+    IF p5Canvas.angleMode = DEGREES THEN angle## = _D2R(__angle##) ELSE angle## = __angle##
 
     v.x = COS(angle##)
     v.y = SIN(angle##)
@@ -1169,7 +1185,7 @@ END SUB
 'END FUNCTION
 
 FUNCTION p5sin## (angle##)
-    IF p5angleMode = RADIANS THEN
+    IF p5Canvas.angleMode = RADIANS THEN
         p5sin## = SIN(angle##)
     ELSE
         p5sin## = SIN(_D2R(angle##))
@@ -1177,7 +1193,7 @@ FUNCTION p5sin## (angle##)
 END FUNCTION
 
 FUNCTION p5cos## (angle##)
-    IF p5angleMode = RADIANS THEN
+    IF p5Canvas.angleMode = RADIANS THEN
         p5cos## = COS(angle##)
     ELSE
         p5cos## = COS(_D2R(angle##))
@@ -1185,7 +1201,7 @@ FUNCTION p5cos## (angle##)
 END FUNCTION
 
 SUB angleMode (kind)
-    p5angleMode = kind
+    p5Canvas.angleMode = kind
 END SUB
 
 'Calculate minimum value between two values
@@ -1592,7 +1608,7 @@ FUNCTION hsb& (H AS _FLOAT, S AS _FLOAT, B AS _FLOAT, A AS _FLOAT)
 END FUNCTION
 
 SUB colorMode (kind AS INTEGER)
-    p5colorMode = kind
+    p5Canvas.colorMode = kind
 END SUB
 
 'uncomment these lines below to see a simple demo
