@@ -89,6 +89,7 @@ frameRate = 30
 
 DIM a AS _BYTE 'dummy variable used to call functions that may not be there
 a = p5setup
+a = p5draw 'run the p5draw function at least once (in case noLoop was used in p5setup)
 
 DO
     IF frameRate THEN _LIMIT frameRate
