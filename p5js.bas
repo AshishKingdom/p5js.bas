@@ -1036,13 +1036,13 @@ FUNCTION sq## (n##)
     sq## = n## * n##
 END FUNCTION
 
-FUNCTION random2d## (mn##, mx##)
+FUNCTION p5random## (mn##, mx##)
     IF mn## > mx## THEN
         tmp## = mn##
         mn## = mx##
         mx## = tmp##
     END IF
-    random2d## = RND * (mx## - mn##) + mn##
+    p5random## = RND * (mx## - mn##) + mn##
 END FUNCTION
 
 FUNCTION join$ (str_array$(), sep$)
