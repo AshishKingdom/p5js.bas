@@ -698,35 +698,12 @@ END SUB
 
 'draws a quadrilateral
 SUB p5quad (x1##, y1##, x2##, y2##, x3##, y3##, x4##, y4##)
-    IF p5Canvas.doFill AND p5Canvas.doStroke THEN EXIT SUB
-
-    DIM bc AS _UNSIGNED LONG
-
-    internalp5makeTempImage
-
-    bc = p5Canvas.stroke
-    p5Canvas.stroke = p5Canvas.fill
-    p5line x1##, y1##, x2##, y2##
-    p5line x2##, y2##, x3##, y3##
-    p5line x3##, y3##, x4##, y4##
-    p5line x4##, y4##, x1##, y1##
-    p5Canvas.stroke = bc
-
-    IF NOT p5Canvas.doStroke THEN
-        p5line x1##, y1##, x2##, y2##
-        p5line x2##, y2##, x3##, y3##
-        p5line x3##, y3##, x4##, y4##
-        p5line x4##, y4##, x1##, y1##
-    END IF
-
-    IF NOT p5Canvas.doFill THEN
-        avgX## = (x1## + x2## + x3## + x4##) / 4
-        avgY## = (y1## + y2## + y3## + y4##) / 4
-        IF p5Canvas.doStroke THEN PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.fill ELSE PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.stroke
-        _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-    END IF
-
-    internalp5displayTempImage
+    beginShape p5LINES
+    vertex x1##, y1##
+    vertex x2##, y2##
+    vertex x3##, y3##
+    vertex x4##, y4##
+    endShape p5CLOSE
 END SUB
 
 SUB gatherMouseData ()
