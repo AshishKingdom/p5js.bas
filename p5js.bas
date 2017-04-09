@@ -26,6 +26,9 @@ TYPE new_p5Canvas
     fill AS _UNSIGNED LONG
     fillA AS _UNSIGNED LONG
     fillAlpha AS _FLOAT
+    backColor AS _UNSIGNED LONG
+    backColorA AS _UNSIGNED LONG
+    backColorAlpha AS _FLOAT
     strokeWeight AS _FLOAT
     doStroke AS _BYTE
     doFill AS _BYTE
@@ -664,19 +667,29 @@ SUB gatherMouseData ()
 END SUB
 
 SUB background (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGB32(r, g, b), BF
+    p5Canvas.backColor = _RGB32(r, g, b)
+    p5Canvas.backColorAlpha = 255
+    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColor, BF
 END SUB
 
 SUB backgroundA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGBA32(r, g, b, a), BF
+    p5Canvas.backColor = _RGB32(r, g, b)
+    p5Canvas.backColorA = _RGBA32(r, g, b, a)
+    p5Canvas.backColorAlpha = constrain(a, 0, 255)
+    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
 END SUB
 
 SUB backgroundB (b AS _FLOAT)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGB32(b, b, b), BF
+    p5Canvas.backColor = _RGB32(b, b, b)
+    p5Canvas.backColorAlpha = 255
+    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColor, BF
 END SUB
 
 SUB backgroundBA (b AS _FLOAT, a AS _FLOAT)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), _RGBA32(b, b, b, a), BF
+    p5Canvas.backColor = _RGB32(b, b, b)
+    p5Canvas.backColorA = _RGBA32(b, b, b, a)
+    p5Canvas.backColorAlpha = constrain(a, 0, 255)
+    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
 END SUB
                                 
 SUB doLoop ()
