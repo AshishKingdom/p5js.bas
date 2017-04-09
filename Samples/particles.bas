@@ -60,7 +60,7 @@ SUB system.addParticle
         IF particles(i).lifespan <= 0 THEN
             'add new:
             createVector particles(i).acc, 0, .05
-            createVector particles(i).vel, random2d(-1, 1), random2d(-1, 0)
+            createVector particles(i).vel, p5random(-1, 1), p5random(-1, 0)
             'particles(i).pos = systemOrigin
             createVector particles(i).pos, _MOUSEX, _MOUSEY
             particles(i).lifespan = 255
@@ -72,7 +72,7 @@ SUB system.addParticle
     new = UBOUND(particles) + 1
     REDIM _PRESERVE particles(UBOUND(particles) + 100) AS Particle
     createVector particles(new).acc, 0, .05
-    createVector particles(new).vel, random2d(-1, 1), random2d(-1, 0)
+    createVector particles(new).vel, p5random(-1, 1), p5random(-1, 0)
     particles(new).pos = systemOrigin
     particles(new).lifespan = 255
 END SUB
