@@ -1,18 +1,8 @@
 'p5js.bas by Fellippe & Ashish
 'Open source - based on p5.js (https://p5js.org/)
-'Last update 4/9/2017
+'Last update 4/6/2017
 
 RANDOMIZE TIMER
-
-'external font rendering lib
-DECLARE LIBRARY "falcon"
-    SUB uprint_extra (BYVAL x&, BYVAL y&, BYVAL chars%&, BYVAL length%&, BYVAL kern&, BYVAL do_render&, txt_width&, BYVAL charpos%&, charcount&, BYVAL colour~&, BYVAL max_width&)
-    FUNCTION uprint (BYVAL x&, BYVAL y&, chars$, BYVAL txt_len&, BYVAL colour~&, BYVAL max_width&)
-    FUNCTION uprintwidth (chars$, BYVAL txt_len&, BYVAL max_width&)
-    FUNCTION uheight& ()
-    FUNCTION falcon_uspacing& ALIAS uspacing ()
-    FUNCTION uascension& ()
-END DECLARE
 
 'p5 constants
 CONST TWO_PI = 6.283185307179586
@@ -21,10 +11,12 @@ CONST QUARTER_PI = 0.785398163397448
 CONST p5POINTS = 1
 CONST p5LINES = 2
 CONST p5CLOSE = 3
-CONST RADIANS = 4
-CONST DEGREES = 5
+CONST p5RADIAN = 4
+CONST p5DEGREE = 5
 CONST CORNER = 6
 CONST CORNERS = 7
+CONST p5RGB = 8
+CONST p5HSB = 9
 
 'boolean constants
 CONST true = -1, false = NOT true
@@ -32,7 +24,6 @@ CONST true = -1, false = NOT true
 'p5 global variables
 TYPE new_p5Canvas
     imgHandle AS LONG
-    fontHandle AS LONG
     stroke AS _UNSIGNED LONG
     strokeA AS _UNSIGNED LONG
     strokeAlpha AS _FLOAT
@@ -46,7 +37,6 @@ TYPE new_p5Canvas
     doStroke AS _BYTE
     doFill AS _BYTE
     textAlign AS _BYTE
-    encoding AS LONG
     rectMode AS _BYTE
     xOffset AS _FLOAT
     yOffset AS _FLOAT
@@ -62,9 +52,11 @@ END TYPE
 DIM SHARED frameRate AS SINGLE
 
 'angle mode
-DIM SHARED p5angleMode AS INTEGER
-p5angleMode = RADIANS
-
+DIM SHARED p5AngleMode AS INTEGER
+p5AngleMode = p5RADIAN
+'color mode
+DIM SHARED p5ColorMode AS INTEGER
+p5ColorMode = p5RGB
 'canvas settings related variables
 DIM SHARED p5Canvas AS new_p5Canvas, pushState AS LONG
 REDIM SHARED p5CanvasBackup(10) AS new_p5Canvas
@@ -92,12 +84,7 @@ CONST LSHIFT = 100304, RSHIFT = 100303, LCONTROL = 100306, RCONTROL = 100307
 CONST LALT = 100308, RALT = 100307
 CONST UP_ARROW = 18432, DOWN_ARROW = 20480, LEFT_ARROW = 19200, RIGHT_ARROW = 19712
 
-'text-related variables
-DIM SHARED loadedFontFile$, currentFontSize AS INTEGER
-DIM SHARED p5LastRenderedCharCount AS LONG, p5LastRenderedLineWidth AS LONG
-REDIM SHARED p5ThisLineChars(0) AS LONG
-
-'timer used to gather input from user
+'mouse query timer
 DIM SHARED p5InputTimer AS INTEGER
 p5InputTimer = _FREETIMER
 ON TIMER(p5InputTimer, .008) gatherInput
@@ -112,7 +99,6 @@ fill 255, 255, 255 'white
 strokeWeight 1
 backgroundB 240
 textAlign LEFT
-textSize 16 'default builtin font
 rectMode CORNER
 frameRate = 30
 
@@ -321,64 +307,6 @@ SUB textAlign (position AS _BYTE)
     p5Canvas.textAlign = position
 END SUB
 
-SUB textFont (font$)
-    DIM tempFontHandle AS LONG
-
-    IF currentFontSize = 0 THEN currentFontSize = 16
-
-    IF font$ <> loadedFontFile$ THEN
-        tempFontHandle = _LOADFONT(font$, currentFontSize)
-
-        IF tempFontHandle > 0 THEN
-            'loading successful
-            _FONT tempFontHandle
-            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
-            p5Canvas.fontHandle = tempFontHandle
-
-            loadedFontFile$ = font$
-        ELSE
-            loadedFontFile$ = ""
-            'built-in fonts
-            IF currentFontSize >= 16 THEN
-                _FONT 16
-            ELSEIF currentFontSize < 16 THEN
-                _FONT 8
-            END IF
-
-            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
-            p5Canvas.fontHandle = _FONT
-        END IF
-    END IF
-END SUB
-
-SUB textSize (size%)
-    DIM tempFontHandle AS LONG
-
-    IF size% = currentFontSize OR size% <= 0 THEN EXIT SUB
-
-    IF loadedFontFile$ = "" THEN
-        'built-in fonts
-        IF size% >= 16 THEN
-            _FONT 16
-            p5Canvas.fontHandle = 16
-        ELSEIF size% < 16 THEN
-            _FONT 8
-            p5Canvas.fontHandle = 8
-        END IF
-    ELSE
-        tempFontHandle = _LOADFONT(loadedFontFile$, size%)
-
-        IF tempFontHandle > 0 THEN
-            'loading successful
-            _FONT tempFontHandle
-            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
-            p5Canvas.fontHandle = tempFontHandle
-
-            currentFontSize = size%
-        END IF
-    END IF
-END SUB
-
 SUB text (t$, __x AS _FLOAT, __y AS _FLOAT)
     DIM x AS _FLOAT, y AS _FLOAT
 
@@ -387,39 +315,17 @@ SUB text (t$, __x AS _FLOAT, __y AS _FLOAT)
 
     SELECT CASE p5Canvas.textAlign
         CASE LEFT
-            p5PrintString x, y, t$
+            _PRINTSTRING (x, y), t$
         CASE CENTER
-            p5PrintString x - PrintWidth(t$) / 2, y - uheight / 2, t$
+            _PRINTSTRING (x - _PRINTWIDTH(t$) / 2, y - _FONTHEIGHT / 2), t$
         CASE RIGHT
-            p5PrintString x - PrintWidth(t$), y, t$
+            _PRINTSTRING (x - _PRINTWIDTH(t$), y), t$
     END SELECT
 END SUB
 
-SUB p5PrintString (Left AS INTEGER, Top AS INTEGER, theText$)
-    DIM Utf$
-
-    IF p5Canvas.encoding = 1252 THEN
-        Utf$ = FromCP1252$(theText$)
-    ELSE 'Default to 437
-        Utf$ = FromCP437$(theText$)
-    END IF
-
-    REDIM p5ThisLineChars(LEN(Utf$)) AS LONG
-    uprint_extra Left, Top, _OFFSET(Utf$), LEN(Utf$), true, true, p5LastRenderedLineWidth, _OFFSET(p5ThisLineChars()), p5LastRenderedCharCount, p5Canvas.strokeA, 0
-    REDIM _PRESERVE p5ThisLineChars(p5LastRenderedCharCount) AS LONG
-END SUB
-
-FUNCTION PrintWidth& (theText$)
-    PrintWidth& = uprintwidth(theText$, LEN(theText$), 0)
-END FUNCTION
-
-FUNCTION textWidth& (theText$)
-    textWidth& = PrintWidth&(theText$)
-END FUNCTION
-
 SUB fill (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     p5Canvas.doFill = true
-    p5Canvas.fill = _RGB32(r, g, b)
+    IF p5ColorMode = p5HSB THEN p5Canvas.fill = HSB(r, g, b, 255) ELSE p5Canvas.fill = _RGB32(r, g, b)
     p5Canvas.fillA = p5Canvas.fill
     p5Canvas.fillAlpha = 255
     COLOR , p5Canvas.fill 'fill also affects text
@@ -427,8 +333,8 @@ END SUB
 
 SUB fillA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     p5Canvas.doFill = true
-    p5Canvas.fill = _RGB32(r, g, b)
-    p5Canvas.fillA = _RGBA32(r, g, b, a)
+    IF p5ColorMode = p5HSB THEN p5Canvas.fill = HSB(r, g, b, a) ELSE p5Canvas.fill = _RGB32(r, g, b)
+    IF p5ColorMode = p5HSB THEN p5Canvas.fillA = HSB(r, g, b, a) ELSE p5Canvas.fillA = _RGBA32(r, g, b, a)
     p5Canvas.fillAlpha = constrain(a, 0, 255)
     COLOR , p5Canvas.fillA 'fill also affects text
 END SUB
@@ -451,15 +357,15 @@ END SUB
 
 SUB stroke (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     p5Canvas.doStroke = true
-    p5Canvas.stroke = _RGB32(r, g, b)
+    IF p5ColorMode = p5HSB THEN p5Canvas.stroke = HSB(r, g, b, 255) ELSE p5Canvas.stroke = _RGB32(r, g, b)
     p5Canvas.strokeA = p5Canvas.stroke
     COLOR p5Canvas.stroke 'stroke also affects text
 END SUB
 
 SUB strokeA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     p5Canvas.doStroke = true
-    p5Canvas.stroke = _RGB32(r, g, b)
-    p5Canvas.strokeA = _RGBA32(r, g, b, a)
+    IF p5ColorMode = p5HSB THEN p5Canvas.stroke = HSB(r, g, b, a) ELSE p5Canvas.stroke = _RGB32(r, g, b)
+    IF p5ColorMode = p5HSB THEN p5Canvas.strokeA = HSB(r, g, b, a) ELSE p5Canvas.strokeA = _RGBA32(r, g, b, a)
     p5Canvas.strokeAlpha = constrain(a, 0, 255)
     COLOR p5Canvas.strokeA 'stroke also affects text
 END SUB
@@ -631,7 +537,7 @@ END SUB
 SUB p5point (x AS _FLOAT, y AS _FLOAT)
     IF NOT p5Canvas.doStroke THEN EXIT SUB
 
-    CircleFill x + p5Canvas.xOffset, y + p5Canvas.yOffset, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
+    PSET (x + p5Canvas.xOffset, y + p5Canvas.yOffset), p5Canvas.strokeA
 END SUB
 
 SUB p5ellipse (__x AS _FLOAT, __y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
@@ -735,7 +641,7 @@ SUB p5triangleB (__centerX##, __centerY##, __ang1##, __ang2##, __ang3##, size##)
     centerX## = __centerX## + p5Canvas.xOffset
     centerY## = __centerY## + p5Canvas.yOffset
 
-    IF p5angleMode = RADIANS THEN
+    IF p5AngleMode = p5RADIAN THEN
         ang1## = __ang1##
         ang2## = __ang2##
         ang3## = __ang3##
@@ -745,17 +651,17 @@ SUB p5triangleB (__centerX##, __centerY##, __ang1##, __ang2##, __ang3##, size##)
         ang3## = _D2R(__ang3##)
     END IF
 
-    IF ang1## < _PI THEN
+    IF ang1## < TWO_PI THEN
         x1## = centerX## - size## * COS(ang1##)
         y1## = centerY## + size## * SIN(ang1##)
     END IF
 
-    IF ang2## < _PI THEN
+    IF ang2## < TWO_PI THEN
         x2## = centerX## - size## * COS(ang2##)
         y2## = centerY## - size## * SIN(ang2##)
     END IF
 
-    IF ang3## < _PI THEN
+    IF ang3## < TWO_PI THEN
         x3## = centerX## + size## * COS(ang3##)
         y3## = centerY## - size## * SIN(ang3##)
     END IF
@@ -1016,14 +922,14 @@ SUB gatherInput ()
 END SUB
 
 SUB background (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
-    p5Canvas.backColor = _RGB32(r, g, b)
+    IF p5ColorMode = p5HSB THEN p5Canvas.backColor = HSB(r, g, b, 255) ELSE p5Canvas.backColor = _RGB32(r, g, b)
     p5Canvas.backColorAlpha = 255
     LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColor, BF
 END SUB
 
 SUB backgroundA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
-    p5Canvas.backColor = _RGB32(r, g, b)
-    p5Canvas.backColorA = _RGBA32(r, g, b, a)
+    IF p5ColorMode = p5HSB THEN p5Canvas.backColor = HSB(r, g, b, a) ELSE p5Canvas.backColor = _RGB32(r, g, b)
+    IF p5ColorMode = p5HSB THEN p5Canvas.backColor = HSB(r, g, b, a) ELSE p5Canvas.backColorA = _RGBA32(r, g, b, a)
     p5Canvas.backColorAlpha = constrain(a, 0, 255)
     LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
 END SUB
@@ -1115,7 +1021,7 @@ FUNCTION vector.magSq## (v AS vector)
 END FUNCTION
 
 SUB vector.fromAngle (v AS vector, __angle##)
-    IF p5angleMode = DEGREES THEN angle## = _D2R(__angle##) ELSE angle## = __angle##
+    IF p5AngleMode = p5DEGREE THEN angle## = _D2R(__angle##) ELSE angle## = __angle##
 
     v.x = COS(angle##)
     v.y = SIN(angle##)
@@ -1165,7 +1071,7 @@ END SUB
 'END FUNCTION
 
 FUNCTION p5sin## (angle##)
-    IF p5angleMode = RADIANS THEN
+    IF p5AngleMode = p5RADIAN THEN
         p5sin## = SIN(angle##)
     ELSE
         p5sin## = SIN(_D2R(angle##))
@@ -1173,7 +1079,7 @@ FUNCTION p5sin## (angle##)
 END FUNCTION
 
 FUNCTION p5cos## (angle##)
-    IF p5angleMode = RADIANS THEN
+    IF p5AngleMode = p5RADIAN THEN
         p5cos## = COS(angle##)
     ELSE
         p5cos## = COS(_D2R(angle##))
@@ -1181,7 +1087,7 @@ FUNCTION p5cos## (angle##)
 END FUNCTION
 
 SUB angleMode (kind)
-    p5angleMode = kind
+    p5AngleMode = kind
 END SUB
 
 'Calculate minimum value between two values
@@ -1239,294 +1145,68 @@ FUNCTION join$ (str_array$(), sep$)
     NEXT
 END FUNCTION
 
-'---------------------------------------------------------------------------------
-'UTF conversion functions courtesy of Luke Ceddia.
-'http://www.qb64.net/forum/index.php?topic=13981.msg121324#msg121324
-FUNCTION FromCP437$ (source$)
-    STATIC init&, table$(255)
-    IF init& = 0 THEN
-        DIM i&
-        FOR i& = 0 TO 127
-            table$(i&) = CHR$(i&)
-        NEXT i&
-        table$(7) = CHR$(226) + CHR$(151) + CHR$(143) 'UTF-8 e2978f
-        table$(128) = CHR$(&HE2) + CHR$(&H82) + CHR$(&HAC)
-        table$(128) = CHR$(&HC3) + CHR$(&H87)
-        table$(129) = CHR$(&HC3) + CHR$(&HBC)
-        table$(130) = CHR$(&HC3) + CHR$(&HA9)
-        table$(131) = CHR$(&HC3) + CHR$(&HA2)
-        table$(132) = CHR$(&HC3) + CHR$(&HA4)
-        table$(133) = CHR$(&HC3) + CHR$(&HA0)
-        table$(134) = CHR$(&HC3) + CHR$(&HA5)
-        table$(135) = CHR$(&HC3) + CHR$(&HA7)
-        table$(136) = CHR$(&HC3) + CHR$(&HAA)
-        table$(137) = CHR$(&HC3) + CHR$(&HAB)
-        table$(138) = CHR$(&HC3) + CHR$(&HA8)
-        table$(139) = CHR$(&HC3) + CHR$(&HAF)
-        table$(140) = CHR$(&HC3) + CHR$(&HAE)
-        table$(141) = CHR$(&HC3) + CHR$(&HAC)
-        table$(142) = CHR$(&HC3) + CHR$(&H84)
-        table$(143) = CHR$(&HC3) + CHR$(&H85)
-        table$(144) = CHR$(&HC3) + CHR$(&H89)
-        table$(145) = CHR$(&HC3) + CHR$(&HA6)
-        table$(146) = CHR$(&HC3) + CHR$(&H86)
-        table$(147) = CHR$(&HC3) + CHR$(&HB4)
-        table$(148) = CHR$(&HC3) + CHR$(&HB6)
-        table$(149) = CHR$(&HC3) + CHR$(&HB2)
-        table$(150) = CHR$(&HC3) + CHR$(&HBB)
-        table$(151) = CHR$(&HC3) + CHR$(&HB9)
-        table$(152) = CHR$(&HC3) + CHR$(&HBF)
-        table$(153) = CHR$(&HC3) + CHR$(&H96)
-        table$(154) = CHR$(&HC3) + CHR$(&H9C)
-        table$(155) = CHR$(&HC2) + CHR$(&HA2)
-        table$(156) = CHR$(&HC2) + CHR$(&HA3)
-        table$(157) = CHR$(&HC2) + CHR$(&HA5)
-        table$(158) = CHR$(&HE2) + CHR$(&H82) + CHR$(&HA7)
-        table$(159) = CHR$(&HC6) + CHR$(&H92)
-        table$(160) = CHR$(&HC3) + CHR$(&HA1)
-        table$(161) = CHR$(&HC3) + CHR$(&HAD)
-        table$(162) = CHR$(&HC3) + CHR$(&HB3)
-        table$(163) = CHR$(&HC3) + CHR$(&HBA)
-        table$(164) = CHR$(&HC3) + CHR$(&HB1)
-        table$(165) = CHR$(&HC3) + CHR$(&H91)
-        table$(166) = CHR$(&HC2) + CHR$(&HAA)
-        table$(167) = CHR$(&HC2) + CHR$(&HBA)
-        table$(168) = CHR$(&HC2) + CHR$(&HBF)
-        table$(169) = CHR$(&HE2) + CHR$(&H8C) + CHR$(&H90)
-        table$(170) = CHR$(&HC2) + CHR$(&HAC)
-        table$(171) = CHR$(&HC2) + CHR$(&HBD)
-        table$(172) = CHR$(&HC2) + CHR$(&HBC)
-        table$(173) = CHR$(&HC2) + CHR$(&HA1)
-        table$(174) = CHR$(&HC2) + CHR$(&HAB)
-        table$(175) = CHR$(&HC2) + CHR$(&HBB)
-        table$(176) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H91)
-        table$(177) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H92)
-        table$(178) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H93)
-        table$(179) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H82)
-        table$(180) = CHR$(&HE2) + CHR$(&H94) + CHR$(&HA4)
-        table$(181) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA1)
-        table$(182) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA2)
-        table$(183) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H96)
-        table$(184) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H95)
-        table$(185) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA3)
-        table$(186) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H91)
-        table$(187) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H97)
-        table$(188) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9D)
-        table$(189) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9C)
-        table$(190) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9B)
-        table$(191) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H90)
-        table$(192) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H94)
-        table$(193) = CHR$(&HE2) + CHR$(&H94) + CHR$(&HB4)
-        table$(194) = CHR$(&HE2) + CHR$(&H94) + CHR$(&HAC)
-        table$(195) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H9C)
-        table$(196) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H80)
-        table$(197) = CHR$(&HE2) + CHR$(&H94) + CHR$(&HBC)
-        table$(198) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9E)
-        table$(199) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9F)
-        table$(200) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9A)
-        table$(201) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H94)
-        table$(202) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA9)
-        table$(203) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA6)
-        table$(204) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA0)
-        table$(205) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H90)
-        table$(206) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HAC)
-        table$(207) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA7)
-        table$(208) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA8)
-        table$(209) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA4)
-        table$(210) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA5)
-        table$(211) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H99)
-        table$(212) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H98)
-        table$(213) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H92)
-        table$(214) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H93)
-        table$(215) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HAB)
-        table$(216) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HAA)
-        table$(217) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H98)
-        table$(218) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H8C)
-        table$(219) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H88)
-        table$(220) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H84)
-        table$(221) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H8C)
-        table$(222) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H90)
-        table$(223) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H80)
-        table$(224) = CHR$(&HCE) + CHR$(&HB1)
-        table$(225) = CHR$(&HC3) + CHR$(&H9F)
-        table$(226) = CHR$(&HCE) + CHR$(&H93)
-        table$(227) = CHR$(&HCF) + CHR$(&H80)
-        table$(228) = CHR$(&HCE) + CHR$(&HA3)
-        table$(229) = CHR$(&HCF) + CHR$(&H83)
-        table$(230) = CHR$(&HC2) + CHR$(&HB5)
-        table$(231) = CHR$(&HCF) + CHR$(&H84)
-        table$(232) = CHR$(&HCE) + CHR$(&HA6)
-        table$(233) = CHR$(&HCE) + CHR$(&H98)
-        table$(234) = CHR$(&HCE) + CHR$(&HA9)
-        table$(235) = CHR$(&HCE) + CHR$(&HB4)
-        table$(236) = CHR$(&HE2) + CHR$(&H88) + CHR$(&H9E)
-        table$(237) = CHR$(&HCF) + CHR$(&H86)
-        table$(238) = CHR$(&HCE) + CHR$(&HB5)
-        table$(239) = CHR$(&HE2) + CHR$(&H88) + CHR$(&HA9)
-        table$(240) = CHR$(&HE2) + CHR$(&H89) + CHR$(&HA1)
-        table$(241) = CHR$(&HC2) + CHR$(&HB1)
-        table$(242) = CHR$(&HE2) + CHR$(&H89) + CHR$(&HA5)
-        table$(243) = CHR$(&HE2) + CHR$(&H89) + CHR$(&HA4)
-        table$(244) = CHR$(&HE2) + CHR$(&H8C) + CHR$(&HA0)
-        table$(245) = CHR$(&HE2) + CHR$(&H8C) + CHR$(&HA1)
-        table$(246) = CHR$(&HC3) + CHR$(&HB7)
-        table$(247) = CHR$(&HE2) + CHR$(&H89) + CHR$(&H88)
-        table$(248) = CHR$(&HC2) + CHR$(&HB0)
-        table$(249) = CHR$(&HE2) + CHR$(&H88) + CHR$(&H99)
-        table$(250) = CHR$(&HC2) + CHR$(&HB7)
-        table$(251) = CHR$(&HE2) + CHR$(&H88) + CHR$(&H9A)
-        table$(252) = CHR$(&HE2) + CHR$(&H81) + CHR$(&HBF)
-        table$(253) = CHR$(&HC2) + CHR$(&HB2)
-        table$(254) = CHR$(&HE2) + CHR$(&H96) + CHR$(&HA0)
-        table$(255) = CHR$(&HC2) + CHR$(&HA0)
-        init& = -1
+'method adapted form http://stackoverflow.com/questions/4106363/converting-rgb-to-hsb-colors
+FUNCTION HSB& (H AS _FLOAT, S AS _FLOAT, B AS _FLOAT, A AS _FLOAT)
+    H = map(H, 0, 255, 0, 360)
+    S = map(S, 0, 255, 0, 1)
+    B = map(B, 0, 255, 0, 1)
+
+    IF S = 0 THEN
+        HSB& = _RGBA32(B * 255, B * 255, B * 255, A)
+        EXIT FUNCTION
     END IF
-    FromCP437$ = UTF8$(source$, table$())
+
+    DIM fmx AS _FLOAT, fmn AS _FLOAT
+    DIM fmd AS _FLOAT, iSextant AS INTEGER
+    DIM imx AS INTEGER, imd AS INTEGER, imn AS INTEGER
+
+    IF B > .5 THEN
+        fmx = B - (B * S) + S
+        fmn = B + (B * S) - S
+    ELSE
+        fmx = B + (B * S)
+        fmn = B - (B * S)
+    END IF
+
+    iSextant = INT(H / 60F)
+
+    IF H >= 300F THEN
+        H = H - 360F
+    END IF
+
+    H = H / 60F
+    H = H - (2F * INT(((iSextant + 1F) MOD 6F) / 2F))
+
+    IF iSextant MOD 2 = 0 THEN
+        fmd = (H * (fmx - fmn)) + fmn
+    ELSE
+        fmd = fmn - (H * (fmx - fmn))
+    END IF
+
+    imx = _ROUND(fmx * 255)
+    imd = _ROUND(fmd * 255)
+    imn = _ROUND(fmn * 255)
+
+    SELECT CASE INT(iSextant)
+        CASE 1
+            HSB& = _RGBA32(imd, imx, imn, A)
+        CASE 2
+            HSB& = _RGBA32(imn, imx, imd, A)
+        CASE 3
+            HSB& = _RGBA32(imn, imd, imx, A)
+        CASE 4
+            HSB& = _RGBA32(imd, imn, imx, A)
+        CASE 5
+            HSB& = _RGBA32(imx, imn, imd, A)
+        CASE ELSE
+            HSB& = _RGBA32(imx, imd, imn, A)
+    END SELECT
+
 END FUNCTION
 
-FUNCTION FromCP1252$ (source$)
-    STATIC init&, table$(255)
-    IF init& = 0 THEN
-        DIM i&
-        FOR i& = 0 TO 127
-            table$(i&) = CHR$(i&)
-        NEXT i&
-        table$(7) = CHR$(226) + CHR$(151) + CHR$(143) 'UTF-8 e2978f
-        table$(128) = CHR$(&HE2) + CHR$(&H82) + CHR$(&HAC)
-        table$(130) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H9A)
-        table$(131) = CHR$(&HC6) + CHR$(&H92)
-        table$(132) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H9E)
-        table$(133) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HA6)
-        table$(134) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HA0)
-        table$(135) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HA1)
-        table$(136) = CHR$(&HCB) + CHR$(&H86)
-        table$(137) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HB0)
-        table$(138) = CHR$(&HC5) + CHR$(&HA0)
-        table$(139) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HB9)
-        table$(140) = CHR$(&HC5) + CHR$(&H92)
-        table$(142) = CHR$(&HC5) + CHR$(&HBD)
-        table$(145) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H98)
-        table$(146) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H99)
-        table$(147) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H9C)
-        table$(148) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H9D)
-        table$(149) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HA2)
-        table$(150) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H93)
-        table$(151) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H94)
-        table$(152) = CHR$(&HCB) + CHR$(&H9C)
-        table$(153) = CHR$(&HE2) + CHR$(&H84) + CHR$(&HA2)
-        table$(154) = CHR$(&HC5) + CHR$(&HA1)
-        table$(155) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HBA)
-        table$(156) = CHR$(&HC5) + CHR$(&H93)
-        table$(158) = CHR$(&HC5) + CHR$(&HBE)
-        table$(159) = CHR$(&HC5) + CHR$(&HB8)
-        table$(160) = CHR$(&HC2) + CHR$(&HA0)
-        table$(161) = CHR$(&HC2) + CHR$(&HA1)
-        table$(162) = CHR$(&HC2) + CHR$(&HA2)
-        table$(163) = CHR$(&HC2) + CHR$(&HA3)
-        table$(164) = CHR$(&HC2) + CHR$(&HA4)
-        table$(165) = CHR$(&HC2) + CHR$(&HA5)
-        table$(166) = CHR$(&HC2) + CHR$(&HA6)
-        table$(167) = CHR$(&HC2) + CHR$(&HA7)
-        table$(168) = CHR$(&HC2) + CHR$(&HA8)
-        table$(169) = CHR$(&HC2) + CHR$(&HA9)
-        table$(170) = CHR$(&HC2) + CHR$(&HAA)
-        table$(171) = CHR$(&HC2) + CHR$(&HAB)
-        table$(172) = CHR$(&HC2) + CHR$(&HAC)
-        table$(173) = CHR$(&HC2) + CHR$(&HAD)
-        table$(174) = CHR$(&HC2) + CHR$(&HAE)
-        table$(175) = CHR$(&HC2) + CHR$(&HAF)
-        table$(176) = CHR$(&HC2) + CHR$(&HB0)
-        table$(177) = CHR$(&HC2) + CHR$(&HB1)
-        table$(178) = CHR$(&HC2) + CHR$(&HB2)
-        table$(179) = CHR$(&HC2) + CHR$(&HB3)
-        table$(180) = CHR$(&HC2) + CHR$(&HB4)
-        table$(181) = CHR$(&HC2) + CHR$(&HB5)
-        table$(182) = CHR$(&HC2) + CHR$(&HB6)
-        table$(183) = CHR$(&HC2) + CHR$(&HB7)
-        table$(184) = CHR$(&HC2) + CHR$(&HB8)
-        table$(185) = CHR$(&HC2) + CHR$(&HB9)
-        table$(186) = CHR$(&HC2) + CHR$(&HBA)
-        table$(187) = CHR$(&HC2) + CHR$(&HBB)
-        table$(188) = CHR$(&HC2) + CHR$(&HBC)
-        table$(189) = CHR$(&HC2) + CHR$(&HBD)
-        table$(190) = CHR$(&HC2) + CHR$(&HBE)
-        table$(191) = CHR$(&HC2) + CHR$(&HBF)
-        table$(192) = CHR$(&HC3) + CHR$(&H80)
-        table$(193) = CHR$(&HC3) + CHR$(&H81)
-        table$(194) = CHR$(&HC3) + CHR$(&H82)
-        table$(195) = CHR$(&HC3) + CHR$(&H83)
-        table$(196) = CHR$(&HC3) + CHR$(&H84)
-        table$(197) = CHR$(&HC3) + CHR$(&H85)
-        table$(198) = CHR$(&HC3) + CHR$(&H86)
-        table$(199) = CHR$(&HC3) + CHR$(&H87)
-        table$(200) = CHR$(&HC3) + CHR$(&H88)
-        table$(201) = CHR$(&HC3) + CHR$(&H89)
-        table$(202) = CHR$(&HC3) + CHR$(&H8A)
-        table$(203) = CHR$(&HC3) + CHR$(&H8B)
-        table$(204) = CHR$(&HC3) + CHR$(&H8C)
-        table$(205) = CHR$(&HC3) + CHR$(&H8D)
-        table$(206) = CHR$(&HC3) + CHR$(&H8E)
-        table$(207) = CHR$(&HC3) + CHR$(&H8F)
-        table$(208) = CHR$(&HC3) + CHR$(&H90)
-        table$(209) = CHR$(&HC3) + CHR$(&H91)
-        table$(210) = CHR$(&HC3) + CHR$(&H92)
-        table$(211) = CHR$(&HC3) + CHR$(&H93)
-        table$(212) = CHR$(&HC3) + CHR$(&H94)
-        table$(213) = CHR$(&HC3) + CHR$(&H95)
-        table$(214) = CHR$(&HC3) + CHR$(&H96)
-        table$(215) = CHR$(&HC3) + CHR$(&H97)
-        table$(216) = CHR$(&HC3) + CHR$(&H98)
-        table$(217) = CHR$(&HC3) + CHR$(&H99)
-        table$(218) = CHR$(&HC3) + CHR$(&H9A)
-        table$(219) = CHR$(&HC3) + CHR$(&H9B)
-        table$(220) = CHR$(&HC3) + CHR$(&H9C)
-        table$(221) = CHR$(&HC3) + CHR$(&H9D)
-        table$(222) = CHR$(&HC3) + CHR$(&H9E)
-        table$(223) = CHR$(&HC3) + CHR$(&H9F)
-        table$(224) = CHR$(&HC3) + CHR$(&HA0)
-        table$(225) = CHR$(&HC3) + CHR$(&HA1)
-        table$(226) = CHR$(&HC3) + CHR$(&HA2)
-        table$(227) = CHR$(&HC3) + CHR$(&HA3)
-        table$(228) = CHR$(&HC3) + CHR$(&HA4)
-        table$(229) = CHR$(&HC3) + CHR$(&HA5)
-        table$(230) = CHR$(&HC3) + CHR$(&HA6)
-        table$(231) = CHR$(&HC3) + CHR$(&HA7)
-        table$(232) = CHR$(&HC3) + CHR$(&HA8)
-        table$(233) = CHR$(&HC3) + CHR$(&HA9)
-        table$(234) = CHR$(&HC3) + CHR$(&HAA)
-        table$(235) = CHR$(&HC3) + CHR$(&HAB)
-        table$(236) = CHR$(&HC3) + CHR$(&HAC)
-        table$(237) = CHR$(&HC3) + CHR$(&HAD)
-        table$(238) = CHR$(&HC3) + CHR$(&HAE)
-        table$(239) = CHR$(&HC3) + CHR$(&HAF)
-        table$(240) = CHR$(&HC3) + CHR$(&HB0)
-        table$(241) = CHR$(&HC3) + CHR$(&HB1)
-        table$(242) = CHR$(&HC3) + CHR$(&HB2)
-        table$(243) = CHR$(&HC3) + CHR$(&HB3)
-        table$(244) = CHR$(&HC3) + CHR$(&HB4)
-        table$(245) = CHR$(&HC3) + CHR$(&HB5)
-        table$(246) = CHR$(&HC3) + CHR$(&HB6)
-        table$(247) = CHR$(&HC3) + CHR$(&HB7)
-        table$(248) = CHR$(&HC3) + CHR$(&HB8)
-        table$(249) = CHR$(&HC3) + CHR$(&HB9)
-        table$(250) = CHR$(&HC3) + CHR$(&HBA)
-        table$(251) = CHR$(&HC3) + CHR$(&HBB)
-        table$(252) = CHR$(&HC3) + CHR$(&HBC)
-        table$(253) = CHR$(&HC3) + CHR$(&HBD)
-        table$(254) = CHR$(&HC3) + CHR$(&HBE)
-        table$(255) = CHR$(&HC3) + CHR$(&HBF)
-        init& = -1
-    END IF
-    FromCP1252$ = UTF8$(source$, table$())
-END FUNCTION
-
-FUNCTION UTF8$ (source$, table$())
-    DIM i AS LONG, dest$
-    FOR i = 1 TO LEN(source$)
-        dest$ = dest$ + table$(ASC(source$, i))
-    NEXT i
-    UTF8$ = dest$
-END FUNCTION
+SUB ColorMode (kind AS INTEGER)
+    p5ColorMode = kind
+END SUB
 
 'uncomment these lines below to see a simple demo
 'FUNCTION p5setup ()
