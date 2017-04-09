@@ -74,6 +74,8 @@ TIMER(p5MouseTimer) ON
 
 'default settings
 createCanvas 640, 400
+_TITLE "p5js.bas - Untitled sketch"
+_ICON
 stroke 255, 255, 255 'white
 fill 0, 0, 0
 strokeWeight 1
