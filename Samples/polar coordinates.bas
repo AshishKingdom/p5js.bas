@@ -23,6 +23,8 @@ FUNCTION p5draw
     dy = r * p5sin(angle)
 
     p5line x, y, x + dx, y + dy
+
+    text STR$(INT(angle)), x + dx + 10, y + dy
 END FUNCTION
 
 FUNCTION keyPressed
