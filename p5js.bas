@@ -25,8 +25,8 @@ CONST RADIANS = 4
 CONST DEGREES = 5
 CONST CORNER = 6
 CONST CORNERS = 7
-CONST p5RGB = 8
-CONST p5HSB = 9
+CONST p5rgb = 8
+CONST p5hsb = 9
 
 'boolean constants
 CONST true = -1, false = NOT true
@@ -64,8 +64,8 @@ END TYPE
 DIM SHARED frameRate AS SINGLE
 
 'angle mode
-DIM SHARED p5ColorMode AS INTEGER
-p5ColorMode = p5RGB
+DIM SHARED p5colorMode AS INTEGER
+p5colorMode = p5rgb
 DIM SHARED p5angleMode AS INTEGER
 p5angleMode = RADIANS
 
@@ -423,7 +423,7 @@ END FUNCTION
 
 SUB fill (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     p5Canvas.doFill = true
-    IF p5ColorMode = p5HSB THEN p5Canvas.fill = HSB(r, g, b, 255) ELSE p5Canvas.fill = _RGB32(r, g, b)
+    IF p5colorMode = p5hsb THEN p5Canvas.fill = hsb(r, g, b, 255) ELSE p5Canvas.fill = _RGB32(r, g, b)
     p5Canvas.fillA = p5Canvas.fill
     p5Canvas.fillAlpha = 255
     COLOR , p5Canvas.fill 'fill also affects text
@@ -431,8 +431,8 @@ END SUB
 
 SUB fillA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     p5Canvas.doFill = true
-    IF p5ColorMode = p5HSB THEN p5Canvas.fill = HSB(r, g, b, a) ELSE p5Canvas.fill = _RGB32(r, g, b)
-    IF p5ColorMode = p5HSB THEN p5Canvas.fillA = HSB(r, g, b, a) ELSE p5Canvas.fillA = _RGBA32(r, g, b, a)
+    IF p5colorMode = p5hsb THEN p5Canvas.fill = hsb(r, g, b, a) ELSE p5Canvas.fill = _RGB32(r, g, b)
+    IF p5colorMode = p5hsb THEN p5Canvas.fillA = hsb(r, g, b, a) ELSE p5Canvas.fillA = _RGBA32(r, g, b, a)
     p5Canvas.fillAlpha = constrain(a, 0, 255)
     COLOR , p5Canvas.fillA 'fill also affects text
 END SUB
@@ -455,15 +455,15 @@ END SUB
 
 SUB stroke (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     p5Canvas.doStroke = true
-    IF p5ColorMode = p5HSB THEN p5Canvas.stroke = HSB(r, g, b, 255) ELSE p5Canvas.stroke = _RGB32(r, g, b)
+    IF p5colorMode = p5hsb THEN p5Canvas.stroke = hsb(r, g, b, 255) ELSE p5Canvas.stroke = _RGB32(r, g, b)
     p5Canvas.strokeA = p5Canvas.stroke
     COLOR p5Canvas.stroke 'stroke also affects text
 END SUB
 
 SUB strokeA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     p5Canvas.doStroke = true
-    IF p5ColorMode = p5HSB THEN p5Canvas.stroke = HSB(r, g, b, a) ELSE p5Canvas.stroke = _RGB32(r, g, b)
-    IF p5ColorMode = p5HSB THEN p5Canvas.strokeA = HSB(r, g, b, a) ELSE p5Canvas.strokeA = _RGBA32(r, g, b, a)
+    IF p5colorMode = p5hsb THEN p5Canvas.stroke = hsb(r, g, b, a) ELSE p5Canvas.stroke = _RGB32(r, g, b)
+    IF p5colorMode = p5hsb THEN p5Canvas.strokeA = hsb(r, g, b, a) ELSE p5Canvas.strokeA = _RGBA32(r, g, b, a)
     p5Canvas.strokeAlpha = constrain(a, 0, 255)
     COLOR p5Canvas.strokeA 'stroke also affects text
 END SUB
@@ -1020,14 +1020,14 @@ SUB gatherInput ()
 END SUB
 
 SUB background (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
-    IF p5ColorMode = p5HSB THEN p5Canvas.backColor = HSB(r, g, b, 255) ELSE p5Canvas.backColor = _RGB32(r, g, b)
+    IF p5colorMode = p5hsb THEN p5Canvas.backColor = hsb(r, g, b, 255) ELSE p5Canvas.backColor = _RGB32(r, g, b)
     p5Canvas.backColorAlpha = 255
     LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColor, BF
 END SUB
 
 SUB backgroundA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
-    IF p5ColorMode = p5HSB THEN p5Canvas.backColor = HSB(r, g, b, a) ELSE p5Canvas.backColor = _RGB32(r, g, b)
-    IF p5ColorMode = p5HSB THEN p5Canvas.backColor = HSB(r, g, b, a) ELSE p5Canvas.backColorA = _RGBA32(r, g, b, a)
+    IF p5colorMode = p5hsb THEN p5Canvas.backColor = hsb(r, g, b, a) ELSE p5Canvas.backColor = _RGB32(r, g, b)
+    IF p5colorMode = p5hsb THEN p5Canvas.backColor = hsb(r, g, b, a) ELSE p5Canvas.backColorA = _RGBA32(r, g, b, a)
     p5Canvas.backColorAlpha = constrain(a, 0, 255)
     LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
 END SUB
@@ -1531,6 +1531,69 @@ FUNCTION UTF8$ (source$, table$())
     NEXT i
     UTF8$ = dest$
 END FUNCTION
+
+'method adapted form http://stackoverflow.com/questions/4106363/converting-rgb-to-hsb-colors
+FUNCTION hsb& (H AS _FLOAT, S AS _FLOAT, B AS _FLOAT, A AS _FLOAT)
+    H = map(H, 0, 255, 0, 360)
+    S = map(S, 0, 255, 0, 1)
+    B = map(B, 0, 255, 0, 1)
+
+    IF S = 0 THEN
+        hsb& = _RGBA32(B * 255, B * 255, B * 255, A)
+        EXIT FUNCTION
+    END IF
+
+    DIM fmx AS _FLOAT, fmn AS _FLOAT
+    DIM fmd AS _FLOAT, iSextant AS INTEGER
+    DIM imx AS INTEGER, imd AS INTEGER, imn AS INTEGER
+
+    IF B > .5 THEN
+        fmx = B - (B * S) + S
+        fmn = B + (B * S) - S
+    ELSE
+        fmx = B + (B * S)
+        fmn = B - (B * S)
+    END IF
+
+    iSextant = INT(H / 60F)
+
+    IF H >= 300F THEN
+        H = H - 360F
+    END IF
+
+    H = H / 60F
+    H = H - (2F * INT(((iSextant + 1F) MOD 6F) / 2F))
+
+    IF iSextant MOD 2 = 0 THEN
+        fmd = (H * (fmx - fmn)) + fmn
+    ELSE
+        fmd = fmn - (H * (fmx - fmn))
+    END IF
+
+    imx = _ROUND(fmx * 255)
+    imd = _ROUND(fmd * 255)
+    imn = _ROUND(fmn * 255)
+
+    SELECT CASE INT(iSextant)
+        CASE 1
+            hsb& = _RGBA32(imd, imx, imn, A)
+        CASE 2
+            hsb& = _RGBA32(imn, imx, imd, A)
+        CASE 3
+            hsb& = _RGBA32(imn, imd, imx, A)
+        CASE 4
+            hsb& = _RGBA32(imd, imn, imx, A)
+        CASE 5
+            hsb& = _RGBA32(imx, imn, imd, A)
+        CASE ELSE
+            hsb& = _RGBA32(imx, imd, imn, A)
+    END SELECT
+
+END FUNCTION
+
+SUB colorMode (kind AS INTEGER)
+    p5colorMode = kind
+END SUB
 
 'uncomment these lines below to see a simple demo
 'FUNCTION p5setup ()

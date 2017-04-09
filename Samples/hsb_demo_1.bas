@@ -1,9 +1,10 @@
 '$include:'../p5js.bas'
+
 FUNCTION p5setup ()
     createCanvas 600, 600 'create 600x600 canvas
     strokeWeight 3 '3 is enough
-    ColorMode p5HSB 'switch to HSB color mode
-    angleMode p5DEGREE 'switch to degree mode
+    colorMode p5hsb 'switch to HSB color mode
+    angleMode DEGREES 'switch to degree mode
 END FUNCTION
 
 FUNCTION p5draw ()
