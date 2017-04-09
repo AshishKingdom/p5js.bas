@@ -13,6 +13,7 @@ CONST p5LINES = 2
 CONST p5CLOSE = 3
 CONST p5RADIAN = 4
 CONST p5DEGREE = 5
+CONST CORNER = 6
 
 'boolean constants
 CONST true = -1, false = NOT true
@@ -33,6 +34,7 @@ TYPE new_p5Canvas
     doStroke AS _BYTE
     doFill AS _BYTE
     textAlign AS _BYTE
+    rectMode AS _BYTE
 END TYPE
 
 TYPE vector
@@ -80,6 +82,7 @@ stroke 255, 255, 255 'white
 fill 0, 0, 0
 strokeWeight 1
 textAlign LEFT
+rectMode CORNER
 frameRate = 30
 
 DIM a AS _BYTE 'dummy variable used to call functions that may not be there
@@ -365,7 +368,11 @@ SUB noStroke ()
 END SUB
 
 SUB strokeWeight (a AS _FLOAT)
-    p5Canvas.strokeWeight = a
+    IF a = 0 THEN
+        noStroke
+    ELSE
+        p5Canvas.strokeWeight = a
+    END IF
 END SUB
 
 SUB CircleFill (CX AS LONG, CY AS LONG, R AS LONG, C AS _UNSIGNED LONG)
@@ -548,29 +555,49 @@ SUB p5triangleB (centerX##, centerY##, __ang1##, __ang2##, __ang3##, size##)
 END SUB
 
 'draws a rectangle
-SUB p5rect (x1##, y1##, width##, height##)
-    IF p5Canvas.doFill AND p5anvas.dostroke THEN EXIT SUB
+SUB p5rect (x##, y##, width##, height##)
+    IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+
+    DIM i AS _FLOAT
 
     internalp5makeTempImage
 
-    IF NOT p5Canvas.doFill THEN LINE (x1##, y1##)-STEP(width##, height##), p5Canvas.fill, BF
-    IF NOT p5Canvas.doStroke THEN
-        FOR i = 0 TO p5Canvas.strokeWeight
-            LINE (x1## + i, y1## + i)-(x1## + width## - i, y1## + height## - i), p5Canvas.stroke, B
-        NEXT
+    IF p5Canvas.rectMode = CORNER THEN
+        x1## = x##
+        y1## = y##
+    ELSE
+        x1## = x## - width## / 2
+        y1## = y## - height## / 2
     END IF
-    IF NOT p5Canvas.doFill THEN
-        IF p5Canvas.doStroke THEN PAINT (x1## + (width## / 2), y1## + (height## / 2)), p5Canvas.fill, p5Canvas.fill ELSE PAINT (x1## + (width## / 2), y1## + (height## / 2)), p5Canvas.fill, p5Canvas.stroke
-        _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+
+    DIM tempColor~&
+    tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
+
+    IF p5Canvas.doStroke THEN
+        LINE (x1## - INT(p5Canvas.strokeWeight / 2), y1## - INT(p5Canvas.strokeWeight / 2))-(x1## + width## + INT(p5Canvas.strokeWeight / 2), y1## + height## + INT(p5Canvas.strokeWeight / 2)), p5Canvas.strokeA, BF
+        LINE (x1## + INT(p5Canvas.strokeWeight / 2), y1## + INT(p5Canvas.strokeWeight / 2))-(x1## + width## - INT(p5Canvas.strokeWeight / 2), y1## + height## - INT(p5Canvas.strokeWeight / 2)), tempColor~&, BF
+        _CLEARCOLOR tempColor~&
+    END IF
+
+    IF p5Canvas.doFill THEN
+        IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
+            LINE (x1##, y1##)-STEP(width##, height##), tempColor~&, BF
+            _CLEARCOLOR tempColor~&
+        END IF
+
+        LINE (x1##, y1##)-STEP(width##, height##), p5Canvas.fillA, BF
     END IF
 
     internalp5displayTempImage
+END SUB
 
+SUB rectMode (mode AS _BYTE)
+    p5Canvas.rectMode = mode
 END SUB
 
 'draws a quadrilateral
 SUB p5quad (x1##, y1##, x2##, y2##, x3##, y3##, x4##, y4##)
-    IF p5Canvas.doFill AND p5anvas.dostroke THEN EXIT SUB
+    IF p5Canvas.doFill AND p5Canvas.doStroke THEN EXIT SUB
 
     DIM bc AS _UNSIGNED LONG
 
