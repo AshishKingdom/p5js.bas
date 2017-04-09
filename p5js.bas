@@ -70,11 +70,19 @@ DIM SHARED mouseIsPressed AS _BYTE, p5mouseWheel AS INTEGER
 DIM SHARED mouseButton1 AS _BYTE, mouseButton2 AS _BYTE, mouseButton3 AS _BYTE
 DIM SHARED mouseButton AS _BYTE
 
+'keyboard consts and variables
+DIM SHARED keyIsPressed AS _BYTE, keyCode AS LONG
+DIM SHARED lastKeyCode AS LONG, totalKeysDown AS INTEGER
+CONST BACKSPACE = 8, DELETE = 21248, ENTER = 13, TAB_KEY = 9, ESCAPE = 27
+CONST LSHIFT = 100304, RSHIFT = 100303, LCONTROL = 100306, RCONTROL = 100307
+CONST LALT = 100308, RALT = 100307
+CONST UP_ARROW = 18432, DOWN_ARROW = 20480, LEFT_ARROW = 19200, RIGHT_ARROW = 19712
+
 'mouse query timer
-DIM SHARED p5MouseTimer AS INTEGER
-p5MouseTimer = _FREETIMER
-ON TIMER(p5MouseTimer, .008) gatherMouseData
-TIMER(p5MouseTimer) ON
+DIM SHARED p5InputTimer AS INTEGER
+p5InputTimer = _FREETIMER
+ON TIMER(p5InputTimer, .008) gatherInput
+TIMER(p5InputTimer) ON
 
 'default settings
 createCanvas 640, 400
@@ -726,8 +734,26 @@ SUB p5quad (x1##, y1##, x2##, y2##, x3##, y3##, x4##, y4##)
     endShape p5CLOSE
 END SUB
 
-SUB gatherMouseData ()
+SUB gatherInput ()
     DIM a AS _BYTE
+
+    'Keyboard input:
+    keyCode = _KEYHIT
+    IF keyCode > 0 AND keyCode <> lastKeyCode THEN
+        lastKeyCode = keyCode
+        a = keyPressed
+        totalKeysDown = totalKeysDown + 1
+    ELSEIF keyCode < 0 THEN
+        totalKeysDown = totalKeysDown - 1
+        IF totalKeysDown <= 0 THEN
+            totalKeysDown = 0
+            keyCode = ABS(keyCode)
+            a = keyReleased
+            lastKeyCode = 0
+        END IF
+    END IF
+
+    keyIsPressed = totalKeysDown > 0
 
     'Mouse input (optimization by Luke Ceddia):
     p5mouseWheel = 0
