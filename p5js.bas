@@ -14,6 +14,7 @@ CONST p5CLOSE = 3
 CONST p5RADIAN = 4
 CONST p5DEGREE = 5
 CONST CORNER = 6
+CONST CORNERS = 7
 
 'boolean constants
 CONST true = -1, false = NOT true
@@ -555,17 +556,21 @@ SUB p5triangleB (centerX##, centerY##, __ang1##, __ang2##, __ang3##, size##)
 END SUB
 
 'draws a rectangle
-SUB p5rect (x##, y##, width##, height##)
+SUB p5rect (x##, y##, __width##, __height##)
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
 
-    DIM i AS _FLOAT
+    DIM width##, height##
 
     internalp5makeTempImage
 
-    IF p5Canvas.rectMode = CORNER THEN
+    width## = __width##
+    height## = __height##
+
+    IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CORNERS THEN
+        'default mode
         x1## = x##
         y1## = y##
-    ELSE
+    ELSEIF p5Canvas.rectMode = CENTER THEN
         x1## = x## - width## / 2
         y1## = y## - height## / 2
     END IF
@@ -573,19 +578,37 @@ SUB p5rect (x##, y##, width##, height##)
     DIM tempColor~&
     tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
 
-    IF p5Canvas.doStroke THEN
-        LINE (x1## - INT(p5Canvas.strokeWeight / 2), y1## - INT(p5Canvas.strokeWeight / 2))-(x1## + width## + INT(p5Canvas.strokeWeight / 2), y1## + height## + INT(p5Canvas.strokeWeight / 2)), p5Canvas.strokeA, BF
-        LINE (x1## + INT(p5Canvas.strokeWeight / 2), y1## + INT(p5Canvas.strokeWeight / 2))-(x1## + width## - INT(p5Canvas.strokeWeight / 2), y1## + height## - INT(p5Canvas.strokeWeight / 2)), tempColor~&, BF
-        _CLEARCOLOR tempColor~&
-    END IF
-
-    IF p5Canvas.doFill THEN
-        IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
-            LINE (x1##, y1##)-STEP(width##, height##), tempColor~&, BF
+    IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CENTER THEN
+        IF p5Canvas.doStroke THEN
+            LINE (x1## - INT(p5Canvas.strokeWeight / 2), y1## - INT(p5Canvas.strokeWeight / 2))-(x1## + width## + INT(p5Canvas.strokeWeight / 2), y1## + height## + INT(p5Canvas.strokeWeight / 2)), p5Canvas.strokeA, BF
+            LINE (x1## + INT(p5Canvas.strokeWeight / 2), y1## + INT(p5Canvas.strokeWeight / 2))-(x1## + width## - INT(p5Canvas.strokeWeight / 2), y1## + height## - INT(p5Canvas.strokeWeight / 2)), tempColor~&, BF
             _CLEARCOLOR tempColor~&
         END IF
 
-        LINE (x1##, y1##)-STEP(width##, height##), p5Canvas.fillA, BF
+        IF p5Canvas.doFill THEN
+            IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
+                LINE (x1##, y1##)-STEP(width##, height##), tempColor~&, BF
+                _CLEARCOLOR tempColor~&
+            END IF
+
+            LINE (x1##, y1##)-STEP(width##, height##), p5Canvas.fillA, BF
+        END IF
+    ELSE
+        'CORNERS - consider width and height values as coordinates instead
+        IF p5Canvas.doStroke THEN
+            LINE (x1## - INT(p5Canvas.strokeWeight / 2), y1## - INT(p5Canvas.strokeWeight / 2))-(width## + INT(p5Canvas.strokeWeight / 2), height## + INT(p5Canvas.strokeWeight / 2)), p5Canvas.strokeA, BF
+            LINE (x1## + INT(p5Canvas.strokeWeight / 2), y1## + INT(p5Canvas.strokeWeight / 2))-(width## - INT(p5Canvas.strokeWeight / 2), height## - INT(p5Canvas.strokeWeight / 2)), tempColor~&, BF
+            _CLEARCOLOR tempColor~&
+        END IF
+
+        IF p5Canvas.doFill THEN
+            IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
+                LINE (x1##, y1##)-(width##, height##), tempColor~&, BF
+                _CLEARCOLOR tempColor~&
+            END IF
+
+            LINE (x1##, y1##)-(width##, height##), p5Canvas.fillA, BF
+        END IF
     END IF
 
     internalp5displayTempImage
