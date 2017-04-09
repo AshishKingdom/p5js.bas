@@ -52,7 +52,8 @@ DIM SHARED p5angleMode AS INTEGER
 p5angleMode = p5RADIAN
 
 'canvas settings related variables
-DIM SHARED p5Canvas AS new_p5Canvas
+DIM SHARED p5Canvas AS new_p5Canvas, pushState AS LONG
+REDIM SHARED p5CanvasBackup(10) AS new_p5Canvas
 
 'begin shape related variables
 DIM SHARED FirstVertex AS vector, avgVertex AS vector, PreviousVertex AS vector, vertexCount AS LONG
@@ -79,8 +80,8 @@ TIMER(p5MouseTimer) ON
 createCanvas 640, 400
 _TITLE "p5js.bas - Untitled sketch"
 _ICON
-stroke 255, 255, 255 'white
-fill 0, 0, 0
+stroke 0, 0, 0 'white
+fill 255, 255, 255
 strokeWeight 1
 textAlign LEFT
 rectMode CORNER
@@ -356,6 +357,24 @@ SUB strokeBA (b AS _FLOAT, a AS _FLOAT)
     p5Canvas.strokeA = _RGBA32(b, b, b, a)
     p5Canvas.strokeAlpha = constrain(a, 0, 255)
     COLOR p5Canvas.strokeA 'stroke also affects text
+END SUB
+
+SUB push
+    pushState = pushState + 1
+    IF pushState > UBOUND(p5CanvasBackup) THEN
+        REDIM _PRESERVE p5CanvasBackup(pushState + 9) AS new_p5Canvas
+    END IF
+    p5CanvasBackup(pushState) = p5Canvas
+END SUB
+
+SUB pop
+    p5Canvas = p5CanvasBackup(pushState)
+    pushState = pushState - 1
+END SUB
+
+SUB redraw
+    DIM a AS _BYTE
+    a = p5draw
 END SUB
 
 SUB noFill ()
