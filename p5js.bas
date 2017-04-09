@@ -336,6 +336,17 @@ SUB textFont (font$)
             p5Canvas.fontHandle = tempFontHandle
 
             loadedFontFile$ = font$
+        ELSE
+            loadedFontFile$ = ""
+            'built-in fonts
+            IF currentFontSize >= 16 THEN
+                _FONT 16
+            ELSEIF currentFontSize < 16 THEN
+                _FONT 8
+            END IF
+
+            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
+            p5Canvas.fontHandle = _FONT
         END IF
     END IF
 END SUB
