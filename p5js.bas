@@ -21,8 +21,8 @@ CONST QUARTER_PI = 0.785398163397448
 CONST p5POINTS = 1
 CONST p5LINES = 2
 CONST p5CLOSE = 3
-CONST p5RADIAN = 4
-CONST p5DEGREE = 5
+CONST RADIANS = 4
+CONST DEGREES = 5
 CONST CORNER = 6
 CONST CORNERS = 7
 
@@ -63,7 +63,7 @@ DIM SHARED frameRate AS SINGLE
 
 'angle mode
 DIM SHARED p5angleMode AS INTEGER
-p5angleMode = p5RADIAN
+p5angleMode = RADIANS
 
 'canvas settings related variables
 DIM SHARED p5Canvas AS new_p5Canvas, pushState AS LONG
@@ -620,7 +620,7 @@ END SUB
 SUB p5point (x AS _FLOAT, y AS _FLOAT)
     IF NOT p5Canvas.doStroke THEN EXIT SUB
 
-    PSET (x + p5Canvas.xOffset, y + p5Canvas.yOffset), p5Canvas.strokeA
+    CircleFill x + p5Canvas.xOffset, y + p5Canvas.yOffset, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
 END SUB
 
 SUB p5ellipse (__x AS _FLOAT, __y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
@@ -724,7 +724,7 @@ SUB p5triangleB (__centerX##, __centerY##, __ang1##, __ang2##, __ang3##, size##)
     centerX## = __centerX## + p5Canvas.xOffset
     centerY## = __centerY## + p5Canvas.yOffset
 
-    IF p5angleMode = p5RADIAN THEN
+    IF p5angleMode = RADIANS THEN
         ang1## = __ang1##
         ang2## = __ang2##
         ang3## = __ang3##
@@ -1104,7 +1104,7 @@ FUNCTION vector.magSq## (v AS vector)
 END FUNCTION
 
 SUB vector.fromAngle (v AS vector, __angle##)
-    IF p5angleMode = p5DEGREE THEN angle## = _D2R(__angle##) ELSE angle## = __angle##
+    IF p5angleMode = DEGREES THEN angle## = _D2R(__angle##) ELSE angle## = __angle##
 
     v.x = COS(angle##)
     v.y = SIN(angle##)
@@ -1154,18 +1154,18 @@ END SUB
 'END FUNCTION
 
 FUNCTION p5sin## (angle##)
-    IF p5angleMode = p5RADIAN THEN
-        p5.sin## = SIN(angle##)
+    IF p5angleMode = RADIANS THEN
+        p5sin## = SIN(angle##)
     ELSE
-        p5.sin## = SIN(_D2R(angle##))
+        p5sin## = SIN(_D2R(angle##))
     END IF
 END FUNCTION
 
 FUNCTION p5cos## (angle##)
-    IF p5angleMode = p5RADIAN THEN
-        p5.cos## = COS(angle##)
+    IF p5angleMode = RADIANS THEN
+        p5cos## = COS(angle##)
     ELSE
-        p5.cos## = COS(_D2R(angle##))
+        p5cos## = COS(_D2R(angle##))
     END IF
 END FUNCTION
 
