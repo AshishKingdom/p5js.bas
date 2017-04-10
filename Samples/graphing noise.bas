@@ -11,7 +11,7 @@ FUNCTION p5setup
     stroke 255, 255, 255
     fill 255, 0, 0
     frameRate = 60
-
+    colorMode p5HSB
     inc = .01
 END FUNCTION
 
@@ -26,7 +26,7 @@ FUNCTION p5draw
     FOR x = 0 TO _WIDTH
         y = noise(xoff, 0, 0) * _HEIGHT
         IF x > 0 THEN
-            stroke map(y, 0, _HEIGHT, 0, 255), map(y, 0, _HEIGHT, 255, 0), 0
+            stroke map(y, 0, _HEIGHT, 0, 255), 255, 100
             p5line px, py, x, y
         END IF
 
@@ -38,4 +38,3 @@ FUNCTION p5draw
 
     start = start + inc
 END FUNCTION
-
