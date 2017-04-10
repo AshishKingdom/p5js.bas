@@ -28,8 +28,6 @@ FUNCTION p5setup
     FOR i = 10 TO _WIDTH - 10 STEP ((_WIDTH - 20) / 10)
         addFirework i, _HEIGHT, 0, true
     NEXT
-
-    framrate = 60
 END FUNCTION
 
 FUNCTION p5draw
