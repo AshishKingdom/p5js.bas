@@ -15,7 +15,7 @@ FUNCTION p5draw ()
     radius = 150
     xoff## = 0
     beginShape p5LINES
-    FOR i = 0 TO 360 STEP 3
+    FOR i = 0 TO 355 STEP 3
         offset = map(noise(xoff, yoff, 0), 0, 1, -30, 30)
         r = radius + offset
         x = r * p5cos(i) + 200
@@ -27,4 +27,3 @@ FUNCTION p5draw ()
     yoff = yoff + .01
 
 END SUB
-
