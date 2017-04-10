@@ -79,8 +79,8 @@ DIM SHARED p5Canvas AS new_p5Canvas, pushState AS LONG
 REDIM SHARED p5CanvasBackup(10) AS new_p5Canvas
 
 'begin shape related variables
-DIM SHARED FirstVertex AS vector, avgVertex AS vector, PreviousVertex AS vector, vertexCount AS LONG
-DIM SHARED shapeAllow AS _BYTE, shapeType AS LONG, shapeInit AS _BYTE
+DIM SHARED FirstVertex AS vector, PreviousVertex AS vector, shapeStrokeBackup AS _UNSIGNED LONG
+DIM SHARED shapeAllow AS _BYTE, shapeType AS LONG, shapeInit AS _BYTE, shapeTempFill AS _UNSIGNED LONG
 DIM SHARED tempShapeImage AS LONG
 
 'loops and NoLoops
@@ -272,8 +272,12 @@ END SUB
 
 SUB beginShape (kind AS LONG)
     internalp5makeTempImage
+    IF p5Canvas.doFill THEN CLS , p5Canvas.fill
     shapeAllow = true
     shapeType = kind
+    shapeStrokeBackup = p5Canvas.strokeA
+    p5Canvas.strokeA = p5Canvas.stroke
+    shapeTempFill = _RGB32((_RED32(p5Canvas.stroke) + _RED32(p5Canvas.fill)) / 2, (_GREEN32(p5Canvas.stroke) + _GREEN32(p5Canvas.fill)) / 2, (_BLUE32(p5Canvas.stroke) + _BLUE32(p5Canvas.fill)) / 2)
 END SUB
 
 SUB vertex (__x AS _FLOAT, __y AS _FLOAT)
@@ -285,9 +289,10 @@ SUB vertex (__x AS _FLOAT, __y AS _FLOAT)
 
     IF shapeInit THEN
         IF shapeType = p5POINTS THEN
-            IF p5Canvas.doStroke THEN CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+            '     IF p5Canvas.doStroke THEN CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill x, y, p5Canvas.strokeWeight / 2, shapeTempFill
+            p5point x, y
         ELSEIF shapeType = p5LINES THEN
-            IF NOT p5Canvas.doStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(x, y), p5Canvas.fillA ELSE p5line PreviousVertex.x, PreviousVertex.y, x, y
+            IF NOT p5Canvas.doStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(x, y), p5Canvas.stroke ELSE p5line PreviousVertex.x, PreviousVertex.y, x, y
         END IF
     END IF
     IF shapeAllow AND NOT shapeInit THEN
@@ -295,36 +300,33 @@ SUB vertex (__x AS _FLOAT, __y AS _FLOAT)
         FirstVertex.y = y
         shapeInit = true
         IF shapeType = p5POINTS THEN
-            IF p5Canvas.doStroke THEN CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
+            IF p5Canvas.doStroke THEN CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.strokeA ELSE CircleFill x, y, p5Canvas.strokeWeight / 2, shapeTempFill
         END IF
         FirstVertex.x = x
         FirstVertex.y = y
     END IF
     PreviousVertex.x = x
     PreviousVertex.y = y
-    avgVertex.x = avgVertex.x + x
-    avgVertex.y = avgVertex.y + y
-    vertexCount = vertexCount + 1
 END SUB
 
 SUB endShape (closed)
     'do we have to close it?
     IF closed = p5CLOSE AND shapeType = p5LINES THEN
-        IF NOT p5Canvas.doStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(FirstVertex.x, FirstVertex.y), p5Canvas.fillA ELSE p5line PreviousVertex.x, PreviousVertex.y, FirstVertex.x, FirstVertex.y
+        IF NOT p5Canvas.doStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(FirstVertex.x, FirstVertex.y), p5Canvas.stroke ELSE p5line PreviousVertex.x, PreviousVertex.y, FirstVertex.x, FirstVertex.y
     END IF
 
     'fill with color
     IF p5Canvas.doFill AND shapeType = p5LINES AND closed = p5CLOSE THEN
-        avgVertex.x = avgVertex.x / vertexCount
-        avgVertex.y = avgVertex.y / vertexCount
-        IF p5Canvas.doStroke THEN
-            PAINT (avgVertex.x, avgVertex.y), p5Canvas.fill, p5Canvas.strokeA
-        ELSE
-            PAINT (avgVertex.x, avgVertex.y), p5Canvas.fill, p5Canvas.fill
-        END IF
+        PAINT (0, 0), shapeTempFill, p5Canvas.strokeA
+        PAINT (_WIDTH - 1, 0), shapeTempFill, p5Canvas.strokeA
+        PAINT (0, _HEIGHT - 1), shapeTempFill, p5Canvas.strokeA
+        PAINT (_WIDTH - 1, _HEIGHT - 1), shapeTempFill, p5Canvas.strokeA
+        _CLEARCOLOR shapeTempFill
+        IF NOT p5Canvas.doStroke THEN _CLEARCOLOR p5Canvas.stroke
         _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+        _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
     END IF
-
+    p5Canvas.strokeA = shapeStrokeBackup
     'it's time to reset all varibles!!
     shapeAllow = false
     shapeType = 0
@@ -333,10 +335,7 @@ SUB endShape (closed)
     FirstVertex.y = 0
     PreviousVertex.x = 0
     PreviousVertex.y = 0
-    vertexCount = 0
-    avgVertex.x = 0
-    avgVertex.y = 0
-
+    shapeTempFill = 0
     'place shape onto main canvas
     internalp5displayTempImage
 END SUB
@@ -493,7 +492,7 @@ END SUB
 SUB strokeA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     p5Canvas.doStroke = true
     IF p5Canvas.colorMode = p5HSB THEN
-        p5Canvas.stroke = hsb(r, g, b, a)
+        p5Canvas.stroke = hsb(r, g, b, 255)
         p5Canvas.strokeA = hsb(r, g, b, a)
     ELSE
         p5Canvas.stroke = _RGB32(r, g, b)
