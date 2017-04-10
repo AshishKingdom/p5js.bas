@@ -14,6 +14,10 @@ DECLARE LIBRARY "falcon"
     FUNCTION uascension& ()
 END DECLARE
 
+DECLARE LIBRARY
+    FUNCTION millis~& ALIAS GetTicks
+END DECLARE
+
 'p5 constants
 CONST TWO_PI = 6.283185307179586
 CONST HALF_PI = 1.570796326794897
@@ -56,6 +60,11 @@ TYPE new_p5Canvas
     angleMode AS INTEGER
 END TYPE
 
+TYPE new_SoundHandle
+    handle AS LONG
+    sync AS _BYTE
+END TYPE
+
 TYPE vector
     x AS _FLOAT
     y AS _FLOAT
@@ -96,6 +105,10 @@ CONST UP_ARROW = 18432, DOWN_ARROW = 20480, LEFT_ARROW = 19200, RIGHT_ARROW = 19
 DIM SHARED loadedFontFile$, currentFontSize AS INTEGER
 DIM SHARED p5LastRenderedCharCount AS LONG, p5LastRenderedLineWidth AS LONG
 REDIM SHARED p5ThisLineChars(0) AS LONG
+
+'sound system
+REDIM SHARED loadedSounds(0) AS new_SoundHandle
+DIM SHARED totalLoadedSounds AS LONG
 
 'timer used to gather input from user
 DIM SHARED p5InputTimer AS INTEGER
@@ -149,6 +162,14 @@ SUB createCanvas (w AS INTEGER, h AS INTEGER)
             tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
         END IF
     END IF
+END SUB
+
+SUB title (t$)
+    _TITLE t$
+END SUB
+
+SUB titleB (v##)
+    _TITLE STR$(v##)
 END SUB
 
 FUNCTION noise## (x AS _FLOAT, y AS _FLOAT, z AS _FLOAT)
@@ -418,6 +439,10 @@ END FUNCTION
 
 FUNCTION textWidth& (theText$)
     textWidth& = PrintWidth&(theText$)
+END FUNCTION
+
+FUNCTION textHeight&
+    textHeight& = uheight
 END FUNCTION
 
 SUB fill (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
@@ -1069,6 +1094,42 @@ SUB noLoop ()
     p5Loop = false
 END SUB
 
+FUNCTION loadSound& (file$)
+    IF _FILEEXISTS(file$) = 0 THEN EXIT FUNCTION
+    DIM tempHandle&, setting$
+
+    setting$ = "vol"
+
+    SELECT CASE UCASE$(RIGHT$(file$, 4))
+        CASE ".WAV", ".OGG", ".AIF", ".RIF", ".VOC"
+            setting$ = "vol,sync,len,pause"
+        CASE ".MP3"
+            setting$ = "vol,pause,setpos"
+    END SELECT
+
+    tempHandle& = _SNDOPEN(file$, setting$)
+    IF tempHandle& > 0 THEN
+        totalLoadedSounds = totalLoadedSounds + 1
+        REDIM _PRESERVE loadedSounds(totalLoadedSounds) AS new_SoundHandle
+        loadedSounds(totalLoadedSounds).handle = tempHandle&
+        loadedSounds(totalLoadedSounds).sync = INSTR(setting$, "sync") > 0
+        loadSound& = tempHandle&
+    END IF
+END FUNCTION
+
+SUB p5play (soundHandle&)
+    DIM i AS LONG
+    FOR i = 1 TO UBOUND(loadedSounds)
+        IF loadedSounds(i).handle = soundHandle& THEN
+            IF loadedSounds(i).sync THEN
+                _SNDPLAYCOPY soundHandle&
+            ELSE
+                IF NOT _SNDPLAYING(soundHandle&) THEN _SNDPLAY soundHandle&
+            END IF
+        END IF
+    NEXT
+END SUB
+
 FUNCTION month& ()
     month& = VAL(LEFT$(DATE$, 2))
 END FUNCTION
@@ -1172,6 +1233,18 @@ SUB vector.mult (v AS vector, n AS _FLOAT)
     v.x = v.x * n
     v.y = v.y * n
     v.z = v.z * n
+END SUB
+
+SUB vector.random2d (v AS vector)
+    DIM angle AS _FLOAT
+
+    IF p5Canvas.angleMode = DEGREES THEN
+        angle = p5random(0, 360)
+    ELSE
+        angle = p5random(0, TWO_PI)
+    END IF
+
+    vector.fromAngle v, angle
 END SUB
 
 'Use QB64's builtin _R2D
@@ -1549,13 +1622,15 @@ FUNCTION UTF8$ (source$, table$())
 END FUNCTION
 
 'method adapted form http://stackoverflow.com/questions/4106363/converting-rgb-to-hsb-colors
-FUNCTION hsb& (H AS _FLOAT, S AS _FLOAT, B AS _FLOAT, A AS _FLOAT)
-    H = map(H, 0, 255, 0, 360)
-    S = map(S, 0, 255, 0, 1)
-    B = map(B, 0, 255, 0, 1)
+FUNCTION hsb~& (__H AS _FLOAT, __S AS _FLOAT, __B AS _FLOAT, A AS _FLOAT)
+    DIM H AS _FLOAT, S AS _FLOAT, B AS _FLOAT
+
+    H = map(__H, 0, 255, 0, 360)
+    S = map(__S, 0, 255, 0, 1)
+    B = map(__B, 0, 255, 0, 1)
 
     IF S = 0 THEN
-        hsb& = _RGBA32(B * 255, B * 255, B * 255, A)
+        hsb~& = _RGBA32(B * 255, B * 255, B * 255, A)
         EXIT FUNCTION
     END IF
 
@@ -1571,14 +1646,14 @@ FUNCTION hsb& (H AS _FLOAT, S AS _FLOAT, B AS _FLOAT, A AS _FLOAT)
         fmn = B - (B * S)
     END IF
 
-    iSextant = INT(H / 60F)
+    iSextant = INT(H / 60)
 
-    IF H >= 300F THEN
-        H = H - 360F
+    IF H >= 300 THEN
+        H = H - 360
     END IF
 
-    H = H / 60F
-    H = H - (2F * INT(((iSextant + 1F) MOD 6F) / 2F))
+    H = H / 60
+    H = H - (2 * INT(((iSextant + 1) MOD 6) / 2))
 
     IF iSextant MOD 2 = 0 THEN
         fmd = (H * (fmx - fmn)) + fmn
@@ -1592,17 +1667,17 @@ FUNCTION hsb& (H AS _FLOAT, S AS _FLOAT, B AS _FLOAT, A AS _FLOAT)
 
     SELECT CASE INT(iSextant)
         CASE 1
-            hsb& = _RGBA32(imd, imx, imn, A)
+            hsb~& = _RGBA32(imd, imx, imn, A)
         CASE 2
-            hsb& = _RGBA32(imn, imx, imd, A)
+            hsb~& = _RGBA32(imn, imx, imd, A)
         CASE 3
-            hsb& = _RGBA32(imn, imd, imx, A)
+            hsb~& = _RGBA32(imn, imd, imx, A)
         CASE 4
-            hsb& = _RGBA32(imd, imn, imx, A)
+            hsb~& = _RGBA32(imd, imn, imx, A)
         CASE 5
-            hsb& = _RGBA32(imx, imn, imd, A)
+            hsb~& = _RGBA32(imx, imn, imd, A)
         CASE ELSE
-            hsb& = _RGBA32(imx, imd, imn, A)
+            hsb~& = _RGBA32(imx, imd, imn, A)
     END SELECT
 
 END FUNCTION
