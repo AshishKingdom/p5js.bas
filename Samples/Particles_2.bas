@@ -1,12 +1,15 @@
 DIM SHARED particles(10000) AS Particle
 DIM SHARED gravity AS vector, MaxAddition
+
 '$include:'../p5js.bas'
+
 TYPE Particle
     pos AS vector
     vel AS vector
     active AS _BYTE
     col AS SINGLE
 END TYPE
+
 FUNCTION p5setup ()
     _TITLE "Particles"
     createCanvas 500, 500
