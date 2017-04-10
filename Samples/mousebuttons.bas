@@ -36,15 +36,13 @@ FUNCTION p5draw
         text "Click away...", 0, 0
     END IF
 
-    fill 255, 0, 0
+    stroke 255, 0, 0
     text "Left", 15, _HEIGHT - _FONTHEIGHT
 
-    fill 0, 255, 0
-    strokeB 0
+    stroke 0, 255, 0
     text "Middle", 60, _HEIGHT - _FONTHEIGHT
 
-    fill 0, 255, 255
-    strokeB 0
+    stroke 0, 255, 255
     text "Right", 120, _HEIGHT - _FONTHEIGHT
 
     noFill

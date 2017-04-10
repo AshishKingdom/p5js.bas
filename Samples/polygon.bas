@@ -14,7 +14,6 @@ END FUNCTION
 FUNCTION p5draw
     backgroundB 0
 
-    noFill
     IF di <= 2 THEN
         text "Click away...", 0, 0
     ELSE
@@ -43,5 +42,5 @@ END FUNCTION
 FUNCTION mouseWheel
     strokeWeight p5Canvas.strokeWeight + p5mouseWheel
 
-    IF p5Canvas.strokeWeight < 1 THEN strokeWeight 1
+    IF p5Canvas.strokeWeight < 2 THEN strokeWeight 2
 END FUNCTION

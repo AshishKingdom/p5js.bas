@@ -51,7 +51,12 @@ FUNCTION p5draw
                 explode firework(i)
                 firework(i).state = 0
                 colorMode p5RGB
-                backgroundBA 255, 70 'sky lights up
+                'sky lights up
+                IF firework(i).pos.x < 100 OR firework(i).pos.x > 540 THEN
+                    backgroundBA 255, 30
+                ELSE
+                    backgroundBA 255, 70
+                END IF
                 p5play explosion
             ELSEIF (firework(i).pos.y > _HEIGHT OR firework(i).lifespan <= 0) AND firework(i).state = 2 THEN
                 firework(i).state = 0

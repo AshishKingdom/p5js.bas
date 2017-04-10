@@ -6,17 +6,18 @@ FUNCTION p5setup ()
 END FUNCTION
 
 FUNCTION p5draw ()
-    backgroundB 200
+    backgroundB 51
 
     strokeWeight 2
-    strokeB 0
+    stroke 255, 255, 0
     p5line 50, 350, _MOUSEX, _MOUSEY
 
-    fillB 0
+    fill 255, 150, 0
     p5ellipse 50, 350, 10, 10
     p5ellipse _MOUSEX, _MOUSEY, 10, 10
 
     d = dist(50, 350, _MOUSEX, _MOUSEY)
     noFill
-    _PRINTSTRING (20, 20), "Distance : " + STR$(d)
+    strokeB 255
+    text "Distance : " + STR$(d), 20, 20
 END FUNCTION

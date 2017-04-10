@@ -26,6 +26,7 @@ FUNCTION p5draw
     FOR x = 0 TO _WIDTH
         y = noise(xoff, 0, 0) * _HEIGHT
         IF x > 0 THEN
+            stroke map(y, 0, _HEIGHT, 0, 255), map(y, 0, _HEIGHT, 255, 0), 0
             p5line px, py, x, y
         END IF
 
