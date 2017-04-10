@@ -88,7 +88,7 @@ SUB show (this AS new_Particle)
     IF this.state = 1 THEN
         stroke this.hu, 255, 255
     ELSEIF this.state = 2 THEN
-        strokeA this.hu, 255, 127, this.lifespan
+        strokeA this.hu, 255, map(this.lifespan, 100, 255, 127, 255), this.lifespan
     END IF
 
     p5point this.pos.x, this.pos.y
