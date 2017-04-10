@@ -8,22 +8,20 @@ END TYPE
 
 FUNCTION p5setup ()
     createCanvas 720, 400
-    _TITLE "HSB Ball"
-    systemOrigin.x = _WIDTH / 2
-    systemOrigin.y = 50
+    _TITLE "HSB Balls"
     noStroke
-    ColorMode p5HSB
     frameRate = 60
     FOR i = 0 TO UBOUND(myball)
-        myBall(i).pos.x = p5random(30, 720)
-        myBall(i).pos.y = p5random(30, 400)
-        myBall(i).vel.x = p5random(-4, 4)
-        myBall(i).vel.y = p5random(-4, 4)
+        createVector myBall(i).pos, p5random(30, 720), p5random(30, 400)
+        createVector myBall(i).vel, p5random(-4, 4), p5random(-4, 4)
     NEXT
 END FUNCTION
 
 FUNCTION p5draw ()
-    backgroundBA 0, 2
+    colorMode p5RGB
+    backgroundBA 0, 20
+
+    colorMode p5HSB
     FOR i = 0 TO UBOUND(myball)
         fill map(myBall(i).pos.x, 30, 720, 0, 255), 255, map(myBall(i).pos.y, 0, 400, 200, 50)
         p5ellipse myBall(i).pos.x, myBall(i).pos.y, 25, 25
