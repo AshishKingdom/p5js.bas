@@ -309,6 +309,10 @@ SUB vertex (__x AS _FLOAT, __y AS _FLOAT)
     PreviousVertex.y = y
 END SUB
 
+SUB vertexB (v AS vector)
+    vertex v.x, v.y
+END SUB
+
 SUB endShape (closed)
     'do we have to close it?
     IF closed = p5CLOSE AND shapeType = p5LINES THEN
@@ -481,6 +485,17 @@ SUB fillBA (b AS _FLOAT, a AS _FLOAT)
     COLOR , p5Canvas.fillA 'fill also affects text
 END SUB
 
+SUB fillC (c AS _UNSIGNED LONG)
+    p5Canvas.doFill = true
+    p5Canvas.fillAlpha = _ALPHA(c)
+    IF p5Canvas.fillAlpha < 255 THEN
+        p5Canvas.fill = _RGB32(_RED32(c), _GREEN32(c), _BLUE32(c))
+    ELSE
+        p5Canvas.fill = c
+    END IF
+    p5Canvas.fillA = c
+END SUB
+
 SUB stroke (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     p5Canvas.doStroke = true
     IF p5Canvas.colorMode = p5HSB THEN p5Canvas.stroke = hsb(r, g, b, 255) ELSE p5Canvas.stroke = _RGB32(r, g, b)
@@ -517,6 +532,17 @@ SUB strokeBA (b AS _FLOAT, a AS _FLOAT)
     p5Canvas.strokeA = _RGBA32(b, b, b, a)
     p5Canvas.strokeAlpha = constrain(a, 0, 255)
     COLOR p5Canvas.strokeA 'stroke also affects text
+END SUB
+
+SUB strokeC (c AS _UNSIGNED LONG)
+    p5Canvas.doStroke = true
+    p5Canvas.strokeAlpha = _ALPHA(c)
+    IF p5Canvas.strokeAlpha < 255 THEN
+        p5Canvas.stroke = _RGB32(_RED32(c), _GREEN32(c), _BLUE32(c))
+    ELSE
+        p5Canvas.stroke = c
+    END IF
+    p5Canvas.strokeA = c
 END SUB
 
 SUB push
@@ -764,9 +790,13 @@ SUB p5triangle (__x1##, __y1##, __x2##, __y2##, __x3##, __y3##)
     internalp5displayTempImage
 END SUB
 
+SUB p5triangleB (v1 AS vector, v2 AS vector, v3 AS vector)
+    p5triangle v1.x, v1.y, v2.x, v2.y, v3.x, v3.y
+END SUB
+
 'draw a triangle by joining 3 different angles from the center point with
 'a given size
-SUB p5triangleB (__centerX##, __centerY##, __ang1##, __ang2##, __ang3##, size##)
+SUB p5triangleC (__centerX##, __centerY##, __ang1##, __ang2##, __ang3##, size##)
     DIM x1##, y1##, x2##, y2##, x3##, y3##
     DIM ang1##, ang2##, ang3##
     DIM centerX##, centerY##
