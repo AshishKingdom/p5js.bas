@@ -1340,12 +1340,82 @@ FUNCTION lerp## (start##, stp##, amt##)
     lerp## = amt## * (stp## - start##) + start##
 END FUNCTION
 
+FUNCTION lerpColor~& (c1 AS _UNSIGNED LONG, c2 AS _UNSIGNED LONG, __v##)
+    DIM v##
+    v## = constrain(__v##, 0, 1)
+
+    IF p5Canvas.colorMode = p5RGB THEN
+        DIM r1 AS _FLOAT, g1 AS _FLOAT, b1 AS _FLOAT
+        DIM r2 AS _FLOAT, g2 AS _FLOAT, b2 AS _FLOAT
+        DIM rstep AS _FLOAT, gstep AS _FLOAT, bstep AS _FLOAT
+
+        r1 = _RED32(c1)
+        g1 = _GREEN32(c1)
+        b1 = _BLUE32(c1)
+
+        r2 = _RED32(c2)
+        g2 = _GREEN32(c2)
+        b2 = _BLUE32(c2)
+
+        rstep = map(v##, 0, 1, r1, r2)
+        gstep = map(v##, 0, 1, g1, g2)
+        bstep = map(v##, 0, 1, b1, b2)
+
+        lerpColor~& = _RGB32(rstep, gstep, bstep)
+    ELSE
+        'p5HSB lerpColor not yet available; return either
+        'of the original colors that's closer to v##
+        IF v## < .5 THEN
+            lerpColor~& = c1
+        ELSE
+            lerpColor~& = c2
+        END IF
+    END IF
+END FUNCTION
+
+FUNCTION color~& (v1 AS _FLOAT, v2 AS _FLOAT, v3 AS _FLOAT)
+    IF p5Canvas.colorMode = p5RGB THEN
+        color~& = _RGB32(v1, v2, v3)
+    ELSEIF p5Canvas.colorMode = p5HSB THEN
+        color~& = hsb(v1, v2, v3, 255)
+    END IF
+END FUNCTION
+
+FUNCTION colorA~& (v1 AS _FLOAT, v2 AS _FLOAT, v3 AS _FLOAT, a AS _FLOAT)
+    IF p5Canvas.colorMode = p5RGB THEN
+        colorA~& = _RGBA32(v1, v2, v3, a)
+    ELSEIF p5Canvas.colorMode = p5HSB THEN
+        colorA~& = hsb(v1, v2, v3, a)
+    END IF
+END FUNCTION
+
+FUNCTION colorB~& (v1 AS _FLOAT)
+    IF p5Canvas.colorMode = p5RGB THEN
+        colorB~& = _RGB32(v1, v1, v1)
+    ELSEIF p5Canvas.colorMode = p5HSB THEN
+        colorB~& = hsb(0, 0, v1, 255)
+    END IF
+END FUNCTION
+
+FUNCTION colorBA~& (v1 AS _FLOAT, a AS _FLOAT)
+    IF p5Canvas.colorMode = p5RGB THEN
+        colorBA~& = _RGBA32(v1, v1, v1, a)
+    ELSEIF p5Canvas.colorMode = p5HSB THEN
+        colorBA~& = hsb(0, 0, v1, a)
+    END IF
+END FUNCTION
+
+
 FUNCTION mag## (x##, y##)
     mag## = _HYPOT(x##, y##)
 END FUNCTION
 
 FUNCTION sq## (n##)
     sq## = n## * n##
+END FUNCTION
+
+FUNCTION pow## (n##, p##)
+    pow## = n## ^ p##
 END FUNCTION
 
 FUNCTION p5random## (mn##, mx##)
