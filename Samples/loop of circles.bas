@@ -11,7 +11,7 @@ FUNCTION p5setup
 END FUNCTION
 
 FUNCTION p5draw
-    background 0, 0, 30
+    backgroundA 0, 0, 30, 20
     translate _WIDTH / 2, _HEIGHT / 2
 
     FOR i = 1 TO NUM
