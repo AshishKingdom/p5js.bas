@@ -132,6 +132,8 @@ colorMode p5RGB
 angleMode RADIANS
 doLoop
 
+_DISPLAY
+
 DIM a AS _BYTE 'dummy variable used to call functions that may not be there
 a = p5setup
 callDrawLoop 'run the p5draw function at least once (in case noLoop was used in p5setup)
