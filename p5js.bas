@@ -41,21 +41,21 @@ TYPE new_p5Canvas
     fontHandle AS LONG
     stroke AS _UNSIGNED LONG
     strokeA AS _UNSIGNED LONG
-    strokeAlpha AS _FLOAT
+    strokeAlpha AS SINGLE
     fill AS _UNSIGNED LONG
     fillA AS _UNSIGNED LONG
-    fillAlpha AS _FLOAT
+    fillAlpha AS SINGLE
     backColor AS _UNSIGNED LONG
     backColorA AS _UNSIGNED LONG
-    backColorAlpha AS _FLOAT
-    strokeWeight AS _FLOAT
+    backColorAlpha AS SINGLE
+    strokeWeight AS SINGLE
     doStroke AS _BYTE
     doFill AS _BYTE
     textAlign AS _BYTE
     encoding AS LONG
     rectMode AS _BYTE
-    xOffset AS _FLOAT
-    yOffset AS _FLOAT
+    xOffset AS SINGLE
+    yOffset AS SINGLE
     colorMode AS INTEGER
     angleMode AS INTEGER
 END TYPE
@@ -66,9 +66,9 @@ TYPE new_SoundHandle
 END TYPE
 
 TYPE vector
-    x AS _FLOAT
-    y AS _FLOAT
-    z AS _FLOAT
+    x AS SINGLE
+    y AS SINGLE
+    z AS SINGLE
 END TYPE
 
 'frame rate
@@ -166,21 +166,41 @@ SUB createCanvas (w AS INTEGER, h AS INTEGER)
     END IF
 END SUB
 
+FUNCTION createImage& (w AS INTEGER, h AS INTEGER)
+    createImage& = _NEWIMAGE(w, h, 32)
+END FUNCTION
+
+SUB image (img&, x AS INTEGER, y AS INTEGER)
+    _PUTIMAGE (x, y), img&, 0
+END SUB
+
+SUB imageB (img&, x AS INTEGER, y AS INTEGER, w AS INTEGER, h AS INTEGER, sx AS INTEGER, sy AS INTEGER, sw AS INTEGER, sh AS INTEGER)
+    _PUTIMAGE (x, y)-STEP(w, h), img&, 0, (sx, sy)-STEP(sw, sh)
+END SUB
+
+FUNCTION width&
+    width& = _WIDTH
+END FUNCTION
+
+FUNCTION height&
+    height& = _HEIGHT
+END FUNCTION
+
 SUB title (t$)
     _TITLE t$
 END SUB
 
-SUB titleB (v##)
-    _TITLE STR$(v##)
+SUB titleB (v!)
+    _TITLE STR$(v!)
 END SUB
 
-FUNCTION noise## (x AS _FLOAT, y AS _FLOAT, z AS _FLOAT)
+FUNCTION noise! (x AS SINGLE, y AS SINGLE, z AS SINGLE)
     STATIC p5NoiseSetup AS _BYTE
-    STATIC perlin() AS _FLOAT
-    STATIC PERLIN_YWRAPB AS _FLOAT, PERLIN_YWRAP AS _FLOAT
-    STATIC PERLIN_ZWRAPB AS _FLOAT, PERLIN_ZWRAP AS _FLOAT
-    STATIC PERLIN_SIZE AS _FLOAT, perlin_octaves AS _FLOAT
-    STATIC perlin_amp_falloff AS _FLOAT
+    STATIC perlin() AS SINGLE
+    STATIC PERLIN_YWRAPB AS SINGLE, PERLIN_YWRAP AS SINGLE
+    STATIC PERLIN_ZWRAPB AS SINGLE, PERLIN_ZWRAP AS SINGLE
+    STATIC PERLIN_SIZE AS SINGLE, perlin_octaves AS SINGLE
+    STATIC perlin_amp_falloff AS SINGLE
 
     IF NOT p5NoiseSetup THEN
         p5NoiseSetup = true
@@ -194,8 +214,8 @@ FUNCTION noise## (x AS _FLOAT, y AS _FLOAT, z AS _FLOAT)
         perlin_octaves = 4
         perlin_amp_falloff = 0.5
 
-        REDIM perlin(PERLIN_SIZE + 1) AS _FLOAT
-        DIM i AS _FLOAT
+        REDIM perlin(PERLIN_SIZE + 1) AS SINGLE
+        DIM i AS SINGLE
         FOR i = 0 TO PERLIN_SIZE + 1
             perlin(i) = RND
         NEXT
@@ -205,23 +225,23 @@ FUNCTION noise## (x AS _FLOAT, y AS _FLOAT, z AS _FLOAT)
     y = ABS(y)
     z = ABS(z)
 
-    DIM xi AS _FLOAT, yi AS _FLOAT, zi AS _FLOAT
+    DIM xi AS SINGLE, yi AS SINGLE, zi AS SINGLE
     xi = INT(x)
     yi = INT(y)
     zi = INT(z)
 
-    DIM xf AS _FLOAT, yf AS _FLOAT, zf AS _FLOAT
+    DIM xf AS SINGLE, yf AS SINGLE, zf AS SINGLE
     xf = x - xi
     yf = y - yi
     zf = z - zi
 
-    DIM r AS _FLOAT, ampl AS _FLOAT, o AS _FLOAT
+    DIM r AS SINGLE, ampl AS SINGLE, o AS SINGLE
     r = 0
     ampl = .5
 
     FOR o = 1 TO perlin_octaves
-        DIM of AS _FLOAT, rxf AS _FLOAT
-        DIM ryf AS _FLOAT, n1 AS _FLOAT, n2 AS _FLOAT, n3 AS _FLOAT
+        DIM of AS SINGLE, rxf AS SINGLE
+        DIM ryf AS SINGLE, n1 AS SINGLE, n2 AS SINGLE, n3 AS SINGLE
         of = xi + INT(yi * (2 ^ PERLIN_YWRAPB)) + INT(zi * (2 ^ PERLIN_ZWRAPB))
 
         rxf = 0.5 * (1.0 - COS(xf * _PI))
@@ -255,11 +275,11 @@ FUNCTION noise## (x AS _FLOAT, y AS _FLOAT, z AS _FLOAT)
         IF yf >= 1.0 THEN yi = yi + 1: yf = yf - 1
         IF zf >= 1.0 THEN zi = zi + 1: zf = zf - 1
     NEXT
-    noise## = r
+    noise! = r
 END FUNCTION
 
-FUNCTION map## (value##, minRange##, maxRange##, newMinRange##, newMaxRange##)
-    map## = ((value## - minRange##) / (maxRange## - minRange##)) * (newMaxRange## - newMinRange##) + newMinRange##
+FUNCTION map! (value!, minRange!, maxRange!, newMinRange!, newMaxRange!)
+    map! = ((value! - minRange!) / (maxRange! - minRange!)) * (newMaxRange! - newMinRange!) + newMinRange!
 END FUNCTION
 
 SUB internalp5makeTempImage
@@ -282,9 +302,9 @@ SUB beginShape (kind AS LONG)
     shapeTempFill = _RGB32((_RED32(p5Canvas.stroke) + _RED32(p5Canvas.fill)) / 2, (_GREEN32(p5Canvas.stroke) + _GREEN32(p5Canvas.fill)) / 2, (_BLUE32(p5Canvas.stroke) + _BLUE32(p5Canvas.fill)) / 2)
 END SUB
 
-SUB vertex (__x AS _FLOAT, __y AS _FLOAT)
+SUB vertex (__x AS SINGLE, __y AS SINGLE)
 
-    DIM x AS _FLOAT, y AS _FLOAT
+    DIM x AS SINGLE, y AS SINGLE
 
     x = __x + p5Canvas.xOffset
     y = __y + p5Canvas.yOffset
@@ -408,8 +428,8 @@ SUB textSize (size%)
     END IF
 END SUB
 
-SUB text (t$, __x AS _FLOAT, __y AS _FLOAT)
-    DIM x AS _FLOAT, y AS _FLOAT
+SUB text (t$, __x AS SINGLE, __y AS SINGLE)
+    DIM x AS SINGLE, y AS SINGLE
 
     x = __x + p5Canvas.xOffset
     y = __y + p5Canvas.yOffset
@@ -450,7 +470,7 @@ FUNCTION textHeight&
     textHeight& = uheight
 END FUNCTION
 
-SUB fill (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
+SUB fill (r AS SINGLE, g AS SINGLE, b AS SINGLE)
     p5Canvas.doFill = true
     IF p5Canvas.colorMode = p5HSB THEN p5Canvas.fill = hsb(r, g, b, 255) ELSE p5Canvas.fill = _RGB32(r, g, b)
     p5Canvas.fillA = p5Canvas.fill
@@ -458,7 +478,7 @@ SUB fill (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     COLOR , p5Canvas.fill 'fill also affects text
 END SUB
 
-SUB fillA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
+SUB fillA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
     p5Canvas.doFill = true
     IF p5Canvas.colorMode = p5HSB THEN
         p5Canvas.fill = hsb(r, g, b, a)
@@ -471,7 +491,7 @@ SUB fillA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     COLOR , p5Canvas.fillA 'fill also affects text
 END SUB
 
-SUB fillB (b AS _FLOAT)
+SUB fillB (b AS SINGLE)
     p5Canvas.doFill = true
     p5Canvas.fill = _RGB32(b, b, b)
     p5Canvas.fillA = p5Canvas.fill
@@ -479,7 +499,7 @@ SUB fillB (b AS _FLOAT)
     COLOR , p5Canvas.fill 'fill also affects text
 END SUB
 
-SUB fillBA (b AS _FLOAT, a AS _FLOAT)
+SUB fillBA (b AS SINGLE, a AS SINGLE)
     p5Canvas.doFill = true
     p5Canvas.fill = _RGB32(b, b, b)
     p5Canvas.fillA = _RGBA32(b, b, b, a)
@@ -498,7 +518,7 @@ SUB fillC (c AS _UNSIGNED LONG)
     p5Canvas.fillA = c
 END SUB
 
-SUB stroke (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
+SUB stroke (r AS SINGLE, g AS SINGLE, b AS SINGLE)
     p5Canvas.doStroke = true
     IF p5Canvas.colorMode = p5HSB THEN p5Canvas.stroke = hsb(r, g, b, 255) ELSE p5Canvas.stroke = _RGB32(r, g, b)
     p5Canvas.strokeA = p5Canvas.stroke
@@ -506,7 +526,7 @@ SUB stroke (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
     COLOR p5Canvas.stroke 'stroke also affects text
 END SUB
 
-SUB strokeA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
+SUB strokeA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
     p5Canvas.doStroke = true
     IF p5Canvas.colorMode = p5HSB THEN
         p5Canvas.stroke = hsb(r, g, b, 255)
@@ -520,7 +540,7 @@ SUB strokeA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     COLOR p5Canvas.strokeA 'stroke also affects text
 END SUB
 
-SUB strokeB (b AS _FLOAT)
+SUB strokeB (b AS SINGLE)
     p5Canvas.doStroke = true
     p5Canvas.stroke = _RGB32(b, b, b)
     p5Canvas.strokeA = p5Canvas.stroke
@@ -528,7 +548,7 @@ SUB strokeB (b AS _FLOAT)
     COLOR p5Canvas.strokeA 'stroke also affects text
 END SUB
 
-SUB strokeBA (b AS _FLOAT, a AS _FLOAT)
+SUB strokeBA (b AS SINGLE, a AS SINGLE)
     p5Canvas.doStroke = true
     p5Canvas.stroke = _RGB32(b, b, b)
     p5Canvas.strokeA = _RGBA32(b, b, b, a)
@@ -565,7 +585,7 @@ SUB redraw
 END SUB
 
 SUB callDrawLoop
-    DIM a AS _BYTE, xOffsetBackup AS _FLOAT, yOffsetBackup AS _FLOAT
+    DIM a AS _BYTE, xOffsetBackup AS SINGLE, yOffsetBackup AS SINGLE
 
     p5frameCount = p5frameCount + 1
 
@@ -593,7 +613,7 @@ SUB noStroke ()
     COLOR 0 'stroke also affects text
 END SUB
 
-SUB strokeWeight (a AS _FLOAT)
+SUB strokeWeight (a AS SINGLE)
     IF a = 0 THEN
         noStroke
     ELSE
@@ -601,7 +621,7 @@ SUB strokeWeight (a AS _FLOAT)
     END IF
 END SUB
 
-SUB translate (xoff AS _FLOAT, yoff AS _FLOAT)
+SUB translate (xoff AS SINGLE, yoff AS SINGLE)
     p5Canvas.xOffset = p5Canvas.xOffset + xoff
     p5Canvas.yOffset = p5Canvas.yOffset + yoff
 END SUB
@@ -649,7 +669,7 @@ SUB CircleFill (CX AS LONG, CY AS LONG, R AS LONG, C AS _UNSIGNED LONG)
 
 END SUB
 
-SUB RoundRectFill (x AS _FLOAT, y AS _FLOAT, x1 AS _FLOAT, y1 AS _FLOAT, r AS _FLOAT, c AS _UNSIGNED LONG)
+SUB RoundRectFill (x AS SINGLE, y AS SINGLE, x1 AS SINGLE, y1 AS SINGLE, r AS SINGLE, c AS _UNSIGNED LONG)
     'This sub from _vincent at the #qb64 chatroom on freenode.net
     LINE (x, y + r)-(x1, y1 - r), c, BF
 
@@ -672,11 +692,11 @@ SUB RoundRectFill (x AS _FLOAT, y AS _FLOAT, x1 AS _FLOAT, y1 AS _FLOAT, r AS _F
     LOOP
 END SUB
 
-SUB p5line (__x1 AS _FLOAT, __y1 AS _FLOAT, __x2 AS _FLOAT, __y2 AS _FLOAT)
-    DIM x1 AS _FLOAT, y1 AS _FLOAT, x2 AS _FLOAT, y2 AS _FLOAT
-    DIM dx AS _FLOAT, dy AS _FLOAT, d AS _FLOAT
-    DIM dxx AS _FLOAT, dyy AS _FLOAT
-    DIM i AS _FLOAT
+SUB p5line (__x1 AS SINGLE, __y1 AS SINGLE, __x2 AS SINGLE, __y2 AS SINGLE)
+    DIM x1 AS SINGLE, y1 AS SINGLE, x2 AS SINGLE, y2 AS SINGLE
+    DIM dx AS SINGLE, dy AS SINGLE, d AS SINGLE
+    DIM dxx AS SINGLE, dyy AS SINGLE
+    DIM i AS SINGLE
 
     IF NOT p5Canvas.doStroke THEN EXIT SUB
 
@@ -695,16 +715,16 @@ SUB p5line (__x1 AS _FLOAT, __y1 AS _FLOAT, __x2 AS _FLOAT, __y2 AS _FLOAT)
     NEXT
 END SUB
 
-SUB p5point (x AS _FLOAT, y AS _FLOAT)
+SUB p5point (x AS SINGLE, y AS SINGLE)
     IF NOT p5Canvas.doStroke THEN EXIT SUB
 
     CircleFill x + p5Canvas.xOffset, y + p5Canvas.yOffset, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
 END SUB
 
-SUB p5ellipse (__x AS _FLOAT, __y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
-    DIM i AS _FLOAT
-    DIM x AS _FLOAT, y AS _FLOAT
-    DIM xx AS _FLOAT, yy AS _FLOAT
+SUB p5ellipse (__x AS SINGLE, __y AS SINGLE, xr AS SINGLE, yr AS SINGLE)
+    DIM i AS SINGLE
+    DIM x AS SINGLE, y AS SINGLE
+    DIM xx AS SINGLE, yy AS SINGLE
 
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
 
@@ -744,47 +764,47 @@ SUB p5ellipse (__x AS _FLOAT, __y AS _FLOAT, xr AS _FLOAT, yr AS _FLOAT)
 END SUB
 
 'draw a triangle by joining 3 differents location
-SUB p5triangle (__x1##, __y1##, __x2##, __y2##, __x3##, __y3##)
-    DIM x1##, y1##, x2##, y2##, x3##, y3##
+SUB p5triangle (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
+    DIM x1!, y1!, x2!, y2!, x3!, y3!
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
 
     DIM bc AS _UNSIGNED LONG
 
-    x1## = __x1## + p5Canvas.xOffset
-    y1## = __y1## + p5Canvas.yOffset
-    x2## = __x2## + p5Canvas.xOffset
-    y2## = __y2## + p5Canvas.yOffset
-    x3## = __x3## + p5Canvas.xOffset
-    y3## = __y3## + p5Canvas.yOffset
+    x1! = __x1! + p5Canvas.xOffset
+    y1! = __y1! + p5Canvas.yOffset
+    x2! = __x2! + p5Canvas.xOffset
+    y2! = __y2! + p5Canvas.yOffset
+    x3! = __x3! + p5Canvas.xOffset
+    y3! = __y3! + p5Canvas.yOffset
 
     internalp5makeTempImage
 
     IF p5Canvas.doStroke THEN
-        p5line x1##, y1##, x2##, y2##
-        p5line x2##, y2##, x3##, y3##
-        p5line x3##, y3##, x1##, y1##
+        p5line x1!, y1!, x2!, y2!
+        p5line x2!, y2!, x3!, y3!
+        p5line x3!, y3!, x1!, y1!
     ELSE
         p5Canvas.strokeA = p5Canvas.fill
         p5Canvas.doStroke = true
-        p5line x1##, y1##, x2##, y2##
-        p5line x2##, y2##, x3##, y3##
-        p5line x3##, y3##, x1##, y1##
+        p5line x1!, y1!, x2!, y2!
+        p5line x2!, y2!, x3!, y3!
+        p5line x3!, y3!, x1!, y1!
         noStroke
     END IF
 
     IF p5Canvas.doFill THEN
-        avgX## = (x1## + x2## + x3##) / 3
-        IF avgX## > _WIDTH - 1 THEN avgX## = _WIDTH - 1
-        IF avgX## < 0 THEN avgX## = 0
+        avgX! = (x1! + x2! + x3!) / 3
+        IF avgX! > _WIDTH - 1 THEN avgX! = _WIDTH - 1
+        IF avgX! < 0 THEN avgX! = 0
 
-        avgY## = (y1## + y2## + y3##) / 3
-        IF avgY## > _HEIGHT - 1 THEN avgY## = _HEIGHT - 1
-        IF avgY## < 0 THEN avgY## = 0
+        avgY! = (y1! + y2! + y3!) / 3
+        IF avgY! > _HEIGHT - 1 THEN avgY! = _HEIGHT - 1
+        IF avgY! < 0 THEN avgY! = 0
 
         IF p5Canvas.doStroke THEN
-            PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.stroke
+            PAINT (avgX!, avgY!), p5Canvas.fill, p5Canvas.stroke
         ELSE
-            PAINT (avgX##, avgY##), p5Canvas.fill, p5Canvas.fill
+            PAINT (avgX!, avgY!), p5Canvas.fill, p5Canvas.fill
         END IF
         _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
     END IF
@@ -798,65 +818,65 @@ END SUB
 
 'draw a triangle by joining 3 different angles from the center point with
 'a given size
-SUB p5triangleC (__centerX##, __centerY##, __ang1##, __ang2##, __ang3##, size##)
-    DIM x1##, y1##, x2##, y2##, x3##, y3##
-    DIM ang1##, ang2##, ang3##
-    DIM centerX##, centerY##
+SUB p5triangleC (__centerX!, __centerY!, __ang1!, __ang2!, __ang3!, size!)
+    DIM x1!, y1!, x2!, y2!, x3!, y3!
+    DIM ang1!, ang2!, ang3!
+    DIM centerX!, centerY!
 
-    centerX## = __centerX## + p5Canvas.xOffset
-    centerY## = __centerY## + p5Canvas.yOffset
+    centerX! = __centerX! + p5Canvas.xOffset
+    centerY! = __centerY! + p5Canvas.yOffset
 
     IF p5Canvas.angleMode = RADIANS THEN
-        ang1## = __ang1##
-        ang2## = __ang2##
-        ang3## = __ang3##
+        ang1! = __ang1!
+        ang2! = __ang2!
+        ang3! = __ang3!
     ELSE
-        ang1## = _D2R(__ang1##)
-        ang2## = _D2R(__ang2##)
-        ang3## = _D2R(__ang3##)
+        ang1! = _D2R(__ang1!)
+        ang2! = _D2R(__ang2!)
+        ang3! = _D2R(__ang3!)
     END IF
 
-    IF ang1## < TWO_PI THEN
-        x1## = centerX## - size## * COS(ang1##)
-        y1## = centerY## + size## * SIN(ang1##)
+    IF ang1! < TWO_PI THEN
+        x1! = centerX! - size! * COS(ang1!)
+        y1! = centerY! + size! * SIN(ang1!)
     END IF
 
-    IF ang2## < TWO_PI THEN
-        x2## = centerX## - size## * COS(ang2##)
-        y2## = centerY## - size## * SIN(ang2##)
+    IF ang2! < TWO_PI THEN
+        x2! = centerX! - size! * COS(ang2!)
+        y2! = centerY! - size! * SIN(ang2!)
     END IF
 
-    IF ang3## < TWO_PI THEN
-        x3## = centerX## + size## * COS(ang3##)
-        y3## = centerY## - size## * SIN(ang3##)
+    IF ang3! < TWO_PI THEN
+        x3! = centerX! + size! * COS(ang3!)
+        y3! = centerY! - size! * SIN(ang3!)
     END IF
 
-    p5triangle x1##, y1##, x2##, y2##, x3##, y3##
+    p5triangle x1!, y1!, x2!, y2!, x3!, y3!
 END SUB
 
 'draws a rectangle
-SUB p5rect (x##, y##, __width##, __height##)
-    DIM width##, height##
+SUB p5rect (x!, y!, __wi!, __he!)
+    DIM wi!, he!
 
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
 
-    width## = __width##
-    height## = __height##
+    wi! = __wi!
+    he! = __he!
 
     internalp5makeTempImage
 
     IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CORNERS THEN
         'default mode
-        x1## = x## + p5Canvas.xOffset
-        y1## = y## + p5Canvas.yOffset
+        x1! = x! + p5Canvas.xOffset
+        y1! = y! + p5Canvas.yOffset
 
         IF p5Canvas.rectMode = CORNERS THEN
-            width## = width## + p5Canvas.xOffset
-            height## = height## + p5Canvas.yOffset
+            wi! = wi! + p5Canvas.xOffset
+            he! = he! + p5Canvas.yOffset
         END IF
     ELSEIF p5Canvas.rectMode = CENTER THEN
-        x1## = x## - width## / 2 + p5Canvas.xOffset
-        y1## = y## - height## / 2 + p5Canvas.yOffset
+        x1! = x! - wi! / 2 + p5Canvas.xOffset
+        y1! = y! - he! / 2 + p5Canvas.yOffset
     END IF
 
     DIM tempColor~&
@@ -864,63 +884,63 @@ SUB p5rect (x##, y##, __width##, __height##)
 
     IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CENTER THEN
         IF p5Canvas.doStroke THEN
-            LINE (x1## - _CEIL(p5Canvas.strokeWeight / 2), y1## - _CEIL(p5Canvas.strokeWeight / 2))-(x1## + width## + _CEIL(p5Canvas.strokeWeight / 2) - 1, y1## + height## + _CEIL(p5Canvas.strokeWeight / 2) - 1), p5Canvas.strokeA, BF
-            LINE (x1## + _CEIL(p5Canvas.strokeWeight / 2), y1## + _CEIL(p5Canvas.strokeWeight / 2))-(x1## + width## - _CEIL(p5Canvas.strokeWeight / 2) - 1, y1## + height## - _CEIL(p5Canvas.strokeWeight / 2) - 1), tempColor~&, BF
+            LINE (x1! - _CEIL(p5Canvas.strokeWeight / 2), y1! - _CEIL(p5Canvas.strokeWeight / 2))-(x1! + wi! + _CEIL(p5Canvas.strokeWeight / 2) - 1, y1! + he! + _CEIL(p5Canvas.strokeWeight / 2) - 1), p5Canvas.strokeA, BF
+            LINE (x1! + _CEIL(p5Canvas.strokeWeight / 2), y1! + _CEIL(p5Canvas.strokeWeight / 2))-(x1! + wi! - _CEIL(p5Canvas.strokeWeight / 2) - 1, y1! + he! - _CEIL(p5Canvas.strokeWeight / 2) - 1), tempColor~&, BF
             _CLEARCOLOR tempColor~&
         END IF
 
         IF p5Canvas.doFill THEN
             IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
-                LINE (x1##, y1##)-STEP(width## - 1, height## - 1), tempColor~&, BF
+                LINE (x1!, y1!)-STEP(wi! - 1, he! - 1), tempColor~&, BF
                 _CLEARCOLOR tempColor~&
             END IF
 
-            LINE (x1##, y1##)-STEP(width## - 1, height## - 1), p5Canvas.fillA, BF
+            LINE (x1!, y1!)-STEP(wi! - 1, he! - 1), p5Canvas.fillA, BF
         END IF
     ELSE
         'CORNERS - consider width and height values as coordinates instead
         IF p5Canvas.doStroke THEN
-            LINE (x1## - _CEIL(p5Canvas.strokeWeight / 2), y1## - _CEIL(p5Canvas.strokeWeight / 2))-(width## + _CEIL(p5Canvas.strokeWeight / 2) - 1, height## + _CEIL(p5Canvas.strokeWeight / 2) - 1), p5Canvas.strokeA, BF
-            LINE (x1## + _CEIL(p5Canvas.strokeWeight / 2), y1## + _CEIL(p5Canvas.strokeWeight / 2))-(width## - _CEIL(p5Canvas.strokeWeight / 2) - 1, height## - _CEIL(p5Canvas.strokeWeight / 2) - 1), tempColor~&, BF
+            LINE (x1! - _CEIL(p5Canvas.strokeWeight / 2), y1! - _CEIL(p5Canvas.strokeWeight / 2))-(wi! + _CEIL(p5Canvas.strokeWeight / 2) - 1, he! + _CEIL(p5Canvas.strokeWeight / 2) - 1), p5Canvas.strokeA, BF
+            LINE (x1! + _CEIL(p5Canvas.strokeWeight / 2), y1! + _CEIL(p5Canvas.strokeWeight / 2))-(wi! - _CEIL(p5Canvas.strokeWeight / 2) - 1, he! - _CEIL(p5Canvas.strokeWeight / 2) - 1), tempColor~&, BF
             _CLEARCOLOR tempColor~&
         END IF
 
         IF p5Canvas.doFill THEN
             IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
-                LINE (x1##, y1##)-(width##, height##), tempColor~&, BF
+                LINE (x1!, y1!)-(wi!, he!), tempColor~&, BF
                 _CLEARCOLOR tempColor~&
             END IF
 
-            LINE (x1##, y1##)-(width##, height##), p5Canvas.fillA, BF
+            LINE (x1!, y1!)-(wi!, he!), p5Canvas.fillA, BF
         END IF
     END IF
 
     internalp5displayTempImage
 END SUB
 
-'draws a rectangle with rounded corners (r## is the amount)
-SUB p5rectB (x##, y##, __width##, __height##, r##)
-    DIM width##, height##
+'draws a rectangle with rounded corners (r! is the amount)
+SUB p5rectB (x!, y!, __wi!, __he!, r!)
+    DIM wi!, he!
 
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
 
-    width## = __width##
-    height## = __height##
+    wi! = __wi!
+    he! = __he!
 
     internalp5makeTempImage
 
     IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CORNERS THEN
         'default mode
-        x1## = x## + p5Canvas.xOffset
-        y1## = y## + p5Canvas.yOffset
+        x1! = x! + p5Canvas.xOffset
+        y1! = y! + p5Canvas.yOffset
 
         IF p5Canvas.rectMode = CORNERS THEN
-            width## = width## + p5Canvas.xOffset
-            height## = height## + p5Canvas.yOffset
+            wi! = wi! + p5Canvas.xOffset
+            he! = he! + p5Canvas.yOffset
         END IF
     ELSEIF p5Canvas.rectMode = CENTER THEN
-        x1## = x## - width## / 2 + p5Canvas.xOffset
-        y1## = y## - height## / 2 + p5Canvas.yOffset
+        x1! = x! - wi! / 2 + p5Canvas.xOffset
+        y1! = y! - he! / 2 + p5Canvas.yOffset
     END IF
 
     DIM tempColor~&
@@ -928,39 +948,39 @@ SUB p5rectB (x##, y##, __width##, __height##, r##)
 
     IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CENTER THEN
         IF p5Canvas.doStroke THEN
-            RoundRectFill x1## - _CEIL(p5Canvas.strokeWeight / 2), y1## - _CEIL(p5Canvas.strokeWeight / 2), x1## + width## + _CEIL(p5Canvas.strokeWeight / 2), y1## + height## + _CEIL(p5Canvas.strokeWeight / 2), r##, p5Canvas.stroke
+            RoundRectFill x1! - _CEIL(p5Canvas.strokeWeight / 2), y1! - _CEIL(p5Canvas.strokeWeight / 2), x1! + wi! + _CEIL(p5Canvas.strokeWeight / 2), y1! + he! + _CEIL(p5Canvas.strokeWeight / 2), r!, p5Canvas.stroke
             _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
 
-            RoundRectFill x1## + _CEIL(p5Canvas.strokeWeight / 2), y1## + _CEIL(p5Canvas.strokeWeight / 2), x1## + width## - _CEIL(p5Canvas.strokeWeight / 2), y1## + height## - _CEIL(p5Canvas.strokeWeight / 2), r##, tempColor~&
+            RoundRectFill x1! + _CEIL(p5Canvas.strokeWeight / 2), y1! + _CEIL(p5Canvas.strokeWeight / 2), x1! + wi! - _CEIL(p5Canvas.strokeWeight / 2), y1! + he! - _CEIL(p5Canvas.strokeWeight / 2), r!, tempColor~&
             _CLEARCOLOR tempColor~&
         END IF
 
         IF p5Canvas.doFill THEN
             IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
-                RoundRectFill x1##, y1##, x1## + width## - 1, height##, r##, tempColor~&
+                RoundRectFill x1!, y1!, x1! + wi! - 1, he!, r!, tempColor~&
                 _CLEARCOLOR tempColor~&
             END IF
 
-            RoundRectFill x1##, y1##, x1## + width## - 1, y1## + height## - 1, r##, p5Canvas.fill
+            RoundRectFill x1!, y1!, x1! + wi! - 1, y1! + he! - 1, r!, p5Canvas.fill
             _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
         END IF
     ELSE
         'CORNERS - consider width and height values as coordinates instead
         IF p5Canvas.doStroke THEN
-            RoundRectFill x1## - _CEIL(p5Canvas.strokeWeight / 2), y1## - _CEIL(p5Canvas.strokeWeight / 2), width## + _CEIL(p5Canvas.strokeWeight / 2), height## + _CEIL(p5Canvas.strokeWeight / 2), r##, p5Canvas.stroke
+            RoundRectFill x1! - _CEIL(p5Canvas.strokeWeight / 2), y1! - _CEIL(p5Canvas.strokeWeight / 2), wi! + _CEIL(p5Canvas.strokeWeight / 2), he! + _CEIL(p5Canvas.strokeWeight / 2), r!, p5Canvas.stroke
             _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
 
-            RoundRectFill x1## + _CEIL(p5Canvas.strokeWeight / 2), y1## + _CEIL(p5Canvas.strokeWeight / 2), width## - _CEIL(p5Canvas.strokeWeight / 2), height## - _CEIL(p5Canvas.strokeWeight / 2), r##, tempColor~&
+            RoundRectFill x1! + _CEIL(p5Canvas.strokeWeight / 2), y1! + _CEIL(p5Canvas.strokeWeight / 2), wi! - _CEIL(p5Canvas.strokeWeight / 2), he! - _CEIL(p5Canvas.strokeWeight / 2), r!, tempColor~&
             _CLEARCOLOR tempColor~&
         END IF
 
         IF p5Canvas.doFill THEN
             IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
-                RoundRectFill x1##, y1##, width##, height##, r##, tempColor~&
+                RoundRectFill x1!, y1!, wi!, he!, r!, tempColor~&
                 _CLEARCOLOR tempColor~&
             END IF
 
-            RoundRectFill x1##, y1##, width##, height##, r##, p5Canvas.fill
+            RoundRectFill x1!, y1!, wi!, he!, r!, p5Canvas.fill
             _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
         END IF
     END IF
@@ -973,23 +993,23 @@ SUB rectMode (mode AS _BYTE)
 END SUB
 
 'draws a quadrilateral
-SUB p5quad (__x1##, __y1##, __x2##, __y2##, __x3##, __y3##, __x4##, __y4##)
-    DIM x1##, y1##, x2##, y2##, x3##, y3##, x4##, y4##
+SUB p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
+    DIM x1!, y1!, x2!, y2!, x3!, y3!, x4!, y4!
 
-    x1## = __x1## + p5Canvas.xOffset
-    y1## = __y1## + p5Canvas.yOffset
-    x2## = __x2## + p5Canvas.xOffset
-    y2## = __y2## + p5Canvas.yOffset
-    x3## = __x3## + p5Canvas.xOffset
-    y3## = __y3## + p5Canvas.yOffset
-    x4## = __x4## + p5Canvas.xOffset
-    y4## = __y4## + p5Canvas.yOffset
+    x1! = __x1! + p5Canvas.xOffset
+    y1! = __y1! + p5Canvas.yOffset
+    x2! = __x2! + p5Canvas.xOffset
+    y2! = __y2! + p5Canvas.yOffset
+    x3! = __x3! + p5Canvas.xOffset
+    y3! = __y3! + p5Canvas.yOffset
+    x4! = __x4! + p5Canvas.xOffset
+    y4! = __y4! + p5Canvas.yOffset
 
     beginShape p5LINES
-    vertex x1##, y1##
-    vertex x2##, y2##
-    vertex x3##, y3##
-    vertex x4##, y4##
+    vertex x1!, y1!
+    vertex x2!, y2!
+    vertex x3!, y3!
+    vertex x4!, y4!
     endShape p5CLOSE
 END SUB
 
@@ -1086,13 +1106,13 @@ SUB gatherInput ()
 
 END SUB
 
-SUB background (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT)
+SUB background (r AS SINGLE, g AS SINGLE, b AS SINGLE)
     IF p5Canvas.colorMode = p5HSB THEN p5Canvas.backColor = hsb(r, g, b, 255) ELSE p5Canvas.backColor = _RGB32(r, g, b)
     p5Canvas.backColorAlpha = 255
     LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColor, BF
 END SUB
 
-SUB backgroundA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
+SUB backgroundA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
     IF p5Canvas.colorMode = p5HSB THEN
         p5Canvas.backColor = hsb(r, g, b, a)
         p5Canvas.backColor = hsb(r, g, b, a)
@@ -1104,13 +1124,13 @@ SUB backgroundA (r AS _FLOAT, g AS _FLOAT, b AS _FLOAT, a AS _FLOAT)
     LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
 END SUB
 
-SUB backgroundB (b AS _FLOAT)
+SUB backgroundB (b AS SINGLE)
     p5Canvas.backColor = _RGB32(b, b, b)
     p5Canvas.backColorAlpha = 255
     LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColor, BF
 END SUB
 
-SUB backgroundBA (b AS _FLOAT, a AS _FLOAT)
+SUB backgroundBA (b AS SINGLE, a AS SINGLE)
     p5Canvas.backColor = _RGB32(b, b, b)
     p5Canvas.backColorA = _RGBA32(b, b, b, a)
     p5Canvas.backColorAlpha = constrain(a, 0, 255)
@@ -1185,7 +1205,7 @@ FUNCTION seconds& ()
     seconds& = VAL(RIGHT$(TIME$, 2))
 END SUB
 
-SUB createVector (v AS vector, x AS _FLOAT, y AS _FLOAT)
+SUB createVector (v AS vector, x AS SINGLE, y AS SINGLE)
     v.x = x
     v.y = y
 END SUB
@@ -1196,7 +1216,7 @@ SUB vector.add (v1 AS vector, v2 AS vector)
     v1.z = v1.z + v2.z
 END SUB
 
-SUB vector.addB (v1 AS vector, x2 AS _FLOAT, y2 AS _FLOAT, z2 AS _FLOAT)
+SUB vector.addB (v1 AS vector, x2 AS SINGLE, y2 AS SINGLE, z2 AS SINGLE)
     v1.x = v1.x + x2
     v1.y = v1.y + y2
     v1.z = v1.z + z2
@@ -1208,66 +1228,66 @@ SUB vector.sub (v1 AS vector, v2 AS vector)
     v1.z = v1.z - v2.z
 END SUB
 
-SUB vector.subB (v1 AS vector, x2 AS _FLOAT, y2 AS _FLOAT, z2 AS _FLOAT)
+SUB vector.subB (v1 AS vector, x2 AS SINGLE, y2 AS SINGLE, z2 AS SINGLE)
     v1.x = v1.x - x2
     v1.y = v1.y - y2
     v1.z = v1.z - z2
 END SUB
 
-SUB vector.limit (v AS vector, __max##)
+SUB vector.limit (v AS vector, __max!)
     mSq = vector.magSq(v)
-    IF mSq > __max## * __max## THEN
+    IF mSq > __max! * __max! THEN
         vector.div v, SQR(mSq)
-        vector.mult v, __max##
+        vector.mult v, __max!
     END IF
 END SUB
 
-FUNCTION vector.magSq## (v AS vector)
-    vector.magSq## = v.x * v.x + v.y * v.y + v.z * v.z
+FUNCTION vector.magSq! (v AS vector)
+    vector.magSq! = v.x * v.x + v.y * v.y + v.z * v.z
 END FUNCTION
 
-SUB vector.fromAngle (v AS vector, __angle##)
-    IF p5Canvas.angleMode = DEGREES THEN angle## = _D2R(__angle##) ELSE angle## = __angle##
+SUB vector.fromAngle (v AS vector, __angle!)
+    IF p5Canvas.angleMode = DEGREES THEN angle! = _D2R(__angle!) ELSE angle! = __angle!
 
-    v.x = COS(angle##)
-    v.y = SIN(angle##)
+    v.x = COS(angle!)
+    v.y = SIN(angle!)
 END SUB
 
-FUNCTION vector.mag## (v AS vector)
+FUNCTION vector.mag! (v AS vector)
     x = v.x
     y = v.y
     z = v.z
 
     magSq = x * x + y * y + z * z
-    vector.mag## = SQR(magSq)
+    vector.mag! = SQR(magSq)
 END FUNCTION
 
-SUB vector.setMag (v AS vector, n AS _FLOAT)
+SUB vector.setMag (v AS vector, n AS SINGLE)
     vector.normalize v
     vector.mult v, n
 END SUB
 
 SUB vector.normalize (v AS vector)
-    theMag## = vector.mag(v)
-    IF theMag## = 0 THEN EXIT SUB
+    theMag! = vector.mag(v)
+    IF theMag! = 0 THEN EXIT SUB
 
-    vector.div v, theMag##
+    vector.div v, theMag!
 END SUB
 
-SUB vector.div (v AS vector, n AS _FLOAT)
+SUB vector.div (v AS vector, n AS SINGLE)
     v.x = v.x / n
     v.y = v.y / n
     v.z = v.z / n
 END SUB
 
-SUB vector.mult (v AS vector, n AS _FLOAT)
+SUB vector.mult (v AS vector, n AS SINGLE)
     v.x = v.x * n
     v.y = v.y * n
     v.z = v.z * n
 END SUB
 
 SUB vector.random2d (v AS vector)
-    DIM angle AS _FLOAT
+    DIM angle AS SINGLE
 
     IF p5Canvas.angleMode = DEGREES THEN
         angle = p5random(0, 360)
@@ -1279,28 +1299,28 @@ SUB vector.random2d (v AS vector)
 END SUB
 
 'Use QB64's builtin _R2D
-'FUNCTION degrees## (r##)
-'    degrees## = r## * (180 / _PI)
+'FUNCTION degrees! (r!)
+'    degrees! = r! * (180 / _PI)
 'END FUNCTION
 
 'Use QB64's builtin _D2R
-'FUNCTION radians## (d##)
-'    radians## = d## * (_PI / 180)
+'FUNCTION radians! (d!)
+'    radians! = d! * (_PI / 180)
 'END FUNCTION
 
-FUNCTION p5sin## (angle##)
+FUNCTION p5sin! (angle!)
     IF p5Canvas.angleMode = RADIANS THEN
-        p5sin## = SIN(angle##)
+        p5sin! = SIN(angle!)
     ELSE
-        p5sin## = SIN(_D2R(angle##))
+        p5sin! = SIN(_D2R(angle!))
     END IF
 END FUNCTION
 
-FUNCTION p5cos## (angle##)
+FUNCTION p5cos! (angle!)
     IF p5Canvas.angleMode = RADIANS THEN
-        p5cos## = COS(angle##)
+        p5cos! = COS(angle!)
     ELSE
-        p5cos## = COS(_D2R(angle##))
+        p5cos! = COS(_D2R(angle!))
     END IF
 END FUNCTION
 
@@ -1309,45 +1329,41 @@ SUB angleMode (kind)
 END SUB
 
 'Calculate minimum value between two values
-FUNCTION min## (a##, b##)
-    IF a## < b## THEN min## = a## ELSE min## = b##
+FUNCTION min! (a!, b!)
+    IF a! < b! THEN min! = a! ELSE min! = b!
 END FUNCTION
 
 'Calculate maximum value between two values
-FUNCTION max## (a##, b##)
-    IF a## > b## THEN max## = a## ELSE max## = b##
+FUNCTION max! (a!, b!)
+    IF a! > b! THEN max! = a! ELSE max! = b!
 END FUNCTION
 
 'Constrain a value between a minimum and maximum value.
-FUNCTION constrain## (n##, low##, high##)
-    constrain## = max(min(n##, high##), low##)
+FUNCTION constrain! (n!, low!, high!)
+    constrain! = max(min(n!, high!), low!)
 END FUNCTION
 
 'Calculate the distance between two points.
-FUNCTION dist## (x1##, y1##, x2##, y2##)
-    IF x2## > x1## THEN dx## = x2## - x1## ELSE dx## = x1## - x2##
-    IF y2## > y1## THEN dy## = y2## - y1## ELSE dy## = y1## - y2##
-    dist## = SQR(dx## * dx## + dy## * dy##)
+FUNCTION dist! (x1!, y1!, x2!, y2!)
+    dist! = SQR((x2! - x1!) ^ 2 + (y2! - y1!) ^ 2)
 END FUNCTION
 
-FUNCTION distB## (v1 AS vector, v2 AS vector)
-    IF v2.x## > v1.x## THEN dx## = v2.x## - v1.x## ELSE dx## = v1.x## - v2.x##
-    IF v2.y## > v1.y## THEN dy## = v2.y## - v1.y## ELSE dy## = v1.y## - v2.y##
-    distB## = SQR(dx## * dx## + dy## * dy##)
+FUNCTION distB! (v1 AS vector, v2 AS vector)
+    distB! = dist!(v1.x, v1.y, v2.x, v2.y)
 END FUNCTION
 
-FUNCTION lerp## (start##, stp##, amt##)
-    lerp## = amt## * (stp## - start##) + start##
+FUNCTION lerp! (start!, stp!, amt!)
+    lerp! = amt! * (stp! - start!) + start!
 END FUNCTION
 
-FUNCTION lerpColor~& (c1 AS _UNSIGNED LONG, c2 AS _UNSIGNED LONG, __v##)
-    DIM v##
-    v## = constrain(__v##, 0, 1)
+FUNCTION lerpColor~& (c1 AS _UNSIGNED LONG, c2 AS _UNSIGNED LONG, __v!)
+    DIM v!
+    v! = constrain(__v!, 0, 1)
 
     IF p5Canvas.colorMode = p5RGB THEN
-        DIM r1 AS _FLOAT, g1 AS _FLOAT, b1 AS _FLOAT
-        DIM r2 AS _FLOAT, g2 AS _FLOAT, b2 AS _FLOAT
-        DIM rstep AS _FLOAT, gstep AS _FLOAT, bstep AS _FLOAT
+        DIM r1 AS SINGLE, g1 AS SINGLE, b1 AS SINGLE
+        DIM r2 AS SINGLE, g2 AS SINGLE, b2 AS SINGLE
+        DIM rstep AS SINGLE, gstep AS SINGLE, bstep AS SINGLE
 
         r1 = _RED32(c1)
         g1 = _GREEN32(c1)
@@ -1357,15 +1373,15 @@ FUNCTION lerpColor~& (c1 AS _UNSIGNED LONG, c2 AS _UNSIGNED LONG, __v##)
         g2 = _GREEN32(c2)
         b2 = _BLUE32(c2)
 
-        rstep = map(v##, 0, 1, r1, r2)
-        gstep = map(v##, 0, 1, g1, g2)
-        bstep = map(v##, 0, 1, b1, b2)
+        rstep = map(v!, 0, 1, r1, r2)
+        gstep = map(v!, 0, 1, g1, g2)
+        bstep = map(v!, 0, 1, b1, b2)
 
         lerpColor~& = _RGB32(rstep, gstep, bstep)
     ELSE
         'p5HSB lerpColor not yet available; return either
-        'of the original colors that's closer to v##
-        IF v## < .5 THEN
+        'of the original colors that's closer to v!
+        IF v! < .5 THEN
             lerpColor~& = c1
         ELSE
             lerpColor~& = c2
@@ -1373,7 +1389,7 @@ FUNCTION lerpColor~& (c1 AS _UNSIGNED LONG, c2 AS _UNSIGNED LONG, __v##)
     END IF
 END FUNCTION
 
-FUNCTION color~& (v1 AS _FLOAT, v2 AS _FLOAT, v3 AS _FLOAT)
+FUNCTION color~& (v1 AS SINGLE, v2 AS SINGLE, v3 AS SINGLE)
     IF p5Canvas.colorMode = p5RGB THEN
         color~& = _RGB32(v1, v2, v3)
     ELSEIF p5Canvas.colorMode = p5HSB THEN
@@ -1381,7 +1397,7 @@ FUNCTION color~& (v1 AS _FLOAT, v2 AS _FLOAT, v3 AS _FLOAT)
     END IF
 END FUNCTION
 
-FUNCTION colorA~& (v1 AS _FLOAT, v2 AS _FLOAT, v3 AS _FLOAT, a AS _FLOAT)
+FUNCTION colorA~& (v1 AS SINGLE, v2 AS SINGLE, v3 AS SINGLE, a AS SINGLE)
     IF p5Canvas.colorMode = p5RGB THEN
         colorA~& = _RGBA32(v1, v2, v3, a)
     ELSEIF p5Canvas.colorMode = p5HSB THEN
@@ -1389,7 +1405,7 @@ FUNCTION colorA~& (v1 AS _FLOAT, v2 AS _FLOAT, v3 AS _FLOAT, a AS _FLOAT)
     END IF
 END FUNCTION
 
-FUNCTION colorB~& (v1 AS _FLOAT)
+FUNCTION colorB~& (v1 AS SINGLE)
     IF p5Canvas.colorMode = p5RGB THEN
         colorB~& = _RGB32(v1, v1, v1)
     ELSEIF p5Canvas.colorMode = p5HSB THEN
@@ -1397,7 +1413,7 @@ FUNCTION colorB~& (v1 AS _FLOAT)
     END IF
 END FUNCTION
 
-FUNCTION colorBA~& (v1 AS _FLOAT, a AS _FLOAT)
+FUNCTION colorBA~& (v1 AS SINGLE, a AS SINGLE)
     IF p5Canvas.colorMode = p5RGB THEN
         colorBA~& = _RGBA32(v1, v1, v1, a)
     ELSEIF p5Canvas.colorMode = p5HSB THEN
@@ -1406,25 +1422,25 @@ FUNCTION colorBA~& (v1 AS _FLOAT, a AS _FLOAT)
 END FUNCTION
 
 
-FUNCTION mag## (x##, y##)
-    mag## = _HYPOT(x##, y##)
+FUNCTION mag! (x!, y!)
+    mag! = _HYPOT(x!, y!)
 END FUNCTION
 
-FUNCTION sq## (n##)
-    sq## = n## * n##
+FUNCTION sq! (n!)
+    sq! = n! * n!
 END FUNCTION
 
-FUNCTION pow## (n##, p##)
-    pow## = n## ^ p##
+FUNCTION pow! (n!, p!)
+    pow! = n! ^ p!
 END FUNCTION
 
-FUNCTION p5random## (mn##, mx##)
-    IF mn## > mx## THEN
-        tmp## = mn##
-        mn## = mx##
-        mx## = tmp##
+FUNCTION p5random! (mn!, mx!)
+    IF mn! > mx! THEN
+        tmp! = mn!
+        mn! = mx!
+        mx! = tmp!
     END IF
-    p5random## = RND * (mx## - mn##) + mn##
+    p5random! = RND * (mx! - mn!) + mn!
 END FUNCTION
 
 FUNCTION join$ (str_array$(), sep$)
