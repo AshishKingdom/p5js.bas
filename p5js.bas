@@ -1,6 +1,6 @@
 'p5js.bas by Fellippe & Ashish
 'Open source - based on p5.js (https://p5js.org/)
-'Last update 4/10/2017
+'Last update 4/14/2017
 
 RANDOMIZE TIMER
 
