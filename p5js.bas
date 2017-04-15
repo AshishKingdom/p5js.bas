@@ -81,7 +81,7 @@ REDIM SHARED p5CanvasBackup(10) AS new_p5Canvas
 'begin shape related variables
 DIM SHARED FirstVertex AS vector, PreviousVertex AS vector, shapeStrokeBackup AS _UNSIGNED LONG
 DIM SHARED shapeAllow AS _BYTE, shapeType AS LONG, shapeInit AS _BYTE, shapeTempFill AS _UNSIGNED LONG
-DIM SHARED tempShapeImage AS LONG
+DIM SHARED tempShapeImage AS LONG, p5previousDest AS LONG
 
 'loops and NoLoops
 DIM SHARED p5Loop AS _BYTE, p5frameCount AS _UNSIGNED LONG
@@ -136,7 +136,7 @@ _DISPLAY
 
 DIM a AS _BYTE 'dummy variable used to call functions that may not be there
 a = p5setup
-callDrawLoop 'run the p5draw function at least once (in case noLoop was used in p5setup)
+_DISPLAY
 
 DO
     IF frameRate THEN _LIMIT frameRate
@@ -283,13 +283,18 @@ FUNCTION map! (value!, minRange!, maxRange!, newMinRange!, newMaxRange!)
 END FUNCTION
 
 SUB internalp5makeTempImage
-    _DEST tempShapeImage
-    CLS , 0 'clear it and make it transparent
+    p5previousDest = _DEST
+    IF p5previousDest = p5Canvas.imgHandle THEN
+        _DEST tempShapeImage
+        CLS , 0 'clear it and make it transparent
+    END IF
 END SUB
 
 SUB internalp5displayTempImage
-    _DEST 0
-    _PUTIMAGE (0, 0), tempShapeImage
+    IF p5previousDest = p5Canvas.imgHandle THEN
+        _DEST p5previousDest
+        _PUTIMAGE (0, 0), tempShapeImage
+    END IF
 END SUB
 
 SUB beginShape (kind AS LONG)

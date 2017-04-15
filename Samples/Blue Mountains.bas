@@ -1,4 +1,4 @@
-DIM SHARED clouds~&, fade~&, further~&, closer~&, mist~&
+DIM SHARED clouds~&, fade~&, further~&, closer~&, mist~&, kk&
 
 'original code in javaScript is at last
 'coded in Qb64 by Ashish
@@ -8,29 +8,32 @@ DIM SHARED clouds~&, fade~&, further~&, closer~&, mist~&
 FUNCTION p5setup ()
     createCanvas 800, 400 'create a 800x400 canvas
     _TITLE "Blue Mountains" 'give title to our sketch
+    kk& = createImage(800, 400) 'create a new image
     'color settings
     clouds~& = _RGB(200, 200, 200)
     fade~& = _RGB(100, 100, 100)
     further~& = _RGB(170, 170, 255)
     closer~& = _RGB(50, 50, 100)
     mist~& = _RGB(255, 255, 255)
-    strokeB 255 'this will display text in white. It just change stroke color
-    backgroundB 0 'set background to 0.
-    text "Click to draw new mountains", 0, 0
-    _DISPLAY
 END FUNCTION
 
 FUNCTION p5draw ()
-    kk& = createImage(800, 800) 'create a new image
+    image kk&, 0, 0
+    strokeB 255
+    textAlign CENTER
+    text "Generating view...", _WIDTH / 2, _HEIGHT / 2 + textHeight
+    _DISPLAY
     _DEST kk& 'we'll draw our mountains on here
     background 162, 63.75, 229.5
     fadeB fade~&
     mountains closer~&, further~&, mist~&
     cloudsB clouds~&
     _DEST 0 'now, it's time to show them to user
-    _PUTIMAGE (0, 0), kk&, 0, (0, 0)-(800, 400)
-    _FREEIMAGE kk& 'free this image, to prevent memory erros
+    image kk&, 0, 0
     makeSmooth 'applying anti-aliasing
+    strokeC lerpColor(further~&, closer~&, .1)
+    textAlign RIGHT
+    text "Click to draw new mountains", _WIDTH, _HEIGHT - textHeight
     noLoop 'turn off drawing loop
 END FUNCTION
 
@@ -64,6 +67,7 @@ SUB makeSmooth ()
         NEXT
     NEXT
 END SUB
+
 SUB fadeB (col&)
     FOR i = 0 TO _HEIGHT / 3
         alpha = map(i, 0, _HEIGHT / 3, 360, 0)
