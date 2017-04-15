@@ -21,7 +21,7 @@ FUNCTION p5setup ()
 END FUNCTION
 
 FUNCTION p5draw ()
-    kk& = createimage(800,800) 'create a new image
+    kk& = createImage(800, 800) 'create a new image
     _DEST kk& 'we'll draw our mountains on here
     background 162, 63.75, 229.5
     fadeB fade~&
@@ -29,6 +29,7 @@ FUNCTION p5draw ()
     cloudsB clouds~&
     _DEST 0 'now, it's time to show them to user
     _PUTIMAGE (0, 0), kk&, 0, (0, 0)-(800, 400)
+    _FREEIMAGE kk& 'free this image, to prevent memory erros
     makeSmooth 'applying anti-aliasing
     noLoop 'turn off drawing loop
 END FUNCTION
