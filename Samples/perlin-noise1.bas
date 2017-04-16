@@ -11,6 +11,10 @@ END FUNCTION
 FUNCTION p5draw
     backgroundB 51
 
+    textAlign CENTER
+    strokeb 255
+    text "Move your mouse", _WIDTH / 2, _HEIGHT / 2
+
     FOR x = 0 TO _WIDTH
         noiseVal = noise((_MOUSEX + x) * noiseScale, _MOUSEY * noiseScale, 0)
         strokeB noiseVal * 255

@@ -8,7 +8,7 @@ END TYPE
 
 FUNCTION p5setup ()
     createCanvas 720, 400
-    _TITLE "HSB Balls"
+    title "HSB Balls"
     noStroke
     frameRate = 60
     FOR i = 0 TO UBOUND(myball)

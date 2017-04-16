@@ -3,7 +3,7 @@ DIM SHARED yoff AS _FLOAT
 '$include:'../p5js.bas'
 
 FUNCTION p5setup ()
-    _TITLE "Blobby"
+    title "Blobby"
     createCanvas 400, 400
     stroke 255, 255, 255
     strokeWeight 2

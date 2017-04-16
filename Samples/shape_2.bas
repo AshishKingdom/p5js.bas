@@ -1,7 +1,7 @@
 '$include:'../p5js.bas'
 
 FUNCTION p5setup ()
-    _TITLE "Star or double diamond?"
+    title "Star or double diamond?"
     createCanvas 400, 400
     strokeWeight 4
     strokeB 255

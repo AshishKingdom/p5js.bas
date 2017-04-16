@@ -7,7 +7,7 @@ DIM SHARED clouds~&, fade~&, further~&, closer~&, mist~&, kk&
 
 FUNCTION p5setup ()
     createCanvas 800, 400 'create a 800x400 canvas
-    _TITLE "Blue Mountains" 'give title to our sketch
+    title "Blue Mountains" 'give title to our sketch
     kk& = createImage(800, 400) 'create a new image
     'color settings
     clouds~& = _RGB(200, 200, 200)

@@ -3,7 +3,7 @@ DIM SHARED Size
 
 FUNCTION p5setup
     createCanvas 400, 400
-    _TITLE "Complex shapes interaction"
+    title "Complex shapes interaction"
     strokeWeight 2
     Size = 30
 END FUNCTION

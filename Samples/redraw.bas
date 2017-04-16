@@ -10,12 +10,12 @@ DIM SHARED x
 
 FUNCTION p5setup ()
     createCanvas 400, 400
-    noLoop
 END FUNCTION
 
 FUNCTION p5draw ()
     backgroundB 204
     p5line x, 0, x, _HEIGHT
+    noLoop
 END FUNCTION
 
 FUNCTION mousePressed

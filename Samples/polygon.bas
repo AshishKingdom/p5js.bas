@@ -4,7 +4,7 @@ DIM SHARED di AS INTEGER
 '$include:'..\p5js.bas'
 
 FUNCTION p5setup
-    _TITLE "Polygon drawing"
+    title "Polygon drawing"
     createCanvas 600, 600
     stroke 255, 255, 255
     strokeWeight 2

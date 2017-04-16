@@ -9,7 +9,7 @@ END TYPE
 
 FUNCTION p5setup
     createCanvas 400, 400
-    _TITLE "Mouse buttons test"
+    title "Mouse buttons test"
     strokeWeight 2
     totalClicks = -1
 END FUNCTION

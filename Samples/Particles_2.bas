@@ -11,7 +11,7 @@ TYPE Particle
 END TYPE
 
 FUNCTION p5setup ()
-    _TITLE "Particles"
+    title "Particles"
     createCanvas 500, 500
     stroke 255, 255, 0
     strokeWeight 2

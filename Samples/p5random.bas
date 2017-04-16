@@ -5,7 +5,6 @@ DIM SHARED Sample
 
 FUNCTION p5setup
     createCanvas 400, 400
-    noLoop
 END FUNCTION
 
 FUNCTION p5draw
@@ -24,6 +23,7 @@ FUNCTION p5draw
             p5line _WIDTH / 2, i, _WIDTH / 2 + r, i
         NEXT
     END IF
+    noLoop
 END FUNCTION
 
 FUNCTION keyPressed

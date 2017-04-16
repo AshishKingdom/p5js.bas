@@ -13,7 +13,7 @@ END TYPE
 
 FUNCTION p5setup ()
     createCanvas 720, 400
-    _TITLE "Simple particle system"
+    title "Simple particle system"
     systemOrigin.x = _WIDTH / 2
     systemOrigin.y = 50
     strokeWeight 4

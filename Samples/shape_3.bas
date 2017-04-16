@@ -1,7 +1,7 @@
 '$include:'../p5js.bas'
 
 FUNCTION p5setup ()
-    _TITLE "Lightning"
+    title "Lightning"
     createCanvas 400, 400
     strokeWeight 4
     strokeB 255

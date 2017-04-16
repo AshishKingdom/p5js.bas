@@ -5,7 +5,7 @@ DIM SHARED inc AS _FLOAT
 FUNCTION p5setup
     createCanvas 400, 400
 
-    _TITLE "Graphing Perlin noise"
+    title "Graphing Perlin noise"
 
     strokeWeight 3
     stroke 255, 255, 255

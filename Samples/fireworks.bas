@@ -18,7 +18,7 @@ END TYPE
 
 FUNCTION p5setup
     createCanvas 640, 480
-    _TITLE "Fireworks display"
+    title "Fireworks display"
     strokeWeight 2
     createVector gravity, 0, .2
 
