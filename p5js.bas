@@ -1303,15 +1303,13 @@ SUB vector.random2d (v AS vector)
     vector.fromAngle v, angle
 END SUB
 
-'Use QB64's builtin _R2D
-'FUNCTION degrees! (r!)
-'    degrees! = r! * (180 / _PI)
-'END FUNCTION
+FUNCTION p5degrees! (r!)
+    p5degrees! = _R2D(r!)
+END FUNCTION
 
-'Use QB64's builtin _D2R
-'FUNCTION radians! (d!)
-'    radians! = d! * (_PI / 180)
-'END FUNCTION
+FUNCTION p5radians! (d!)
+    p5radians! = _D2R(d!)
+END FUNCTION
 
 FUNCTION p5sin! (angle!)
     IF p5Canvas.angleMode = RADIANS THEN
@@ -1441,9 +1439,7 @@ END FUNCTION
 
 FUNCTION p5random! (mn!, mx!)
     IF mn! > mx! THEN
-        tmp! = mn!
-        mn! = mx!
-        mx! = tmp!
+        SWAP mn!, mx!
     END IF
     p5random! = RND * (mx! - mn!) + mn!
 END FUNCTION
