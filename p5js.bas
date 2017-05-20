@@ -171,7 +171,10 @@ FUNCTION createImage& (w AS INTEGER, h AS INTEGER)
     createImage& = _NEWIMAGE(w, h, 32)
 END FUNCTION
 
-SUB image (img&, x AS INTEGER, y AS INTEGER)
+SUB image (img&, __x AS INTEGER, __y AS INTEGER)
+    x = __x + p5Canvas.xOffset
+    y = __y + p5Canvas.yOffset
+
     _PUTIMAGE (x, y), img&, 0
 END SUB
 
