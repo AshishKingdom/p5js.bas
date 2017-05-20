@@ -730,7 +730,7 @@ SUB p5ellipse (__x AS SINGLE, __y AS SINGLE, xr AS SINGLE, yr AS SINGLE)
     DIM i AS SINGLE
     DIM x AS SINGLE, y AS SINGLE
     DIM xx AS SINGLE, yy AS SINGLE
-
+	internalp5makeTempImage
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
 
     x = __x + p5Canvas.xOffset
@@ -758,7 +758,7 @@ SUB p5ellipse (__x AS SINGLE, __y AS SINGLE, xr AS SINGLE, yr AS SINGLE)
         'no fill
         DIM tempColor~&
         IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
-        IF xr <> yr THEN
+		IF xr <> yr THEN
             CIRCLE (x, y), xr - p5Canvas.strokeWeight / 2, tempColor~&, , , xr / yr
             PAINT (x, y), tempColor~&, tempColor~&
         ELSE
@@ -766,13 +766,14 @@ SUB p5ellipse (__x AS SINGLE, __y AS SINGLE, xr AS SINGLE, yr AS SINGLE)
         END IF
         _CLEARCOLOR tempColor~&
     END IF
+	internalp5displayTempImage
 END SUB
 
 'draw a triangle by joining 3 differents location
 SUB p5triangle (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     DIM x1!, y1!, x2!, y2!, x3!, y3!
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
-
+	internalp5makeTempImage
     DIM bc AS _UNSIGNED LONG
 
     x1! = __x1! + p5Canvas.xOffset
