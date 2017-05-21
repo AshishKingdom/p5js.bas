@@ -362,8 +362,8 @@ SUB endShape (closed)
 
     'fill with color
     IF p5Canvas.doFill AND shapeType = p5LINES AND closed = p5CLOSE THEN
-        ' _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-        ' _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+         _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+         _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
         PAINT (0, 0), shapeTempFill, p5Canvas.strokeA
         PAINT (_WIDTH - 1, 0), shapeTempFill, p5Canvas.strokeA
         PAINT (0, _HEIGHT - 1), shapeTempFill, p5Canvas.strokeA
