@@ -307,8 +307,7 @@ SUB beginShape (kind AS LONG)
     shapeAllow = true
     shapeType = kind
     shapeStrokeBackup = p5Canvas.strokeA
-    p5Canvas.strokeA = p5Canvas.stroke
-    shapeTempFill = _RGB32((_RED32(p5Canvas.stroke) + _RED32(p5Canvas.fill)) / 2, (_GREEN32(p5Canvas.stroke) + _GREEN32(p5Canvas.fill)) / 2, (_BLUE32(p5Canvas.stroke) + _BLUE32(p5Canvas.fill)) / 2)
+    shapeTempFill = _RGB32((_RED32(p5Canvas.strokeA) + _RED32(p5Canvas.fillA)) / 2, (_GREEN32(p5Canvas.strokeA) + _GREEN32(p5Canvas.fillA)) / 2, (_BLUE32(p5Canvas.strokeA) + _BLUE32(p5Canvas.fillA)) / 2)
 END SUB
 
 SUB vertex (__x AS SINGLE, __y AS SINGLE)
@@ -320,10 +319,21 @@ SUB vertex (__x AS SINGLE, __y AS SINGLE)
 
     IF shapeInit THEN
         IF shapeType = p5POINTS THEN
-            '     IF p5Canvas.doStroke THEN CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill x, y, p5Canvas.strokeWeight / 2, shapeTempFill
-            p5point x, y
+            IF p5Canvas.doStroke THEN CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.strokeA ELSE CircleFill x, y, p5Canvas.strokeWeight / 2, shapeTempFill
+            'p5point x, y
         ELSEIF shapeType = p5LINES THEN
-            IF NOT p5Canvas.doStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(x, y), p5Canvas.stroke ELSE p5line PreviousVertex.x, PreviousVertex.y, x, y
+            IF NOT p5Canvas.doStroke THEN
+                LINE (PreviousVertex.x, PreviousVertex.y)-(x, y), p5Canvas.strokeA
+            ELSE
+                dx = PreviousVertex.x - x
+                dy = PreviousVertex.y - y
+                d = SQR(dx * dx + dy * dy)
+                FOR i = 0 TO d
+                    CircleFill dxx + x, dyy + y, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
+                    dxx = dxx + dx / d
+                    dyy = dyy + dy / d
+                NEXT
+            END IF
         END IF
     END IF
     IF shapeAllow AND NOT shapeInit THEN
@@ -352,14 +362,14 @@ SUB endShape (closed)
 
     'fill with color
     IF p5Canvas.doFill AND shapeType = p5LINES AND closed = p5CLOSE THEN
+        ' _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+        ' _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
         PAINT (0, 0), shapeTempFill, p5Canvas.strokeA
         PAINT (_WIDTH - 1, 0), shapeTempFill, p5Canvas.strokeA
         PAINT (0, _HEIGHT - 1), shapeTempFill, p5Canvas.strokeA
         PAINT (_WIDTH - 1, _HEIGHT - 1), shapeTempFill, p5Canvas.strokeA
         _CLEARCOLOR shapeTempFill
-        IF NOT p5Canvas.doStroke THEN _CLEARCOLOR p5Canvas.stroke
-        _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-        _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+        IF NOT p5Canvas.doStroke THEN _CLEARCOLOR p5Canvas.strokeA
     END IF
     p5Canvas.strokeA = shapeStrokeBackup
     'it's time to reset all varibles!!
