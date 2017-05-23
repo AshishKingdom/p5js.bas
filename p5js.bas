@@ -16,6 +16,7 @@ END DECLARE
 
 DECLARE LIBRARY
     FUNCTION millis~& ALIAS GetTicks
+	sub glutSetCursor (byval style&)
 END DECLARE
 
 'p5 constants
@@ -32,6 +33,18 @@ CONST CORNER = 6
 CONST CORNERS = 7
 CONST p5RGB = 8
 CONST p5HSB = 9
+const CURSOR_NORMAL = 1
+const CURSOR_HAND = 2
+const CURSOR_HELP = 4
+const CURSOR_CYCLE = 7
+const CURSOR_TEXT = 8
+const CURSOR_CROSSHAIR = 3
+const CURSOR_UP_DOWN = 10
+const CURSOR_LEFT_RIGHT = 11
+const CURSOR_LEFT_RIGHT_CORNER = 16
+const CURSOR_RIGHT_LEFT_CORNER = 17
+const CURSOR_MOVE = 5
+const CURSOR_NONE = 23
 
 'boolean constants
 CONST true = -1, false = NOT true
@@ -1819,6 +1832,17 @@ FUNCTION hsb~& (__H AS _FLOAT, __S AS _FLOAT, __B AS _FLOAT, A AS _FLOAT)
     END SELECT
 
 END FUNCTION
+
+function brightness! (col~&)
+    r = _red32(col~&)
+	g = _green32(col~&)
+	b = _blue32(col~&)
+	brightness! = ((r + g + b) / (255 * 3)) * 255
+end function
+
+sub cursor (kind)
+if kind = CURSOR_NONE then _mousehide else glutSetCursor kind
+end sub
 
 SUB colorMode (kind AS INTEGER)
     p5Canvas.colorMode = kind
