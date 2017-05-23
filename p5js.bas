@@ -16,7 +16,7 @@ END DECLARE
 
 DECLARE LIBRARY
     FUNCTION millis~& ALIAS GetTicks
-	sub glutSetCursor (byval style&)
+    SUB glutSetCursor (BYVAL style&)
 END DECLARE
 
 'p5 constants
@@ -33,18 +33,18 @@ CONST CORNER = 6
 CONST CORNERS = 7
 CONST p5RGB = 8
 CONST p5HSB = 9
-const CURSOR_NORMAL = 1
-const CURSOR_HAND = 2
-const CURSOR_HELP = 4
-const CURSOR_CYCLE = 7
-const CURSOR_TEXT = 8
-const CURSOR_CROSSHAIR = 3
-const CURSOR_UP_DOWN = 10
-const CURSOR_LEFT_RIGHT = 11
-const CURSOR_LEFT_RIGHT_CORNER = 16
-const CURSOR_RIGHT_LEFT_CORNER = 17
-const CURSOR_MOVE = 5
-const CURSOR_NONE = 23
+CONST CURSOR_NORMAL = 1
+CONST CURSOR_HAND = 2
+CONST CURSOR_HELP = 4
+CONST CURSOR_CYCLE = 7
+CONST CURSOR_TEXT = 8
+CONST CURSOR_CROSSHAIR = 3
+CONST CURSOR_UP_DOWN = 10
+CONST CURSOR_LEFT_RIGHT = 11
+CONST CURSOR_LEFT_RIGHT_CORNER = 16
+CONST CURSOR_RIGHT_LEFT_CORNER = 17
+CONST CURSOR_MOVE = 5
+CONST CURSOR_NONE = 23
 
 'boolean constants
 CONST true = -1, false = NOT true
@@ -375,8 +375,8 @@ SUB endShape (closed)
 
     'fill with color
     IF p5Canvas.doFill AND shapeType = p5LINES AND closed = p5CLOSE THEN
-         _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-         _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+        _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+        _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
         PAINT (0, 0), shapeTempFill, p5Canvas.strokeA
         PAINT (_WIDTH - 1, 0), shapeTempFill, p5Canvas.strokeA
         PAINT (0, _HEIGHT - 1), shapeTempFill, p5Canvas.strokeA
@@ -1833,16 +1833,16 @@ FUNCTION hsb~& (__H AS _FLOAT, __S AS _FLOAT, __B AS _FLOAT, A AS _FLOAT)
 
 END FUNCTION
 
-function brightness! (col~&)
-    r = _red32(col~&)
-	g = _green32(col~&)
-	b = _blue32(col~&)
-	brightness! = ((r + g + b) / (255 * 3)) * 255
-end function
+FUNCTION brightness! (col~&)
+    r = _RED32(col~&)
+    g = _GREEN32(col~&)
+    b = _BLUE32(col~&)
+    brightness! = ((r + g + b) / (255 * 3)) * 255
+END FUNCTION
 
-sub cursor (kind)
-if kind = CURSOR_NONE then _mousehide else glutSetCursor kind
-end sub
+SUB cursor (kind)
+    IF kind = CURSOR_NONE THEN _MOUSEHIDE ELSE glutSetCursor kind
+END SUB
 
 SUB colorMode (kind AS INTEGER)
     p5Canvas.colorMode = kind
