@@ -1837,7 +1837,8 @@ FUNCTION brightness! (col~&)
     r = _RED32(col~&)
     g = _GREEN32(col~&)
     b = _BLUE32(col~&)
-    brightness! = ((r + g + b) / (255 * 3)) * 255
+	a = _ALPHA32(col~&)
+    brightness! = ((r + g + b + a) / (255 * 4)) * 255
 END FUNCTION
 
 SUB cursor (kind)
