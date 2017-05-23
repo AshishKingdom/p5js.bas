@@ -1837,7 +1837,7 @@ FUNCTION brightness! (col~&)
     r = _RED32(col~&)
     g = _GREEN32(col~&)
     b = _BLUE32(col~&)
-	a = _ALPHA32(col~&)
+    a = _ALPHA32(col~&)
     brightness! = ((r + g + b + a) / (255 * 4)) * 255
 END FUNCTION
 
@@ -1845,51 +1845,51 @@ SUB colorMode (kind AS INTEGER)
     p5Canvas.colorMode = kind
 END SUB
 
-function hue! (col~&)
-    r! = _red32(col~&)
-	g! = _green32(col~&)
-	b! = _blue32(col~&)
-	mx! = max(max(r!, g!), b!)
-	mn! = min(min(r!, g!), b!)
-	delta! = mx! - mn!
-	if delta! <> 0 then
-	    if r! = mx! then 
-		    hue! = (g - b) / delta!
-		elseif g! = mx! then 
-		    hue! = 2 + ((b - r) / delta!)
-		elseif b! = mx! then 
-		    hue! = 4 + ((r - g) / delta!)
-		end if
-    else
-         hue! = 0   		
-	end if
-	hue! = 60 * hue!
-	if hue! < 0 then hue! = hue! + 360
-	hue! = map(hue!, 0, 360, 0, 255)
-end function
+FUNCTION hue! (col~&)
+    r! = _RED32(col~&)
+    g! = _GREEN32(col~&)
+    b! = _BLUE32(col~&)
+    mx! = max(max(r!, g!), b!)
+    mn! = min(min(r!, g!), b!)
+    delta! = mx! - mn!
+    IF delta! <> 0 THEN
+        IF r! = mx! THEN
+            hue! = (g - b) / delta!
+        ELSEIF g! = mx! THEN
+            hue! = 2 + ((b - r) / delta!)
+        ELSEIF b! = mx! THEN
+            hue! = 4 + ((r - g) / delta!)
+        END IF
+    ELSE
+        hue! = 0
+    END IF
+    hue! = 60 * hue!
+    IF hue! < 0 THEN hue! = hue! + 360
+    hue! = map(hue!, 0, 360, 0, 255)
+END FUNCTION
 
-function saturation! (col~&)
-    r! = _red32(col~&)
-	g! = _green32(col~&)
-	b! = _blue32(col~&)
-	mx! = max(max(r!, g!), b!)
-	mn! = min(min(r!, g!), b!)
-	delta! = mx! - mn!
-	if mx!<>0 then
-	    saturation! = delta! / mx!
-    else 
-	    saturation! = 0
-	end if
-	saturation! = map(saturation!, 0, 1, 0, 255)
-end function
+FUNCTION saturation! (col~&)
+    r! = _RED32(col~&)
+    g! = _GREEN32(col~&)
+    b! = _BLUE32(col~&)
+    mx! = max(max(r!, g!), b!)
+    mn! = min(min(r!, g!), b!)
+    delta! = mx! - mn!
+    IF mx! <> 0 THEN
+        saturation! = delta! / mx!
+    ELSE
+        saturation! = 0
+    END IF
+    saturation! = map(saturation!, 0, 1, 0, 255)
+END FUNCTION
 
-function lightness! (col~&)
-    r! = _red32(col~&)
-	g! = _green32(col~&)
-	b! = _blue32(col~&)
-	mx! = max(max(r!, g!), b!)
-	lightness! = mx!
-end function
+FUNCTION lightness! (col~&)
+    r! = _RED32(col~&)
+    g! = _GREEN32(col~&)
+    b! = _BLUE32(col~&)
+    mx! = max(max(r!, g!), b!)
+    lightness! = mx!
+END FUNCTION
  
 SUB cursor (kind)
     IF kind = CURSOR_NONE THEN _MOUSEHIDE ELSE glutSetCursor kind
