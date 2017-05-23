@@ -1841,12 +1841,58 @@ FUNCTION brightness! (col~&)
     brightness! = ((r + g + b + a) / (255 * 4)) * 255
 END FUNCTION
 
-SUB cursor (kind)
-    IF kind = CURSOR_NONE THEN _MOUSEHIDE ELSE glutSetCursor kind
-END SUB
-
 SUB colorMode (kind AS INTEGER)
     p5Canvas.colorMode = kind
+END SUB
+
+function hue! (col~&)
+    r! = _red32(col~&)
+	g! = _green32(col~&)
+	b! = _blue32(col~&)
+	mx! = max(max(r!, g!), b!)
+	mn! = min(min(r!, g!), b!)
+	delta! = mx! - mn!
+	if delta! <> 0 then
+	    if r! = mx! then 
+		    hue! = (g - b) / delta!
+		elseif g! = mx! then 
+		    hue! = 2 + ((b - r) / delta!)
+		elseif b! = mx! then 
+		    hue! = 4 + ((r - g) / delta!)
+		end if
+    else
+         hue! = 0   		
+	end if
+	hue! = 60 * hue!
+	if hue! < 0 then hue! = hue! + 360
+	hue! = map(hue!, 0, 360, 0, 255)
+end function
+
+function saturation! (col~&)
+    r! = _red32(col~&)
+	g! = _green32(col~&)
+	b! = _blue32(col~&)
+	mx! = max(max(r!, g!), b!)
+	mn! = min(min(r!, g!), b!)
+	delta! = mx! - mn!
+	if mx!<>0 then
+	    saturation! = delta! / mx!
+    else 
+	    saturation! = 0
+	end if
+	saturation! = map(saturation!, 0, 1, 0, 255)
+end function
+
+function lightness! (col~&)
+    r! = _red32(col~&)
+	g! = _green32(col~&)
+	b! = _blue32(col~&)
+	mx! = max(max(r!, g!), b!)
+	lightness! = mx!
+end function
+ 
+SUB cursor (kind)
+    IF kind = CURSOR_NONE THEN _MOUSEHIDE ELSE glutSetCursor kind
 END SUB
 
 'uncomment these lines below to see a simple demo
