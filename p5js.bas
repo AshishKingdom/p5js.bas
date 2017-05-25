@@ -817,15 +817,15 @@ SUB p5triangle (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     internalp5makeTempImage
 
     IF p5Canvas.doStroke THEN
-        p5line x1!, y1!, x2!, y2!
-        p5line x2!, y2!, x3!, y3!
-        p5line x3!, y3!, x1!, y1!
+        p5line __x1!, __y1!, __x2!, __y2!
+        p5line __x2!, __y2!, __x3!, __y3!
+        p5line __x3!, __y3!, __x1!, __y1!
     ELSE
         p5Canvas.strokeA = p5Canvas.fill
         p5Canvas.doStroke = true
-        p5line x1!, y1!, x2!, y2!
-        p5line x2!, y2!, x3!, y3!
-        p5line x3!, y3!, x1!, y1!
+        p5line __x1!, __y1!, __x2!, __y2!
+        p5line __x2!, __y2!, __x3!, __y3!
+        p5line __x3!, __y3!, __x1!, __y1!
         noStroke
     END IF
 
@@ -1032,6 +1032,8 @@ END SUB
 
 'draws a quadrilateral
 SUB p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
+    IF NOT p5Canvas.doStroke AND NOT p5Canvas.doFill THEN EXIT SUB
+    
     DIM x1!, y1!, x2!, y2!, x3!, y3!, x4!, y4!
 
     x1! = __x1! + p5Canvas.xOffset
@@ -1042,37 +1044,71 @@ SUB p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
     y3! = __y3! + p5Canvas.yOffset
     x4! = __x4! + p5Canvas.xOffset
     y4! = __y4! + p5Canvas.yOffset
-
-    beginShape p5LINES
-    vertex x1!, y1!
-    vertex x2!, y2!
-    vertex x3!, y3!
-    vertex x4!, y4!
-    endShape p5CLOSE
+    
+    IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
+    IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
+    
+    internalp5makeTempImage
+    IF p5Canvas.doFill THEN
+        CLS , p5Canvas.fill
+    END IF
+    IF p5Canvas.doStroke THEN
+        internalp5line x1!, y1!, x2!, y2!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+        internalp5line x2!, y2!, x3!, y3!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+        internalp5line x3!, y3!, x4!, y4!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+        internalp5line x4!, y4!, x1!, y1!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+    ELSE
+        internalp5line x1!, y1!, x2!, y2!, p5Canvas.strokeWeight / 2, tempColor~&
+        internalp5line x2!, y2!, x3!, y3!, p5Canvas.strokeWeight / 2, tempColor~&
+        internalp5line x3!, y3!, x4!, y4!, p5Canvas.strokeWeight / 2, tempColor~&
+        internalp5line x4!, y4!, x1!, y1!, p5Canvas.strokeWeight / 2, tempColor~&
+    END IF
+    
+    IF p5Canvas.doFill THEN
+        IF p5Canvas.doStroke THEN
+            PAINT (0, 0), tempFill~&, p5Canvas.stroke
+            PAINT (_WIDTH, 0), tempFill~&, p5Canvas.stroke
+            PAINT (0, _HEIGHT), tempFill~&, p5Canvas.stroke
+            PAINT (_WIDTH, _HEIGHT), tempFill~&, p5Canvas.stroke
+        ELSE
+            PAINT (0, 0), tempFill~&, tempColor~&
+            PAINT (_WIDTH, 0), tempFill~&, tempColor~&
+            PAINT (0, _HEIGHT), tempFill~&, tempColor~&
+            PAINT (_WIDTH, _HEIGHT), tempFill~&, tempColor~&
+        END IF
+    END IF
+    
+    _CLEARCOLOR tempFill~&
+    _CLEARCOLOR tempColor~&
+    
+    _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+    _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+    
+    internalp5displayTempImage
 END SUB
 
 'draws a bezier curve
 'method by Ashish
-SUB bezier (__x0, __y0, __x1, __y1, __x2, __y2, __x3, __y3)
+SUB bezier (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     IF NOT p5Canvas.doStroke AND NOT p5Canvas.doFill THEN EXIT SUB
     
-    x0 = __x0 + p5Canvas.xOffset
-    x1 = __x1 + p5Canvas.xOffset
-    x2 = __x2 + p5Canvas.xOffset
-    x3 = __x3 + p5Canvas.xOffset
+    x0! = __x0! + p5Canvas.xOffset
+    x1! = __x1! + p5Canvas.xOffset
+    x2! = __x2! + p5Canvas.xOffset
+    x3! = __x3! + p5Canvas.xOffset
     
-    y0 = __y0 + p5Canvas.yOffset
-    y1 = __y1 + p5Canvas.yOffset
-    y2 = __y2 + p5Canvas.yOffset
-    y3 = __y3 + p5Canvas.yOffset
+    y0! = __y0! + p5Canvas.yOffset
+    y1! = __y1! + p5Canvas.yOffset
+    y2! = __y2! + p5Canvas.yOffset
+    y3! = __y3! + p5Canvas.yOffset
     
-    cx = 3 * (x1 - x0)
-    bx = 3 * (x2 - x1) - cx
-    ax = x3 - x0 - cx - bx
+    cx! = 3 * (x1! - x0!)
+    bx! = 3 * (x2! - x1!) - cx!
+    ax! = x3! - x0! - cx! - bx!
     
-    cy = 3 * (y1 - y0)
-    by = 3 * (y2 - y1) - cy
-    ay = y3 - y0 - cy - by
+    cy! = 3 * (y1! - y0!)
+    by! = 3 * (y2! - y1!) - cy!
+    ay! = y3! - y0! - cy! - by!
     
     DIM s AS DOUBLE
     s = .001
@@ -1084,13 +1120,13 @@ SUB bezier (__x0, __y0, __x1, __y1, __x2, __y2, __x3, __y3)
     
     IF p5Canvas.doFill THEN
         CLS , p5Canvas.fill
-        IF p5Canvas.doStroke THEN LINE (x0, y0)-(x3, y3), p5Canvas.stroke ELSE LINE (x0, y0)-(x3, y3), tempColor~&
+        IF p5Canvas.doStroke THEN LINE (x0!, y0!)-(x3!, y3!), p5Canvas.stroke ELSE LINE (x0!, y0!)-(x3!, y3!), tempColor~&
     END IF
 
-    FOR t = 0 TO 1 - s STEP s
-        xt = ax * (t * t * t) + bx * (t * t) + cx * t + x0
-        yt = ay * (t * t * t) + by * (t * t) + cy * t + y0
-        IF p5Canvas.doStroke THEN CircleFill xt, yt, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xt, yt, p5Canvas.strokeWeight / 2, tempColor~&
+    FOR t# = 0 TO 1 - s STEP s
+        xt! = ax! * (t# * t# * t#) + bx! * (t# * t#) + cx! * t# + x0!
+        yt! = ay! * (t# * t# * t#) + by! * (t# * t#) + cy! * t# + y0!
+        IF p5Canvas.doStroke THEN CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, tempColor~&
     NEXT
 
     IF p5Canvas.doFill THEN
@@ -1113,10 +1149,10 @@ SUB bezier (__x0, __y0, __x1, __y1, __x2, __y2, __x3, __y3)
 
     IF p5Canvas.doFill THEN
         IF p5Canvas.doStroke THEN _CLEARCOLOR p5Canvas.stroke ELSE _CLEARCOLOR tempColor~&
-        FOR t = 0 TO 1 - s STEP s
-            xt = ax * (t * t * t) + bx * (t * t) + cx * t + x0
-            yt = ay * (t * t * t) + by * (t * t) + cy * t + y0
-            IF p5Canvas.doStroke THEN CircleFill xt, yt, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xt, yt, p5Canvas.strokeWeight / 2, tempColor~&
+        FOR t# = 0 TO 1 - s STEP s
+            xt! = ax! * (t# * t# * t#) + bx! * (t# * t#) + cx! * t# + x0!
+            yt! = ay! * (t# * t# * t#) + by! * (t# * t#) + cy! * t# + y0!
+            IF p5Canvas.doStroke THEN CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, tempColor~&
         NEXT
     END IF
 
@@ -1127,6 +1163,17 @@ SUB bezier (__x0, __y0, __x1, __y1, __x2, __y2, __x3, __y3)
 
     internalp5displayTempImage
 
+END SUB
+
+SUB internalp5line (x0!, y0!, x1!, y1!, s!, col~&)
+    dx! = x1! - x0!
+    dy! = y1! - y0!
+    d! = SQR(dx! * dx! + dy! * dy!)
+    FOR i = 0 TO d!
+        CircleFill x0! + dxx!, y0! + dyy!, s!, col~&
+        dxx! = dxx! + dx! / d!
+        dyy! = dyy! + dy! / d!
+    NEXT
 END SUB
 
 SUB gatherInput ()
@@ -1973,6 +2020,14 @@ SUB cursor (kind)
     IF kind = CURSOR_NONE THEN _MOUSEHIDE ELSE glutSetCursor kind
 END SUB
 
+
+' function p5setup()
+' strokeWeight 2
+' strokeba 0,100
+' fillBa 255,100
+' nofill
+' p5quad 100,10,50,300,300,150,400,40
+' end function
 'uncomment these lines below to see a simple demo
 'FUNCTION p5setup ()
 '    createCanvas 400, 400
