@@ -1051,6 +1051,84 @@ SUB p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
     endShape p5CLOSE
 END SUB
 
+'draws a bezier curve
+'method by Ashish
+SUB bezier (__x0, __y0, __x1, __y1, __x2, __y2, __x3, __y3)
+    IF NOT p5Canvas.doStroke AND NOT p5Canvas.doFill THEN EXIT SUB
+    
+    x0 = __x0 + p5Canvas.xOffset
+    x1 = __x1 + p5Canvas.xOffset
+    x2 = __x2 + p5Canvas.xOffset
+    x3 = __x3 + p5Canvas.xOffset
+    
+    y0 = __y0 + p5Canvas.yOffset
+    y1 = __y1 + p5Canvas.yOffset
+    y2 = __y2 + p5Canvas.yOffset
+    y3 = __y3 + p5Canvas.yOffset
+    
+    cx = 3 * (x1 - x0)
+    bx = 3 * (x2 - x1) - cx
+    ax = x3 - x0 - cx - bx
+    
+    cy = 3 * (y1 - y0)
+    by = 3 * (y2 - y1) - cy
+    ay = y3 - y0 - cy - by
+    
+    DIM s AS DOUBLE
+    s = .001
+    
+    internalp5makeTempImage
+    
+    IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
+    IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
+    
+    IF p5Canvas.doFill THEN
+        CLS , p5Canvas.fill
+        IF p5Canvas.doStroke THEN LINE (x0, y0)-(x3, y3), p5Canvas.stroke ELSE LINE (x0, y0)-(x3, y3), tempColor~&
+    END IF
+
+    FOR t = 0 TO 1 - s STEP s
+        xt = ax * (t * t * t) + bx * (t * t) + cx * t + x0
+        yt = ay * (t * t * t) + by * (t * t) + cy * t + y0
+        IF p5Canvas.doStroke THEN CircleFill xt, yt, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xt, yt, p5Canvas.strokeWeight / 2, tempColor~&
+    NEXT
+
+    IF p5Canvas.doFill THEN
+        IF p5Canvas.doStroke THEN
+            PAINT (0, 0), tempFill~&, p5Canvas.stroke
+            PAINT (_WIDTH, 0), tempFill~&, p5Canvas.stroke
+            PAINT (0, _HEIGHT), tempFill~&, p5Canvas.stroke
+            PAINT (_WIDTH, _HEIGHT), tempFill~&, p5Canvas.stroke
+        ELSE
+            PAINT (0, 0), tempFill~&, tempColor~&
+            PAINT (_WIDTH, 0), tempFill~&, tempColor~&
+            PAINT (0, _HEIGHT), tempFill~&, tempColor~&
+            PAINT (_WIDTH, _HEIGHT), tempFill~&, tempColor~&
+        END IF
+    END IF
+
+    _CLEARCOLOR tempFill~&
+
+    IF NOT p5Canvas.doStroke THEN _CLEARCOLOR tempColor~&: GOTO internal_p5_bezier_display
+
+    IF p5Canvas.doFill THEN
+        IF p5Canvas.doStroke THEN _CLEARCOLOR p5Canvas.stroke ELSE _CLEARCOLOR tempColor~&
+        FOR t = 0 TO 1 - s STEP s
+            xt = ax * (t * t * t) + bx * (t * t) + cx * t + x0
+            yt = ay * (t * t * t) + by * (t * t) + cy * t + y0
+            IF p5Canvas.doStroke THEN CircleFill xt, yt, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xt, yt, p5Canvas.strokeWeight / 2, tempColor~&
+        NEXT
+    END IF
+
+    internal_p5_bezier_display:::
+
+    _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+    _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+
+    internalp5displayTempImage
+
+END SUB
+
 SUB gatherInput ()
     DIM a AS _BYTE
 
