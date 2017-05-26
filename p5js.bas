@@ -1146,12 +1146,28 @@ END SUB
 SUB backgroundA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
     IF p5Canvas.colorMode = p5HSB THEN
         p5Canvas.backColor = hsb(r, g, b, a)
-        p5Canvas.backColor = hsb(r, g, b, a)
+        p5Canvas.backColorA = hsb(r, g, b, a)
     ELSE
         p5Canvas.backColor = _RGB32(r, g, b)
         p5Canvas.backColorA = _RGBA32(r, g, b, a)
     END IF
     p5Canvas.backColorAlpha = constrain(a, 0, 255)
+    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
+END SUB
+
+SUB backgroundN (c$)
+    c~& = colorN(c$)
+    p5Canvas.backColor = c~&
+    p5Canvas.backColorA = c~&
+    p5Canvas.backColorAlpha = 255
+    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
+END SUB
+
+SUB backgroundNA (c$, a!)
+    c~& = colorNA(c$, a!)
+    p5Canvas.backColor = _RGB32(_RED32(c~&), _GREEN32(c~&), _BLUE32(c~&))
+    p5Canvas.backColorA = c~&
+    p5Canvas.backColorAlpha = _ALPHA32(c~&)
     LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
 END SUB
 
