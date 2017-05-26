@@ -85,9 +85,9 @@ TYPE vector
     z AS SINGLE
 END TYPE
 
-type __p5Colors
-    hex as str
-end type
+' type __p5Colors
+    ' hex as str
+' end type
 'frame rate
 DIM SHARED frameRate AS SINGLE
 
