@@ -1089,7 +1089,7 @@ END SUB
 
 'draws a bezier curve
 'method by Ashish
-SUB bezier (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
+SUB p5bezier (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     IF NOT p5Canvas.doStroke AND NOT p5Canvas.doFill THEN EXIT SUB
     
     x0! = __x0! + p5Canvas.xOffset
@@ -1163,6 +1163,60 @@ SUB bezier (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
 
     internalp5displayTempImage
 
+END SUB
+
+SUB p5curve (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
+    
+    IF NOT p5Canvas.doStroke OR NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+    
+    x0! = __x0! + p5Canvas.xOffset
+    x1! = __x1! + p5Canvas.xOffset
+    x2! = __x2! + p5Canvas.xOffset
+    x3! = __x3! + p5Canvas.xOffset
+    
+    y0! = __y0! + p5Canvas.yOffset
+    y1! = __y1! + p5Canvas.yOffset
+    y2! = __y2! + p5Canvas.yOffset
+    y3! = __y3! + p5Canvas.yOffset
+    
+    internalp5makeTempImage
+    
+    IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
+    
+    IF p5Canvas.doFill THEN CLS , p5Canvas.fill: LINE (x1!, y1!)-(x2!, y2!), p5Canvas.stroke
+    DIM s AS DOUBLE
+    s = .001
+    FOR t# = 0 TO 1 - s STEP s
+        xt! = 0.5 * ((2 * x1!) + (-x0! + x2!) * t# + (2 * x0! - 5 * x1! + 4 * x2! - x3!) * (t# * t#) + (-x0! + 3 * x1! - 3 * x2! + x3!) * (t# * t# * t#))
+        yt! = 0.5 * ((2 * y1!) + (-y0! + y2!) * t# + (2 * y0! - 5 * y1! + 4 * y2! - y3!) * (t# * t#) + (-y0! + 3 * y1! - 3 * y2! + y3!) * (t# * t# * t#))
+        CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+    NEXT
+
+    IF NOT p5Canvas.doFill THEN GOTO internal_p5_curve_display
+    
+    IF p5Canvas.doFill THEN
+        PAINT (0, 0), tempFill~&, p5Canvas.stroke
+        PAINT (_WIDTH, 0), tempFill~&, p5Canvas.stroke
+        PAINT (0, _HEIGHT), tempFill~&, p5Canvas.stroke
+        PAINT (_WIDTH, _HEIGHT), tempFill~&, p5Canvas.stroke
+    END IF
+    
+    _CLEARCOLOR tempFill~&
+    IF p5Canvas.doFill THEN
+        _CLEARCOLOR p5Canvas.stroke
+        FOR t# = 0 TO 1 STEP .01
+            xt! = 0.5 * ((2 * x1!) + (-x0! + x2!) * t# + (2 * x0! - 5 * x1! + 4 * x2! - x3!) * (t# * t#) + (-x0! + 3 * x1! - 3 * x2! + x3!) * (t# * t# * t#))
+            yt! = 0.5 * ((2 * y1!) + (-y0! + y2!) * t# + (2 * y0! - 5 * y1! + 4 * y2! - y3!) * (t# * t#) + (-y0! + 3 * y1! - 3 * y2! + y3!) * (t# * t# * t#))
+            CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+        NEXT
+    END IF
+    
+    internal_p5_curve_display:::
+    
+    _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+    _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+    
+    internalp5displayTempImage
 END SUB
 
 SUB internalp5line (x0!, y0!, x1!, y1!, s!, col~&)
@@ -2020,14 +2074,6 @@ SUB cursor (kind)
     IF kind = CURSOR_NONE THEN _MOUSEHIDE ELSE glutSetCursor kind
 END SUB
 
-
-' function p5setup()
-' strokeWeight 2
-' strokeba 0,100
-' fillBa 255,100
-' nofill
-' p5quad 100,10,50,300,300,150,400,40
-' end function
 'uncomment these lines below to see a simple demo
 'FUNCTION p5setup ()
 '    createCanvas 400, 400
