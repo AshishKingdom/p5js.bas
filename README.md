@@ -20,6 +20,7 @@ We're not related to the Processing.js foundation. We're fans. This is an open s
 
 Currently, p5js.bas has support for the following:
 
+* [arc()](https://p5js.org/reference/#/p5/arc) 
 * [angleMode()](https://p5js.org/reference/#/p5/angleMode)
 * [background()](https://p5js.org/reference/#/p5/background)
 * [beginShape()](https://p5js.org/reference/#/p5/beginShape)

@@ -45,7 +45,10 @@ CONST CURSOR_LEFT_RIGHT_CORNER = 16
 CONST CURSOR_RIGHT_LEFT_CORNER = 17
 CONST CURSOR_MOVE = 5
 CONST CURSOR_NONE = 23
-
+CONST ARC_DEFAULT = 1
+CONST ARC_OPEN = 3
+CONST ARC_CHORD = 5
+CONST ARC_PIE = 7
 'boolean constants
 CONST true = -1, false = NOT true
 
@@ -1112,6 +1115,90 @@ SUB p5curve (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     
     internal_p5_curve_display:::
     
+    _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+    _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+    
+    internalp5displayTempImage
+END SUB
+
+SUB p5arc (__x!, __y!, w!, h!, start##, stp##, mode)
+    IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+    
+    x! = __x! + p5Canvas.xOffset
+    y! = __y! + p5Canvas.yOffset
+    
+    IF p5Canvas.angleMode = DEGREES THEN start## = p5degrees(start##): spt## = p5degrees(spt##)
+    
+    IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
+    IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
+    
+    x0! = x! + w! * p5cos(start##)
+    y0! = y! + h! * p5sin(start##)
+    x1! = x! + w! * p5cos(stp##)
+    y1! = y! + h! * p5sin(stp##)
+    
+    internalp5makeTempImage
+    
+    IF p5Canvas.doFill THEN
+        CLS , p5Canvas.fill
+        IF p5Canvas.doStroke THEN
+            IF mode = ARC_DEFAULT OR mode = ARC_PIE THEN
+                LINE (x!, y!)-(x0!, y0!), p5Canvas.stroke
+                LINE (x!, y!)-(x1!, y1!), p5Canvas.stroke
+            ELSEIF mode = ARC_OPEN OR mode = ARC_CHORD THEN
+                LINE (x0!, y0!)-(x1!, y1!), p5Canvas.stroke
+            END IF
+        ELSE
+            IF mode = ARC_DEFAULT OR mode = ARC_PIE THEN
+                LINE (x!, y!)-(x0!, y0!), tempColor~&
+                LINE (x!, y!)-(x1!, y1!), tempColor~&
+            ELSEIF mode = ARC_OPEN OR mode = ARC_CHORD THEN
+                LINE (x0!, y0!)-(x1!, y1!), tempColor~&
+            END IF
+        END IF
+    END IF
+    
+    FOR i## = start## TO stp## STEP .001
+        xx! = x! + w! * p5cos(i##)
+        yy! = y! + h! * p5sin(i##)
+        IF p5Canvas.doStroke THEN CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, tempColor~&
+    NEXT
+    
+    IF p5Canvas.doFill THEN
+        IF p5Canvas.doStroke THEN
+            PAINT (0, 0), tempFill~&, p5Canvas.stroke
+            PAINT (_WIDTH, 0), tempFill~&, p5Canvas.stroke
+            PAINT (0, _HEIGHT), tempFill~&, p5Canvas.stroke
+            PAINT (_WIDTH, _HEIGHT), tempFill~&, p5Canvas.stroke
+        ELSE
+            PAINT (0, 0), tempFill~&, tempColor~&
+            PAINT (_WIDTH, 0), tempFill~&, tempColor~&
+            PAINT (0, _HEIGHT), tempFill~&, tempColor~&
+            PAINT (_WIDTH, _HEIGHT), tempFill~&, tempColor~&
+        END IF
+    END IF
+    _CLEARCOLOR tempFill~&
+    
+    IF p5Canvas.doStroke THEN
+        IF mode = ARC_CHORD THEN internalp5line x0!, y0!, x1!, y1!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+        IF mode = ARC_PIE THEN internalp5line x0!, y0!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke: internalp5line x1!, y1!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+    END IF
+        
+    IF p5Canvas.doFill THEN
+        IF p5Canvas.doStroke THEN _CLEARCOLOR p5Canvas.stroke ELSE _CLEARCOLOR tempColor~&
+        IF p5Canvas.doStroke THEN
+            IF mode = ARC_CHORD THEN internalp5line x0!, y0!, x1!, y1!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+            IF mode = ARC_PIE THEN internalp5line x0!, y0!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke: internalp5line x1!, y1!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+        END IF
+        IF NOT p5Canvas.doStroke THEN GOTO internal_p5_arc_display
+        FOR i## = start## TO stp## STEP .001
+            xx! = x! + w! * p5cos(i##)
+            yy! = y! + h! * p5sin(i##)
+            IF p5Canvas.doStroke THEN CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, tempColor~&
+        NEXT
+    END IF
+    
+    internal_p5_arc_display:::
     _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
     _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
     
