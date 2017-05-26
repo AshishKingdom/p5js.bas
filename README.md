@@ -32,6 +32,7 @@ Currently, p5js.bas has support for the following:
 * [createImage()](https://p5js.org/reference/#/p5/createImage)
 * [createVector()](https://p5js.org/reference/#/p5/createVector)
 * [cursor()](https://p5js.org/reference/#/p5/cursor)
+* [curve()](https://p5js.org/reference/#/p5/curve)
 * [day()](https://p5js.org/reference/#/p5/day)
 * [dist()](https://p5js.org/reference/#/p5/dist)
 * [doLoop()](https://p5js.org/reference/#/p5/loop)
