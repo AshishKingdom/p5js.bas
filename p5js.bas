@@ -85,6 +85,9 @@ TYPE vector
     z AS SINGLE
 END TYPE
 
+type __p5Colors
+    hex as str
+end type
 'frame rate
 DIM SHARED frameRate AS SINGLE
 
@@ -158,32 +161,9 @@ DO
     _DISPLAY
 LOOP
 
-SUB createCanvas (w AS INTEGER, h AS INTEGER)
-    STATIC CanvasSetup AS _BYTE
-
-    IF NOT CanvasSetup THEN
-        p5Canvas.imgHandle = _NEWIMAGE(w, h, 32)
-        SCREEN p5Canvas.imgHandle
-        tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
-        CanvasSetup = true
-    ELSE
-        DIM oldDest AS LONG
-        oldDest = p5Canvas.imgHandle
-        p5Canvas.imgHandle = _NEWIMAGE(w, h, 32)
-        SCREEN p5Canvas.imgHandle
-        _FREEIMAGE oldDest
-
-        IF tempShapeImage THEN
-            _FREEIMAGE tempShapeImage
-            tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
-        END IF
-    END IF
-END SUB
-
-FUNCTION createImage& (w AS INTEGER, h AS INTEGER)
-    createImage& = _NEWIMAGE(w, h, 32)
-END FUNCTION
-
+'######################################################################################################
+'###################### 2D Rendering related methods & functions ######################################
+'######################################################################################################
 SUB image (img&, __x AS INTEGER, __y AS INTEGER)
     x = __x + p5Canvas.xOffset
     y = __y + p5Canvas.yOffset
@@ -195,109 +175,6 @@ SUB imageB (img&, x AS INTEGER, y AS INTEGER, w AS INTEGER, h AS INTEGER, sx AS 
     _PUTIMAGE (x, y)-STEP(w, h), img&, 0, (sx, sy)-STEP(sw, sh)
 END SUB
 
-FUNCTION width&
-    width& = _WIDTH
-END FUNCTION
-
-FUNCTION height&
-    height& = _HEIGHT
-END FUNCTION
-
-SUB title (t$)
-    _TITLE t$
-END SUB
-
-SUB titleB (v!)
-    _TITLE STR$(v!)
-END SUB
-
-FUNCTION noise! (x AS SINGLE, y AS SINGLE, z AS SINGLE)
-    STATIC p5NoiseSetup AS _BYTE
-    STATIC perlin() AS SINGLE
-    STATIC PERLIN_YWRAPB AS SINGLE, PERLIN_YWRAP AS SINGLE
-    STATIC PERLIN_ZWRAPB AS SINGLE, PERLIN_ZWRAP AS SINGLE
-    STATIC PERLIN_SIZE AS SINGLE, perlin_octaves AS SINGLE
-    STATIC perlin_amp_falloff AS SINGLE
-
-    IF NOT p5NoiseSetup THEN
-        p5NoiseSetup = true
-
-        PERLIN_YWRAPB = 4
-        PERLIN_YWRAP = INT(1 * (2 ^ PERLIN_YWRAPB))
-        PERLIN_ZWRAPB = 8
-        PERLIN_ZWRAP = INT(1 * (2 ^ PERLIN_ZWRAPB))
-        PERLIN_SIZE = 4095
-
-        perlin_octaves = 4
-        perlin_amp_falloff = 0.5
-
-        REDIM perlin(PERLIN_SIZE + 1) AS SINGLE
-        DIM i AS SINGLE
-        FOR i = 0 TO PERLIN_SIZE + 1
-            perlin(i) = RND
-        NEXT
-    END IF
-
-    x = ABS(x)
-    y = ABS(y)
-    z = ABS(z)
-
-    DIM xi AS SINGLE, yi AS SINGLE, zi AS SINGLE
-    xi = INT(x)
-    yi = INT(y)
-    zi = INT(z)
-
-    DIM xf AS SINGLE, yf AS SINGLE, zf AS SINGLE
-    xf = x - xi
-    yf = y - yi
-    zf = z - zi
-
-    DIM r AS SINGLE, ampl AS SINGLE, o AS SINGLE
-    r = 0
-    ampl = .5
-
-    FOR o = 1 TO perlin_octaves
-        DIM of AS SINGLE, rxf AS SINGLE
-        DIM ryf AS SINGLE, n1 AS SINGLE, n2 AS SINGLE, n3 AS SINGLE
-        of = xi + INT(yi * (2 ^ PERLIN_YWRAPB)) + INT(zi * (2 ^ PERLIN_ZWRAPB))
-
-        rxf = 0.5 * (1.0 - COS(xf * _PI))
-        ryf = 0.5 * (1.0 - COS(yf * _PI))
-
-        n1 = perlin(of AND PERLIN_SIZE)
-        n1 = n1 + rxf * (perlin((of + 1) AND PERLIN_SIZE) - n1)
-        n2 = perlin((of + PERLIN_YWRAP) AND PERLIN_SIZE)
-        n2 = n2 + rxf * (perlin((of + PERLIN_YWRAP + 1) AND PERLIN_SIZE) - n2)
-        n1 = n1 + ryf * (n2 - n1)
-
-        of = of + PERLIN_ZWRAP
-        n2 = perlin(of AND PERLIN_SIZE)
-        n2 = n2 + rxf * (perlin((of + 1) AND PERLIN_SIZE) - n2)
-        n3 = perlin((of + PERLIN_YWRAP) AND PERLIN_SIZE)
-        n3 = n3 + rxf * (perlin((of + PERLIN_YWRAP + 1) AND PERLIN_SIZE) - n3)
-        n2 = n2 + ryf * (n3 - n2)
-
-        n1 = n1 + (0.5 * (1.0 - COS(zf * _PI))) * (n2 - n1)
-
-        r = r + n1 * ampl
-        ampl = ampl * perlin_amp_falloff
-        xi = INT(xi * (2 ^ 1))
-        xf = xf * 2
-        yi = INT(yi * (2 ^ 1))
-        yf = yf * 2
-        zi = INT(zi * (2 ^ 1))
-        zf = zf * 2
-
-        IF xf >= 1.0 THEN xi = xi + 1: xf = xf - 1
-        IF yf >= 1.0 THEN yi = yi + 1: yf = yf - 1
-        IF zf >= 1.0 THEN zi = zi + 1: zf = zf - 1
-    NEXT
-    noise! = r
-END FUNCTION
-
-FUNCTION map! (value!, minRange!, maxRange!, newMinRange!, newMaxRange!)
-    map! = ((value! - minRange!) / (maxRange! - minRange!)) * (newMaxRange! - newMinRange!) + newMinRange!
-END FUNCTION
 
 SUB internalp5makeTempImage
     p5previousDest = _DEST
@@ -396,261 +273,6 @@ SUB endShape (closed)
     shapeTempFill = 0
     'place shape onto main canvas
     internalp5displayTempImage
-END SUB
-
-SUB textAlign (position AS _BYTE)
-    p5Canvas.textAlign = position
-END SUB
-
-SUB textFont (font$)
-    DIM tempFontHandle AS LONG
-
-    IF currentFontSize = 0 THEN currentFontSize = 16
-
-    IF font$ <> loadedFontFile$ THEN
-        tempFontHandle = _LOADFONT(font$, currentFontSize)
-
-        IF tempFontHandle > 0 THEN
-            'loading successful
-            _FONT tempFontHandle
-            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
-            p5Canvas.fontHandle = tempFontHandle
-
-            loadedFontFile$ = font$
-        ELSE
-            loadedFontFile$ = ""
-            'built-in fonts
-            IF currentFontSize >= 16 THEN
-                _FONT 16
-            ELSEIF currentFontSize < 16 THEN
-                _FONT 8
-            END IF
-
-            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
-            p5Canvas.fontHandle = _FONT
-        END IF
-    END IF
-END SUB
-
-SUB textSize (size%)
-    DIM tempFontHandle AS LONG
-
-    IF size% = currentFontSize OR size% <= 0 THEN EXIT SUB
-
-    IF loadedFontFile$ = "" THEN
-        'built-in fonts
-        IF size% >= 16 THEN
-            _FONT 16
-            p5Canvas.fontHandle = 16
-        ELSEIF size% < 16 THEN
-            _FONT 8
-            p5Canvas.fontHandle = 8
-        END IF
-    ELSE
-        tempFontHandle = _LOADFONT(loadedFontFile$, size%)
-
-        IF tempFontHandle > 0 THEN
-            'loading successful
-            _FONT tempFontHandle
-            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
-            p5Canvas.fontHandle = tempFontHandle
-
-            currentFontSize = size%
-        END IF
-    END IF
-END SUB
-
-SUB text (t$, __x AS SINGLE, __y AS SINGLE)
-    DIM x AS SINGLE, y AS SINGLE
-
-    x = __x + p5Canvas.xOffset
-    y = __y + p5Canvas.yOffset
-
-    SELECT CASE p5Canvas.textAlign
-        CASE LEFT
-            p5PrintString x, y, t$
-        CASE CENTER
-            p5PrintString x - PrintWidth(t$) / 2, y - uheight / 2, t$
-        CASE RIGHT
-            p5PrintString x - PrintWidth(t$), y, t$
-    END SELECT
-END SUB
-
-SUB p5PrintString (Left AS INTEGER, Top AS INTEGER, theText$)
-    DIM Utf$
-
-    IF p5Canvas.encoding = 1252 THEN
-        Utf$ = FromCP1252$(theText$)
-    ELSE 'Default to 437
-        Utf$ = FromCP437$(theText$)
-    END IF
-
-    REDIM p5ThisLineChars(LEN(Utf$)) AS LONG
-    uprint_extra Left, Top, _OFFSET(Utf$), LEN(Utf$), true, true, p5LastRenderedLineWidth, _OFFSET(p5ThisLineChars()), p5LastRenderedCharCount, p5Canvas.strokeA, 0
-    REDIM _PRESERVE p5ThisLineChars(p5LastRenderedCharCount) AS LONG
-END SUB
-
-FUNCTION PrintWidth& (theText$)
-    PrintWidth& = uprintwidth(theText$, LEN(theText$), 0)
-END FUNCTION
-
-FUNCTION textWidth& (theText$)
-    textWidth& = PrintWidth&(theText$)
-END FUNCTION
-
-FUNCTION textHeight&
-    textHeight& = uheight
-END FUNCTION
-
-SUB fill (r AS SINGLE, g AS SINGLE, b AS SINGLE)
-    p5Canvas.doFill = true
-    IF p5Canvas.colorMode = p5HSB THEN p5Canvas.fill = hsb(r, g, b, 255) ELSE p5Canvas.fill = _RGB32(r, g, b)
-    p5Canvas.fillA = p5Canvas.fill
-    p5Canvas.fillAlpha = 255
-    COLOR , p5Canvas.fill 'fill also affects text
-END SUB
-
-SUB fillA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
-    p5Canvas.doFill = true
-    IF p5Canvas.colorMode = p5HSB THEN
-        p5Canvas.fill = hsb(r, g, b, a)
-        p5Canvas.fillA = hsb(r, g, b, a)
-    ELSE
-        p5Canvas.fill = _RGB32(r, g, b)
-        p5Canvas.fillA = _RGBA32(r, g, b, a)
-    END IF
-    p5Canvas.fillAlpha = constrain(a, 0, 255)
-    COLOR , p5Canvas.fillA 'fill also affects text
-END SUB
-
-SUB fillB (b AS SINGLE)
-    p5Canvas.doFill = true
-    p5Canvas.fill = _RGB32(b, b, b)
-    p5Canvas.fillA = p5Canvas.fill
-    p5Canvas.fillAlpha = 255
-    COLOR , p5Canvas.fill 'fill also affects text
-END SUB
-
-SUB fillBA (b AS SINGLE, a AS SINGLE)
-    p5Canvas.doFill = true
-    p5Canvas.fill = _RGB32(b, b, b)
-    p5Canvas.fillA = _RGBA32(b, b, b, a)
-    p5Canvas.fillAlpha = constrain(a, 0, 255)
-    COLOR , p5Canvas.fillA 'fill also affects text
-END SUB
-
-SUB fillC (c AS _UNSIGNED LONG)
-    p5Canvas.doFill = true
-    p5Canvas.fillAlpha = _ALPHA(c)
-    IF p5Canvas.fillAlpha < 255 THEN
-        p5Canvas.fill = _RGB32(_RED32(c), _GREEN32(c), _BLUE32(c))
-    ELSE
-        p5Canvas.fill = c
-    END IF
-    p5Canvas.fillA = c
-END SUB
-
-SUB stroke (r AS SINGLE, g AS SINGLE, b AS SINGLE)
-    p5Canvas.doStroke = true
-    IF p5Canvas.colorMode = p5HSB THEN p5Canvas.stroke = hsb(r, g, b, 255) ELSE p5Canvas.stroke = _RGB32(r, g, b)
-    p5Canvas.strokeA = p5Canvas.stroke
-    p5Canvas.strokeAlpha = 255
-    COLOR p5Canvas.stroke 'stroke also affects text
-END SUB
-
-SUB strokeA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
-    p5Canvas.doStroke = true
-    IF p5Canvas.colorMode = p5HSB THEN
-        p5Canvas.stroke = hsb(r, g, b, 255)
-        p5Canvas.strokeA = hsb(r, g, b, a)
-    ELSE
-        p5Canvas.stroke = _RGB32(r, g, b)
-        p5Canvas.strokeA = _RGBA32(r, g, b, a)
-    END IF
-
-    p5Canvas.strokeAlpha = constrain(a, 0, 255)
-    COLOR p5Canvas.strokeA 'stroke also affects text
-END SUB
-
-SUB strokeB (b AS SINGLE)
-    p5Canvas.doStroke = true
-    p5Canvas.stroke = _RGB32(b, b, b)
-    p5Canvas.strokeA = p5Canvas.stroke
-    p5Canvas.strokeAlpha = 255
-    COLOR p5Canvas.strokeA 'stroke also affects text
-END SUB
-
-SUB strokeBA (b AS SINGLE, a AS SINGLE)
-    p5Canvas.doStroke = true
-    p5Canvas.stroke = _RGB32(b, b, b)
-    p5Canvas.strokeA = _RGBA32(b, b, b, a)
-    p5Canvas.strokeAlpha = constrain(a, 0, 255)
-    COLOR p5Canvas.strokeA 'stroke also affects text
-END SUB
-
-SUB strokeC (c AS _UNSIGNED LONG)
-    p5Canvas.doStroke = true
-    p5Canvas.strokeAlpha = _ALPHA(c)
-    IF p5Canvas.strokeAlpha < 255 THEN
-        p5Canvas.stroke = _RGB32(_RED32(c), _GREEN32(c), _BLUE32(c))
-    ELSE
-        p5Canvas.stroke = c
-    END IF
-    p5Canvas.strokeA = c
-END SUB
-
-SUB push
-    pushState = pushState + 1
-    IF pushState > UBOUND(p5CanvasBackup) THEN
-        REDIM _PRESERVE p5CanvasBackup(pushState + 9) AS new_p5Canvas
-    END IF
-    p5CanvasBackup(pushState) = p5Canvas
-END SUB
-
-SUB pop
-    p5Canvas = p5CanvasBackup(pushState)
-    pushState = pushState - 1
-END SUB
-
-SUB redraw
-    callDrawLoop
-END SUB
-
-SUB callDrawLoop
-    DIM a AS _BYTE, xOffsetBackup AS SINGLE, yOffsetBackup AS SINGLE
-
-    p5frameCount = p5frameCount + 1
-
-    'calls to translate() are reverted after the draw loop
-    xOffsetBackup = p5Canvas.xOffset
-    yOffsetBackup = p5Canvas.yOffset
-
-    a = p5draw
-
-    p5Canvas.xOffset = xOffsetBackup
-    p5Canvas.yOffset = yOffsetBackup
-END SUB
-
-FUNCTION frameCount~&
-    frameCount~& = p5frameCount
-END FUNCTION
-
-SUB noFill ()
-    p5Canvas.doFill = false
-    COLOR , 0 'fill also affects text
-END SUB
-
-SUB noStroke ()
-    p5Canvas.doStroke = false
-    COLOR 0 'stroke also affects text
-END SUB
-
-SUB strokeWeight (a AS SINGLE)
-    IF a = 0 THEN
-        noStroke
-    ELSE
-        p5Canvas.strokeWeight = a
-    END IF
 END SUB
 
 SUB translate (xoff AS SINGLE, yoff AS SINGLE)
@@ -1230,97 +852,12 @@ SUB internalp5line (x0!, y0!, x1!, y1!, s!, col~&)
     NEXT
 END SUB
 
-SUB gatherInput ()
-    DIM a AS _BYTE
-
-    'Keyboard input:
-    keyCode = _KEYHIT
-    IF keyCode > 0 AND keyCode <> lastKeyCode THEN
-        lastKeyCode = keyCode
-        a = keyPressed
-        totalKeysDown = totalKeysDown + 1
-    ELSEIF keyCode < 0 THEN
-        totalKeysDown = totalKeysDown - 1
-        IF totalKeysDown <= 0 THEN
-            totalKeysDown = 0
-            keyCode = ABS(keyCode)
-            a = keyReleased
-            lastKeyCode = 0
-        END IF
-    END IF
-
-    keyIsPressed = totalKeysDown > 0
-
-    'Mouse input (optimization by Luke Ceddia):
-    p5mouseWheel = 0
-
-    IF _MOUSEINPUT THEN
-        p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
-        IF _MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 AND _MOUSEBUTTON(3) = mouseButton3 THEN
-            DO WHILE _MOUSEINPUT
-                p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
-                IF NOT (_MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 AND _MOUSEBUTTON(3) = mouseButton3) THEN EXIT DO
-            LOOP
-        END IF
-        mouseButton1 = _MOUSEBUTTON(1)
-        mouseButton2 = _MOUSEBUTTON(2)
-        mouseButton3 = _MOUSEBUTTON(3)
-    END IF
-
-    WHILE _MOUSEINPUT: WEND
-
-    IF p5mouseWheel THEN
-        a = mouseWheel
-    END IF
-
-    IF mouseButton1 THEN
-        mouseButton = LEFT
-        IF NOT mouseIsPressed THEN
-            mouseIsPressed = true
-            a = mousePressed
-        ELSE
-            a = mouseDragged
-        END IF
+SUB strokeWeight (a AS SINGLE)
+    IF a = 0 THEN
+        noStroke
     ELSE
-        IF mouseIsPressed AND mouseButton = LEFT THEN
-            mouseIsPressed = false
-            a = mouseReleased
-            a = mouseClicked
-        END IF
+        p5Canvas.strokeWeight = a
     END IF
-
-    IF mouseButton2 THEN
-        mouseButton = RIGHT
-        IF NOT mouseIsPressed THEN
-            mouseIsPressed = true
-            a = mousePressed
-        ELSE
-            a = mouseDragged
-        END IF
-    ELSE
-        IF mouseIsPressed AND mouseButton = RIGHT THEN
-            mouseIsPressed = false
-            a = mouseReleased
-            a = mouseClicked
-        END IF
-    END IF
-
-    IF mouseButton3 THEN
-        mouseButton = CENTER
-        IF NOT mouseIsPressed THEN
-            mouseIsPressed = true
-            a = mousePressed
-        ELSE
-            a = mouseDragged
-        END IF
-    ELSE
-        IF mouseIsPressed AND mouseButton = CENTER THEN
-            mouseIsPressed = false
-            a = mouseReleased
-            a = mouseClicked
-        END IF
-    END IF
-
 END SUB
 
 SUB background (r AS SINGLE, g AS SINGLE, b AS SINGLE)
@@ -1353,313 +890,113 @@ SUB backgroundBA (b AS SINGLE, a AS SINGLE)
     p5Canvas.backColorAlpha = constrain(a, 0, 255)
     LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
 END SUB
-                                
-SUB doLoop ()
-    p5Loop = true
+
+'#####################################################################################################
+'########################## Text Rendering Related methods & functions ###############################
+'#####################################################################################################
+
+SUB textAlign (position AS _BYTE)
+    p5Canvas.textAlign = position
 END SUB
 
-SUB noLoop ()
-    p5Loop = false
-END SUB
+SUB textFont (font$)
+    DIM tempFontHandle AS LONG
 
-FUNCTION loadSound& (file$)
-    IF _FILEEXISTS(file$) = 0 THEN EXIT FUNCTION
-    DIM tempHandle&, setting$
+    IF currentFontSize = 0 THEN currentFontSize = 16
 
-    setting$ = "vol"
+    IF font$ <> loadedFontFile$ THEN
+        tempFontHandle = _LOADFONT(font$, currentFontSize)
 
-    SELECT CASE UCASE$(RIGHT$(file$, 4))
-        CASE ".WAV", ".OGG", ".AIF", ".RIF", ".VOC"
-            setting$ = "vol,sync,len,pause"
-        CASE ".MP3"
-            setting$ = "vol,pause,setpos"
-    END SELECT
+        IF tempFontHandle > 0 THEN
+            'loading successful
+            _FONT tempFontHandle
+            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
+            p5Canvas.fontHandle = tempFontHandle
 
-    tempHandle& = _SNDOPEN(file$, setting$)
-    IF tempHandle& > 0 THEN
-        totalLoadedSounds = totalLoadedSounds + 1
-        REDIM _PRESERVE loadedSounds(totalLoadedSounds) AS new_SoundHandle
-        loadedSounds(totalLoadedSounds).handle = tempHandle&
-        loadedSounds(totalLoadedSounds).sync = INSTR(setting$, "sync") > 0
-        loadSound& = tempHandle&
-    END IF
-END FUNCTION
-
-SUB p5play (soundHandle&)
-    DIM i AS LONG
-    FOR i = 1 TO UBOUND(loadedSounds)
-        IF loadedSounds(i).handle = soundHandle& THEN
-            IF loadedSounds(i).sync THEN
-                _SNDPLAYCOPY soundHandle&
-            ELSE
-                IF NOT _SNDPLAYING(soundHandle&) THEN _SNDPLAY soundHandle&
-            END IF
-        END IF
-    NEXT
-END SUB
-
-FUNCTION month& ()
-    month& = VAL(LEFT$(DATE$, 2))
-END FUNCTION
-
-FUNCTION day& ()
-    day& = VAL(MID$(DATE$, 4, 2))
-END FUNCTION
-
-FUNCTION year& ()
-    year& = VAL(RIGHT$(DATE$, 4))
-END FUNCTION
-
-FUNCTION hour& ()
-    hour& = VAL(LEFT$(TIME$, 2))
-END FUNCTION
-
-FUNCTION minute& ()
-    minute& = VAL(MID$(TIME$, 4, 2))
-END FUNCTION
-
-FUNCTION seconds& ()
-    seconds& = VAL(RIGHT$(TIME$, 2))
-END SUB
-
-SUB createVector (v AS vector, x AS SINGLE, y AS SINGLE)
-    v.x = x
-    v.y = y
-END SUB
-
-SUB vector.add (v1 AS vector, v2 AS vector)
-    v1.x = v1.x + v2.x
-    v1.y = v1.y + v2.y
-    v1.z = v1.z + v2.z
-END SUB
-
-SUB vector.addB (v1 AS vector, x2 AS SINGLE, y2 AS SINGLE, z2 AS SINGLE)
-    v1.x = v1.x + x2
-    v1.y = v1.y + y2
-    v1.z = v1.z + z2
-END SUB
-
-SUB vector.sub (v1 AS vector, v2 AS vector)
-    v1.x = v1.x - v2.x
-    v1.y = v1.y - v2.y
-    v1.z = v1.z - v2.z
-END SUB
-
-SUB vector.subB (v1 AS vector, x2 AS SINGLE, y2 AS SINGLE, z2 AS SINGLE)
-    v1.x = v1.x - x2
-    v1.y = v1.y - y2
-    v1.z = v1.z - z2
-END SUB
-
-SUB vector.limit (v AS vector, __max!)
-    mSq = vector.magSq(v)
-    IF mSq > __max! * __max! THEN
-        vector.div v, SQR(mSq)
-        vector.mult v, __max!
-    END IF
-END SUB
-
-FUNCTION vector.magSq! (v AS vector)
-    vector.magSq! = v.x * v.x + v.y * v.y + v.z * v.z
-END FUNCTION
-
-SUB vector.fromAngle (v AS vector, __angle!)
-    IF p5Canvas.angleMode = DEGREES THEN angle! = _D2R(__angle!) ELSE angle! = __angle!
-
-    v.x = COS(angle!)
-    v.y = SIN(angle!)
-END SUB
-
-FUNCTION vector.mag! (v AS vector)
-    x = v.x
-    y = v.y
-    z = v.z
-
-    magSq = x * x + y * y + z * z
-    vector.mag! = SQR(magSq)
-END FUNCTION
-
-SUB vector.setMag (v AS vector, n AS SINGLE)
-    vector.normalize v
-    vector.mult v, n
-END SUB
-
-SUB vector.normalize (v AS vector)
-    theMag! = vector.mag(v)
-    IF theMag! = 0 THEN EXIT SUB
-
-    vector.div v, theMag!
-END SUB
-
-SUB vector.div (v AS vector, n AS SINGLE)
-    v.x = v.x / n
-    v.y = v.y / n
-    v.z = v.z / n
-END SUB
-
-SUB vector.mult (v AS vector, n AS SINGLE)
-    v.x = v.x * n
-    v.y = v.y * n
-    v.z = v.z * n
-END SUB
-
-SUB vector.random2d (v AS vector)
-    DIM angle AS SINGLE
-
-    IF p5Canvas.angleMode = DEGREES THEN
-        angle = p5random(0, 360)
-    ELSE
-        angle = p5random(0, TWO_PI)
-    END IF
-
-    vector.fromAngle v, angle
-END SUB
-
-FUNCTION p5degrees! (r!)
-    p5degrees! = _R2D(r!)
-END FUNCTION
-
-FUNCTION p5radians! (d!)
-    p5radians! = _D2R(d!)
-END FUNCTION
-
-FUNCTION p5sin! (angle!)
-    IF p5Canvas.angleMode = RADIANS THEN
-        p5sin! = SIN(angle!)
-    ELSE
-        p5sin! = SIN(_D2R(angle!))
-    END IF
-END FUNCTION
-
-FUNCTION p5cos! (angle!)
-    IF p5Canvas.angleMode = RADIANS THEN
-        p5cos! = COS(angle!)
-    ELSE
-        p5cos! = COS(_D2R(angle!))
-    END IF
-END FUNCTION
-
-SUB angleMode (kind)
-    p5Canvas.angleMode = kind
-END SUB
-
-'Calculate minimum value between two values
-FUNCTION min! (a!, b!)
-    IF a! < b! THEN min! = a! ELSE min! = b!
-END FUNCTION
-
-'Calculate maximum value between two values
-FUNCTION max! (a!, b!)
-    IF a! > b! THEN max! = a! ELSE max! = b!
-END FUNCTION
-
-'Constrain a value between a minimum and maximum value.
-FUNCTION constrain! (n!, low!, high!)
-    constrain! = max(min(n!, high!), low!)
-END FUNCTION
-
-'Calculate the distance between two points.
-FUNCTION dist! (x1!, y1!, x2!, y2!)
-    dist! = SQR((x2! - x1!) ^ 2 + (y2! - y1!) ^ 2)
-END FUNCTION
-
-FUNCTION distB! (v1 AS vector, v2 AS vector)
-    distB! = dist!(v1.x, v1.y, v2.x, v2.y)
-END FUNCTION
-
-FUNCTION lerp! (start!, stp!, amt!)
-    lerp! = amt! * (stp! - start!) + start!
-END FUNCTION
-
-FUNCTION lerpColor~& (c1 AS _UNSIGNED LONG, c2 AS _UNSIGNED LONG, __v!)
-    DIM v!
-    v! = constrain(__v!, 0, 1)
-
-    IF p5Canvas.colorMode = p5RGB THEN
-        DIM r1 AS SINGLE, g1 AS SINGLE, b1 AS SINGLE
-        DIM r2 AS SINGLE, g2 AS SINGLE, b2 AS SINGLE
-        DIM rstep AS SINGLE, gstep AS SINGLE, bstep AS SINGLE
-
-        r1 = _RED32(c1)
-        g1 = _GREEN32(c1)
-        b1 = _BLUE32(c1)
-
-        r2 = _RED32(c2)
-        g2 = _GREEN32(c2)
-        b2 = _BLUE32(c2)
-
-        rstep = map(v!, 0, 1, r1, r2)
-        gstep = map(v!, 0, 1, g1, g2)
-        bstep = map(v!, 0, 1, b1, b2)
-
-        lerpColor~& = _RGB32(rstep, gstep, bstep)
-    ELSE
-        'p5HSB lerpColor not yet available; return either
-        'of the original colors that's closer to v!
-        IF v! < .5 THEN
-            lerpColor~& = c1
+            loadedFontFile$ = font$
         ELSE
-            lerpColor~& = c2
+            loadedFontFile$ = ""
+            'built-in fonts
+            IF currentFontSize >= 16 THEN
+                _FONT 16
+            ELSEIF currentFontSize < 16 THEN
+                _FONT 8
+            END IF
+
+            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
+            p5Canvas.fontHandle = _FONT
         END IF
     END IF
-END FUNCTION
+END SUB
 
-FUNCTION color~& (v1 AS SINGLE, v2 AS SINGLE, v3 AS SINGLE)
-    IF p5Canvas.colorMode = p5RGB THEN
-        color~& = _RGB32(v1, v2, v3)
-    ELSEIF p5Canvas.colorMode = p5HSB THEN
-        color~& = hsb(v1, v2, v3, 255)
+SUB textSize (size%)
+    DIM tempFontHandle AS LONG
+
+    IF size% = currentFontSize OR size% <= 0 THEN EXIT SUB
+
+    IF loadedFontFile$ = "" THEN
+        'built-in fonts
+        IF size% >= 16 THEN
+            _FONT 16
+            p5Canvas.fontHandle = 16
+        ELSEIF size% < 16 THEN
+            _FONT 8
+            p5Canvas.fontHandle = 8
+        END IF
+    ELSE
+        tempFontHandle = _LOADFONT(loadedFontFile$, size%)
+
+        IF tempFontHandle > 0 THEN
+            'loading successful
+            _FONT tempFontHandle
+            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
+            p5Canvas.fontHandle = tempFontHandle
+
+            currentFontSize = size%
+        END IF
     END IF
-END FUNCTION
+END SUB
 
-FUNCTION colorA~& (v1 AS SINGLE, v2 AS SINGLE, v3 AS SINGLE, a AS SINGLE)
-    IF p5Canvas.colorMode = p5RGB THEN
-        colorA~& = _RGBA32(v1, v2, v3, a)
-    ELSEIF p5Canvas.colorMode = p5HSB THEN
-        colorA~& = hsb(v1, v2, v3, a)
+SUB text (t$, __x AS SINGLE, __y AS SINGLE)
+    DIM x AS SINGLE, y AS SINGLE
+
+    x = __x + p5Canvas.xOffset
+    y = __y + p5Canvas.yOffset
+
+    SELECT CASE p5Canvas.textAlign
+        CASE LEFT
+            p5PrintString x, y, t$
+        CASE CENTER
+            p5PrintString x - PrintWidth(t$) / 2, y - uheight / 2, t$
+        CASE RIGHT
+            p5PrintString x - PrintWidth(t$), y, t$
+    END SELECT
+END SUB
+
+SUB p5PrintString (Left AS INTEGER, Top AS INTEGER, theText$)
+    DIM Utf$
+
+    IF p5Canvas.encoding = 1252 THEN
+        Utf$ = FromCP1252$(theText$)
+    ELSE 'Default to 437
+        Utf$ = FromCP437$(theText$)
     END IF
+
+    REDIM p5ThisLineChars(LEN(Utf$)) AS LONG
+    uprint_extra Left, Top, _OFFSET(Utf$), LEN(Utf$), true, true, p5LastRenderedLineWidth, _OFFSET(p5ThisLineChars()), p5LastRenderedCharCount, p5Canvas.strokeA, 0
+    REDIM _PRESERVE p5ThisLineChars(p5LastRenderedCharCount) AS LONG
+END SUB
+
+FUNCTION PrintWidth& (theText$)
+    PrintWidth& = uprintwidth(theText$, LEN(theText$), 0)
 END FUNCTION
 
-FUNCTION colorB~& (v1 AS SINGLE)
-    IF p5Canvas.colorMode = p5RGB THEN
-        colorB~& = _RGB32(v1, v1, v1)
-    ELSEIF p5Canvas.colorMode = p5HSB THEN
-        colorB~& = hsb(0, 0, v1, 255)
-    END IF
+FUNCTION textWidth& (theText$)
+    textWidth& = PrintWidth&(theText$)
 END FUNCTION
 
-FUNCTION colorBA~& (v1 AS SINGLE, a AS SINGLE)
-    IF p5Canvas.colorMode = p5RGB THEN
-        colorBA~& = _RGBA32(v1, v1, v1, a)
-    ELSEIF p5Canvas.colorMode = p5HSB THEN
-        colorBA~& = hsb(0, 0, v1, a)
-    END IF
-END FUNCTION
-
-
-FUNCTION mag! (x!, y!)
-    mag! = _HYPOT(x!, y!)
-END FUNCTION
-
-FUNCTION sq! (n!)
-    sq! = n! * n!
-END FUNCTION
-
-FUNCTION pow! (n!, p!)
-    pow! = n! ^ p!
-END FUNCTION
-
-FUNCTION p5random! (mn!, mx!)
-    IF mn! > mx! THEN
-        SWAP mn!, mx!
-    END IF
-    p5random! = RND * (mx! - mn!) + mn!
-END FUNCTION
-
-FUNCTION join$ (str_array$(), sep$)
-    FOR i = LBOUND(str_array$) TO UBOUND(str_array$)
-        join$ = join$ + str_array$(i) + sep$
-    NEXT
+FUNCTION textHeight&
+    textHeight& = uheight
 END FUNCTION
 
 '---------------------------------------------------------------------------------
@@ -1951,6 +1288,703 @@ FUNCTION UTF8$ (source$, table$())
     UTF8$ = dest$
 END FUNCTION
 
+'#####################################################################################################
+'########################### p5 Environment Related methods & functions ##############################
+'#####################################################################################################
+SUB createCanvas (w AS INTEGER, h AS INTEGER)
+    STATIC CanvasSetup AS _BYTE
+
+    IF NOT CanvasSetup THEN
+        p5Canvas.imgHandle = _NEWIMAGE(w, h, 32)
+        SCREEN p5Canvas.imgHandle
+        tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
+        CanvasSetup = true
+    ELSE
+        DIM oldDest AS LONG
+        oldDest = p5Canvas.imgHandle
+        p5Canvas.imgHandle = _NEWIMAGE(w, h, 32)
+        SCREEN p5Canvas.imgHandle
+        _FREEIMAGE oldDest
+
+        IF tempShapeImage THEN
+            _FREEIMAGE tempShapeImage
+            tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
+        END IF
+    END IF
+END SUB
+
+FUNCTION createImage& (w AS INTEGER, h AS INTEGER)
+    createImage& = _NEWIMAGE(w, h, 32)
+END FUNCTION
+
+FUNCTION width&
+    width& = _WIDTH
+END FUNCTION
+
+FUNCTION height&
+    height& = _HEIGHT
+END FUNCTION
+
+SUB title (t$)
+    _TITLE t$
+END SUB
+
+SUB titleB (v!)
+    _TITLE STR$(v!)
+END SUB
+
+
+SUB push
+    pushState = pushState + 1
+    IF pushState > UBOUND(p5CanvasBackup) THEN
+        REDIM _PRESERVE p5CanvasBackup(pushState + 9) AS new_p5Canvas
+    END IF
+    p5CanvasBackup(pushState) = p5Canvas
+END SUB
+
+SUB pop
+    p5Canvas = p5CanvasBackup(pushState)
+    pushState = pushState - 1
+END SUB
+
+SUB redraw
+    callDrawLoop
+END SUB
+
+SUB callDrawLoop
+    DIM a AS _BYTE, xOffsetBackup AS SINGLE, yOffsetBackup AS SINGLE
+
+    p5frameCount = p5frameCount + 1
+
+    'calls to translate() are reverted after the draw loop
+    xOffsetBackup = p5Canvas.xOffset
+    yOffsetBackup = p5Canvas.yOffset
+
+    a = p5draw
+
+    p5Canvas.xOffset = xOffsetBackup
+    p5Canvas.yOffset = yOffsetBackup
+END SUB
+
+FUNCTION frameCount~&
+    frameCount~& = p5frameCount
+END FUNCTION
+
+SUB gatherInput ()
+    DIM a AS _BYTE
+
+    'Keyboard input:
+    keyCode = _KEYHIT
+    IF keyCode > 0 AND keyCode <> lastKeyCode THEN
+        lastKeyCode = keyCode
+        a = keyPressed
+        totalKeysDown = totalKeysDown + 1
+    ELSEIF keyCode < 0 THEN
+        totalKeysDown = totalKeysDown - 1
+        IF totalKeysDown <= 0 THEN
+            totalKeysDown = 0
+            keyCode = ABS(keyCode)
+            a = keyReleased
+            lastKeyCode = 0
+        END IF
+    END IF
+
+    keyIsPressed = totalKeysDown > 0
+
+    'Mouse input (optimization by Luke Ceddia):
+    p5mouseWheel = 0
+
+    IF _MOUSEINPUT THEN
+        p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
+        IF _MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 AND _MOUSEBUTTON(3) = mouseButton3 THEN
+            DO WHILE _MOUSEINPUT
+                p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
+                IF NOT (_MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 AND _MOUSEBUTTON(3) = mouseButton3) THEN EXIT DO
+            LOOP
+        END IF
+        mouseButton1 = _MOUSEBUTTON(1)
+        mouseButton2 = _MOUSEBUTTON(2)
+        mouseButton3 = _MOUSEBUTTON(3)
+    END IF
+
+    WHILE _MOUSEINPUT: WEND
+
+    IF p5mouseWheel THEN
+        a = mouseWheel
+    END IF
+
+    IF mouseButton1 THEN
+        mouseButton = LEFT
+        IF NOT mouseIsPressed THEN
+            mouseIsPressed = true
+            a = mousePressed
+        ELSE
+            a = mouseDragged
+        END IF
+    ELSE
+        IF mouseIsPressed AND mouseButton = LEFT THEN
+            mouseIsPressed = false
+            a = mouseReleased
+            a = mouseClicked
+        END IF
+    END IF
+
+    IF mouseButton2 THEN
+        mouseButton = RIGHT
+        IF NOT mouseIsPressed THEN
+            mouseIsPressed = true
+            a = mousePressed
+        ELSE
+            a = mouseDragged
+        END IF
+    ELSE
+        IF mouseIsPressed AND mouseButton = RIGHT THEN
+            mouseIsPressed = false
+            a = mouseReleased
+            a = mouseClicked
+        END IF
+    END IF
+
+    IF mouseButton3 THEN
+        mouseButton = CENTER
+        IF NOT mouseIsPressed THEN
+            mouseIsPressed = true
+            a = mousePressed
+        ELSE
+            a = mouseDragged
+        END IF
+    ELSE
+        IF mouseIsPressed AND mouseButton = CENTER THEN
+            mouseIsPressed = false
+            a = mouseReleased
+            a = mouseClicked
+        END IF
+    END IF
+
+END SUB
+                                
+SUB doLoop ()
+    p5Loop = true
+END SUB
+
+SUB noLoop ()
+    p5Loop = false
+END SUB
+
+SUB cursor (kind)
+    IF kind = CURSOR_NONE THEN _MOUSEHIDE ELSE glutSetCursor kind
+END SUB
+
+'#####################################################################################################
+'############################# p5 Maths & Vectors Related functions ##################################
+'#####################################################################################################
+
+FUNCTION noise! (x AS SINGLE, y AS SINGLE, z AS SINGLE)
+    STATIC p5NoiseSetup AS _BYTE
+    STATIC perlin() AS SINGLE
+    STATIC PERLIN_YWRAPB AS SINGLE, PERLIN_YWRAP AS SINGLE
+    STATIC PERLIN_ZWRAPB AS SINGLE, PERLIN_ZWRAP AS SINGLE
+    STATIC PERLIN_SIZE AS SINGLE, perlin_octaves AS SINGLE
+    STATIC perlin_amp_falloff AS SINGLE
+
+    IF NOT p5NoiseSetup THEN
+        p5NoiseSetup = true
+
+        PERLIN_YWRAPB = 4
+        PERLIN_YWRAP = INT(1 * (2 ^ PERLIN_YWRAPB))
+        PERLIN_ZWRAPB = 8
+        PERLIN_ZWRAP = INT(1 * (2 ^ PERLIN_ZWRAPB))
+        PERLIN_SIZE = 4095
+
+        perlin_octaves = 4
+        perlin_amp_falloff = 0.5
+
+        REDIM perlin(PERLIN_SIZE + 1) AS SINGLE
+        DIM i AS SINGLE
+        FOR i = 0 TO PERLIN_SIZE + 1
+            perlin(i) = RND
+        NEXT
+    END IF
+
+    x = ABS(x)
+    y = ABS(y)
+    z = ABS(z)
+
+    DIM xi AS SINGLE, yi AS SINGLE, zi AS SINGLE
+    xi = INT(x)
+    yi = INT(y)
+    zi = INT(z)
+
+    DIM xf AS SINGLE, yf AS SINGLE, zf AS SINGLE
+    xf = x - xi
+    yf = y - yi
+    zf = z - zi
+
+    DIM r AS SINGLE, ampl AS SINGLE, o AS SINGLE
+    r = 0
+    ampl = .5
+
+    FOR o = 1 TO perlin_octaves
+        DIM of AS SINGLE, rxf AS SINGLE
+        DIM ryf AS SINGLE, n1 AS SINGLE, n2 AS SINGLE, n3 AS SINGLE
+        of = xi + INT(yi * (2 ^ PERLIN_YWRAPB)) + INT(zi * (2 ^ PERLIN_ZWRAPB))
+
+        rxf = 0.5 * (1.0 - COS(xf * _PI))
+        ryf = 0.5 * (1.0 - COS(yf * _PI))
+
+        n1 = perlin(of AND PERLIN_SIZE)
+        n1 = n1 + rxf * (perlin((of + 1) AND PERLIN_SIZE) - n1)
+        n2 = perlin((of + PERLIN_YWRAP) AND PERLIN_SIZE)
+        n2 = n2 + rxf * (perlin((of + PERLIN_YWRAP + 1) AND PERLIN_SIZE) - n2)
+        n1 = n1 + ryf * (n2 - n1)
+
+        of = of + PERLIN_ZWRAP
+        n2 = perlin(of AND PERLIN_SIZE)
+        n2 = n2 + rxf * (perlin((of + 1) AND PERLIN_SIZE) - n2)
+        n3 = perlin((of + PERLIN_YWRAP) AND PERLIN_SIZE)
+        n3 = n3 + rxf * (perlin((of + PERLIN_YWRAP + 1) AND PERLIN_SIZE) - n3)
+        n2 = n2 + ryf * (n3 - n2)
+
+        n1 = n1 + (0.5 * (1.0 - COS(zf * _PI))) * (n2 - n1)
+
+        r = r + n1 * ampl
+        ampl = ampl * perlin_amp_falloff
+        xi = INT(xi * (2 ^ 1))
+        xf = xf * 2
+        yi = INT(yi * (2 ^ 1))
+        yf = yf * 2
+        zi = INT(zi * (2 ^ 1))
+        zf = zf * 2
+
+        IF xf >= 1.0 THEN xi = xi + 1: xf = xf - 1
+        IF yf >= 1.0 THEN yi = yi + 1: yf = yf - 1
+        IF zf >= 1.0 THEN zi = zi + 1: zf = zf - 1
+    NEXT
+    noise! = r
+END FUNCTION
+
+FUNCTION map! (value!, minRange!, maxRange!, newMinRange!, newMaxRange!)
+    map! = ((value! - minRange!) / (maxRange! - minRange!)) * (newMaxRange! - newMinRange!) + newMinRange!
+END FUNCTION
+
+SUB createVector (v AS vector, x AS SINGLE, y AS SINGLE)
+    v.x = x
+    v.y = y
+END SUB
+
+SUB vector.add (v1 AS vector, v2 AS vector)
+    v1.x = v1.x + v2.x
+    v1.y = v1.y + v2.y
+    v1.z = v1.z + v2.z
+END SUB
+
+SUB vector.addB (v1 AS vector, x2 AS SINGLE, y2 AS SINGLE, z2 AS SINGLE)
+    v1.x = v1.x + x2
+    v1.y = v1.y + y2
+    v1.z = v1.z + z2
+END SUB
+
+SUB vector.sub (v1 AS vector, v2 AS vector)
+    v1.x = v1.x - v2.x
+    v1.y = v1.y - v2.y
+    v1.z = v1.z - v2.z
+END SUB
+
+SUB vector.subB (v1 AS vector, x2 AS SINGLE, y2 AS SINGLE, z2 AS SINGLE)
+    v1.x = v1.x - x2
+    v1.y = v1.y - y2
+    v1.z = v1.z - z2
+END SUB
+
+SUB vector.limit (v AS vector, __max!)
+    mSq = vector.magSq(v)
+    IF mSq > __max! * __max! THEN
+        vector.div v, SQR(mSq)
+        vector.mult v, __max!
+    END IF
+END SUB
+
+FUNCTION vector.magSq! (v AS vector)
+    vector.magSq! = v.x * v.x + v.y * v.y + v.z * v.z
+END FUNCTION
+
+SUB vector.fromAngle (v AS vector, __angle!)
+    IF p5Canvas.angleMode = DEGREES THEN angle! = _D2R(__angle!) ELSE angle! = __angle!
+
+    v.x = COS(angle!)
+    v.y = SIN(angle!)
+END SUB
+
+FUNCTION vector.mag! (v AS vector)
+    x = v.x
+    y = v.y
+    z = v.z
+
+    magSq = x * x + y * y + z * z
+    vector.mag! = SQR(magSq)
+END FUNCTION
+
+SUB vector.setMag (v AS vector, n AS SINGLE)
+    vector.normalize v
+    vector.mult v, n
+END SUB
+
+SUB vector.normalize (v AS vector)
+    theMag! = vector.mag(v)
+    IF theMag! = 0 THEN EXIT SUB
+
+    vector.div v, theMag!
+END SUB
+
+SUB vector.div (v AS vector, n AS SINGLE)
+    v.x = v.x / n
+    v.y = v.y / n
+    v.z = v.z / n
+END SUB
+
+SUB vector.mult (v AS vector, n AS SINGLE)
+    v.x = v.x * n
+    v.y = v.y * n
+    v.z = v.z * n
+END SUB
+
+SUB vector.random2d (v AS vector)
+    DIM angle AS SINGLE
+
+    IF p5Canvas.angleMode = DEGREES THEN
+        angle = p5random(0, 360)
+    ELSE
+        angle = p5random(0, TWO_PI)
+    END IF
+
+    vector.fromAngle v, angle
+END SUB
+
+FUNCTION p5degrees! (r!)
+    p5degrees! = _R2D(r!)
+END FUNCTION
+
+FUNCTION p5radians! (d!)
+    p5radians! = _D2R(d!)
+END FUNCTION
+
+FUNCTION p5sin! (angle!)
+    IF p5Canvas.angleMode = RADIANS THEN
+        p5sin! = SIN(angle!)
+    ELSE
+        p5sin! = SIN(_D2R(angle!))
+    END IF
+END FUNCTION
+
+FUNCTION p5cos! (angle!)
+    IF p5Canvas.angleMode = RADIANS THEN
+        p5cos! = COS(angle!)
+    ELSE
+        p5cos! = COS(_D2R(angle!))
+    END IF
+END FUNCTION
+
+SUB angleMode (kind)
+    p5Canvas.angleMode = kind
+END SUB
+
+'Calculate minimum value between two values
+FUNCTION min! (a!, b!)
+    IF a! < b! THEN min! = a! ELSE min! = b!
+END FUNCTION
+
+'Calculate maximum value between two values
+FUNCTION max! (a!, b!)
+    IF a! > b! THEN max! = a! ELSE max! = b!
+END FUNCTION
+
+'Constrain a value between a minimum and maximum value.
+FUNCTION constrain! (n!, low!, high!)
+    constrain! = max(min(n!, high!), low!)
+END FUNCTION
+
+'Calculate the distance between two points.
+FUNCTION dist! (x1!, y1!, x2!, y2!)
+    dist! = SQR((x2! - x1!) ^ 2 + (y2! - y1!) ^ 2)
+END FUNCTION
+
+FUNCTION distB! (v1 AS vector, v2 AS vector)
+    distB! = dist!(v1.x, v1.y, v2.x, v2.y)
+END FUNCTION
+
+FUNCTION lerp! (start!, stp!, amt!)
+    lerp! = amt! * (stp! - start!) + start!
+END FUNCTION
+
+FUNCTION mag! (x!, y!)
+    mag! = _HYPOT(x!, y!)
+END FUNCTION
+
+FUNCTION sq! (n!)
+    sq! = n! * n!
+END FUNCTION
+
+FUNCTION pow! (n!, p!)
+    pow! = n! ^ p!
+END FUNCTION
+
+FUNCTION p5random! (mn!, mx!)
+    IF mn! > mx! THEN
+        SWAP mn!, mx!
+    END IF
+    p5random! = RND * (mx! - mn!) + mn!
+END FUNCTION
+
+FUNCTION join$ (str_array$(), sep$)
+    FOR i = LBOUND(str_array$) TO UBOUND(str_array$)
+        join$ = join$ + str_array$(i) + sep$
+    NEXT
+END FUNCTION
+
+'#####################################################################################################
+'######################## p5 Date & Time Related functions ###########################################
+'#####################################################################################################
+
+FUNCTION month& ()
+    month& = VAL(LEFT$(DATE$, 2))
+END FUNCTION
+
+FUNCTION day& ()
+    day& = VAL(MID$(DATE$, 4, 2))
+END FUNCTION
+
+FUNCTION year& ()
+    year& = VAL(RIGHT$(DATE$, 4))
+END FUNCTION
+
+FUNCTION hour& ()
+    hour& = VAL(LEFT$(TIME$, 2))
+END FUNCTION
+
+FUNCTION minute& ()
+    minute& = VAL(MID$(TIME$, 4, 2))
+END FUNCTION
+
+FUNCTION seconds& ()
+    seconds& = VAL(RIGHT$(TIME$, 2))
+END SUB
+
+'#####################################################################################################
+'############################ p5 Sound Related methods &  functions ##################################
+'#####################################################################################################
+
+FUNCTION loadSound& (file$)
+    IF _FILEEXISTS(file$) = 0 THEN EXIT FUNCTION
+    DIM tempHandle&, setting$
+
+    setting$ = "vol"
+
+    SELECT CASE UCASE$(RIGHT$(file$, 4))
+        CASE ".WAV", ".OGG", ".AIF", ".RIF", ".VOC"
+            setting$ = "vol,sync,len,pause"
+        CASE ".MP3"
+            setting$ = "vol,pause,setpos"
+    END SELECT
+
+    tempHandle& = _SNDOPEN(file$, setting$)
+    IF tempHandle& > 0 THEN
+        totalLoadedSounds = totalLoadedSounds + 1
+        REDIM _PRESERVE loadedSounds(totalLoadedSounds) AS new_SoundHandle
+        loadedSounds(totalLoadedSounds).handle = tempHandle&
+        loadedSounds(totalLoadedSounds).sync = INSTR(setting$, "sync") > 0
+        loadSound& = tempHandle&
+    END IF
+END FUNCTION
+
+SUB p5play (soundHandle&)
+    DIM i AS LONG
+    FOR i = 1 TO UBOUND(loadedSounds)
+        IF loadedSounds(i).handle = soundHandle& THEN
+            IF loadedSounds(i).sync THEN
+                _SNDPLAYCOPY soundHandle&
+            ELSE
+                IF NOT _SNDPLAYING(soundHandle&) THEN _SNDPLAY soundHandle&
+            END IF
+        END IF
+    NEXT
+END SUB
+
+'#####################################################################################################
+'############################ p5 Colors Related methods & functions ##################################
+'#####################################################################################################
+
+SUB fill (r AS SINGLE, g AS SINGLE, b AS SINGLE)
+    p5Canvas.doFill = true
+    IF p5Canvas.colorMode = p5HSB THEN p5Canvas.fill = hsb(r, g, b, 255) ELSE p5Canvas.fill = _RGB32(r, g, b)
+    p5Canvas.fillA = p5Canvas.fill
+    p5Canvas.fillAlpha = 255
+    COLOR , p5Canvas.fill 'fill also affects text
+END SUB
+
+SUB fillA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
+    p5Canvas.doFill = true
+    IF p5Canvas.colorMode = p5HSB THEN
+        p5Canvas.fill = hsb(r, g, b, a)
+        p5Canvas.fillA = hsb(r, g, b, a)
+    ELSE
+        p5Canvas.fill = _RGB32(r, g, b)
+        p5Canvas.fillA = _RGBA32(r, g, b, a)
+    END IF
+    p5Canvas.fillAlpha = constrain(a, 0, 255)
+    COLOR , p5Canvas.fillA 'fill also affects text
+END SUB
+
+SUB fillB (b AS SINGLE)
+    p5Canvas.doFill = true
+    p5Canvas.fill = _RGB32(b, b, b)
+    p5Canvas.fillA = p5Canvas.fill
+    p5Canvas.fillAlpha = 255
+    COLOR , p5Canvas.fill 'fill also affects text
+END SUB
+
+SUB fillBA (b AS SINGLE, a AS SINGLE)
+    p5Canvas.doFill = true
+    p5Canvas.fill = _RGB32(b, b, b)
+    p5Canvas.fillA = _RGBA32(b, b, b, a)
+    p5Canvas.fillAlpha = constrain(a, 0, 255)
+    COLOR , p5Canvas.fillA 'fill also affects text
+END SUB
+
+SUB fillC (c AS _UNSIGNED LONG)
+    p5Canvas.doFill = true
+    p5Canvas.fillAlpha = _ALPHA(c)
+    IF p5Canvas.fillAlpha < 255 THEN
+        p5Canvas.fill = _RGB32(_RED32(c), _GREEN32(c), _BLUE32(c))
+    ELSE
+        p5Canvas.fill = c
+    END IF
+    p5Canvas.fillA = c
+END SUB
+
+SUB stroke (r AS SINGLE, g AS SINGLE, b AS SINGLE)
+    p5Canvas.doStroke = true
+    IF p5Canvas.colorMode = p5HSB THEN p5Canvas.stroke = hsb(r, g, b, 255) ELSE p5Canvas.stroke = _RGB32(r, g, b)
+    p5Canvas.strokeA = p5Canvas.stroke
+    p5Canvas.strokeAlpha = 255
+    COLOR p5Canvas.stroke 'stroke also affects text
+END SUB
+
+SUB strokeA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
+    p5Canvas.doStroke = true
+    IF p5Canvas.colorMode = p5HSB THEN
+        p5Canvas.stroke = hsb(r, g, b, 255)
+        p5Canvas.strokeA = hsb(r, g, b, a)
+    ELSE
+        p5Canvas.stroke = _RGB32(r, g, b)
+        p5Canvas.strokeA = _RGBA32(r, g, b, a)
+    END IF
+
+    p5Canvas.strokeAlpha = constrain(a, 0, 255)
+    COLOR p5Canvas.strokeA 'stroke also affects text
+END SUB
+
+SUB strokeB (b AS SINGLE)
+    p5Canvas.doStroke = true
+    p5Canvas.stroke = _RGB32(b, b, b)
+    p5Canvas.strokeA = p5Canvas.stroke
+    p5Canvas.strokeAlpha = 255
+    COLOR p5Canvas.strokeA 'stroke also affects text
+END SUB
+
+SUB strokeBA (b AS SINGLE, a AS SINGLE)
+    p5Canvas.doStroke = true
+    p5Canvas.stroke = _RGB32(b, b, b)
+    p5Canvas.strokeA = _RGBA32(b, b, b, a)
+    p5Canvas.strokeAlpha = constrain(a, 0, 255)
+    COLOR p5Canvas.strokeA 'stroke also affects text
+END SUB
+
+SUB strokeC (c AS _UNSIGNED LONG)
+    p5Canvas.doStroke = true
+    p5Canvas.strokeAlpha = _ALPHA(c)
+    IF p5Canvas.strokeAlpha < 255 THEN
+        p5Canvas.stroke = _RGB32(_RED32(c), _GREEN32(c), _BLUE32(c))
+    ELSE
+        p5Canvas.stroke = c
+    END IF
+    p5Canvas.strokeA = c
+END SUB
+
+SUB noFill ()
+    p5Canvas.doFill = false
+    COLOR , 0 'fill also affects text
+END SUB
+
+SUB noStroke ()
+    p5Canvas.doStroke = false
+    COLOR 0 'stroke also affects text
+END SUB
+
+FUNCTION lerpColor~& (c1 AS _UNSIGNED LONG, c2 AS _UNSIGNED LONG, __v!)
+    DIM v!
+    v! = constrain(__v!, 0, 1)
+
+    IF p5Canvas.colorMode = p5RGB THEN
+        DIM r1 AS SINGLE, g1 AS SINGLE, b1 AS SINGLE
+        DIM r2 AS SINGLE, g2 AS SINGLE, b2 AS SINGLE
+        DIM rstep AS SINGLE, gstep AS SINGLE, bstep AS SINGLE
+
+        r1 = _RED32(c1)
+        g1 = _GREEN32(c1)
+        b1 = _BLUE32(c1)
+
+        r2 = _RED32(c2)
+        g2 = _GREEN32(c2)
+        b2 = _BLUE32(c2)
+
+        rstep = map(v!, 0, 1, r1, r2)
+        gstep = map(v!, 0, 1, g1, g2)
+        bstep = map(v!, 0, 1, b1, b2)
+
+        lerpColor~& = _RGB32(rstep, gstep, bstep)
+    ELSE
+        'p5HSB lerpColor not yet available; return either
+        'of the original colors that's closer to v!
+        IF v! < .5 THEN
+            lerpColor~& = c1
+        ELSE
+            lerpColor~& = c2
+        END IF
+    END IF
+END FUNCTION
+
+FUNCTION color~& (v1 AS SINGLE, v2 AS SINGLE, v3 AS SINGLE)
+    IF p5Canvas.colorMode = p5RGB THEN
+        color~& = _RGB32(v1, v2, v3)
+    ELSEIF p5Canvas.colorMode = p5HSB THEN
+        color~& = hsb(v1, v2, v3, 255)
+    END IF
+END FUNCTION
+
+FUNCTION colorA~& (v1 AS SINGLE, v2 AS SINGLE, v3 AS SINGLE, a AS SINGLE)
+    IF p5Canvas.colorMode = p5RGB THEN
+        colorA~& = _RGBA32(v1, v2, v3, a)
+    ELSEIF p5Canvas.colorMode = p5HSB THEN
+        colorA~& = hsb(v1, v2, v3, a)
+    END IF
+END FUNCTION
+
+FUNCTION colorB~& (v1 AS SINGLE)
+    IF p5Canvas.colorMode = p5RGB THEN
+        colorB~& = _RGB32(v1, v1, v1)
+    ELSEIF p5Canvas.colorMode = p5HSB THEN
+        colorB~& = hsb(0, 0, v1, 255)
+    END IF
+END FUNCTION
+
+FUNCTION colorBA~& (v1 AS SINGLE, a AS SINGLE)
+    IF p5Canvas.colorMode = p5RGB THEN
+        colorBA~& = _RGBA32(v1, v1, v1, a)
+    ELSEIF p5Canvas.colorMode = p5HSB THEN
+        colorBA~& = hsb(0, 0, v1, a)
+    END IF
+END FUNCTION
+
 'method adapted form http://stackoverflow.com/questions/4106363/converting-rgb-to-hsb-colors
 FUNCTION hsb~& (__H AS _FLOAT, __S AS _FLOAT, __B AS _FLOAT, A AS _FLOAT)
     DIM H AS _FLOAT, S AS _FLOAT, B AS _FLOAT
@@ -2070,9 +2104,13 @@ FUNCTION lightness! (col~&)
     lightness! = mx!
 END FUNCTION
  
-SUB cursor (kind)
-    IF kind = CURSOR_NONE THEN _MOUSEHIDE ELSE glutSetCursor kind
-END SUB
+'can convert hexadecimal colors value to rgb one
+'usage col~&  = hexToRgb~&("#ffdf00")
+function hexToRgb~& (h$)
+    if len(h$) <> 7 or len(h$) = 0 then exit function
+	h$ = right$(h$,len(h$)-1)
+	hexToRgb~& = _rgb32(val("&h"+left$(h$,2)),val("&h"+mid$(h$,3,2)),val("&h"+right$(h$,2)))
+end function  
 
 'uncomment these lines below to see a simple demo
 'FUNCTION p5setup ()
