@@ -949,7 +949,7 @@ SUB p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
     
     IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
     IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
-    
+
     internalp5makeTempImage
     IF p5Canvas.doFill THEN
         CLS , p5Canvas.fill
@@ -1157,13 +1157,13 @@ SUB p5arc (__x!, __y!, w!, h!, start##, stp##, mode)
             END IF
         END IF
     END IF
-    
+
     FOR i## = start## TO stp## STEP .001
         xx! = x! + w! * p5cos(i##)
         yy! = y! + h! * p5sin(i##)
         IF p5Canvas.doStroke THEN CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, tempColor~&
     NEXT
-    
+
     IF p5Canvas.doFill THEN
         IF p5Canvas.doStroke THEN
             PAINT (0, 0), tempFill~&, p5Canvas.stroke
@@ -1178,12 +1178,12 @@ SUB p5arc (__x!, __y!, w!, h!, start##, stp##, mode)
         END IF
     END IF
     _CLEARCOLOR tempFill~&
-    
+
     IF p5Canvas.doStroke THEN
         IF mode = ARC_CHORD THEN internalp5line x0!, y0!, x1!, y1!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
         IF mode = ARC_PIE THEN internalp5line x0!, y0!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke: internalp5line x1!, y1!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
     END IF
-        
+
     IF p5Canvas.doFill THEN
         IF p5Canvas.doStroke THEN _CLEARCOLOR p5Canvas.stroke ELSE _CLEARCOLOR tempColor~&
         IF p5Canvas.doStroke THEN
@@ -2409,9 +2409,7 @@ END FUNCTION
 
 FUNCTION colorN~& (c$)
     IF LEFT$(c$, 1) = "#" THEN
-        c~& = hexToRgb~&(c$)
-        IF p5Canvas.colorMode = p5RGB THEN colorN~& = c~&: EXIT FUNCTION
-        IF p5Canvas.colorMode = p5HSB THEN colorN~& = hsb(_RED32(c~&), _GREEN32(c~&), _BLUE32(c~&), 255)
+        colorN~& = hexToCol~&(c$)
     ELSE
         FOR i = 1 TO UBOUND(p5Colors)
             IF LCASE$(c$) = LCASE$(RTRIM$(p5Colors(i).n)) THEN colorN~& = p5Colors(i).c: EXIT FOR
@@ -2421,9 +2419,7 @@ END FUNCTION
 
 FUNCTION colorNA~& (c$, a!)
     IF LEFT$(c$, 1) = "#" THEN
-        c~& = hexToRgb~&(c$)
-        IF p5Canvas.colorMode = p5RGB THEN colorNA~& = _RGBA32(_RED32(c~&), _GREEN32(c~&), _BLUE32(c~&), a!)
-        IF p5Canvas.colorMode = p5HSB THEN colorNA~& = hsb(_RED32(c~&), _GREEN32(c~&), _BLUE32(c~&), a!)
+        colorNA~& = hexToCol~&(c$)
     ELSE
         FOR i = 1 TO UBOUND(p5Colors)
             IF LCASE$(c$) = LCASE$(RTRIM$(p5Colors(i).n)) THEN colorNA~& = _RGBA32(_RED32(p5Colors(i).c), _GREEN32(p5Colors(i).c), _BLUE32(p5Colors(i).c), a!)
@@ -2551,10 +2547,10 @@ END FUNCTION
  
 'can convert hexadecimal colors value to rgb one
 'usage col~&  = hexToRgb~&("#ffdf00")
-FUNCTION hexToRgb~& (h$)
+FUNCTION hexToCol~& (h$)
     IF LEN(h$) <> 7 OR LEN(h$) = 0 THEN EXIT FUNCTION
     h$ = RIGHT$(h$, LEN(h$) - 1)
-    hexToRgb~& = _RGB32(VAL("&h" + LEFT$(h$, 2)), VAL("&h" + MID$(h$, 3, 2)), VAL("&h" + RIGHT$(h$, 2)))
+    IF p5Canvas.colorMode = p5HSB THEN hexToCol~& = hsb(VAL("&h" + LEFT$(h$, 2)), VAL("&h" + MID$(h$, 3, 2)), VAL("&h" + RIGHT$(h$, 2)), 255) ELSE hexToCol~& = _RGB32(VAL("&h" + LEFT$(h$, 2)), VAL("&h" + MID$(h$, 3, 2)), VAL("&h" + RIGHT$(h$, 2)))
 END FUNCTION
 
 'uncomment these lines below to see a simple demo
