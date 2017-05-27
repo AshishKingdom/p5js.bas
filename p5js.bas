@@ -407,6 +407,9 @@ REDIM SHARED p5ThisLineChars(0) AS LONG
 REDIM SHARED loadedSounds(0) AS new_SoundHandle
 DIM SHARED totalLoadedSounds AS LONG
 
+'noise function related variables
+dim shared perlin_octaves as single, perlin_amp_falloff as single
+
 'timer used to gather input from user
 DIM SHARED p5InputTimer AS INTEGER
 p5InputTimer = _FREETIMER
@@ -1106,7 +1109,7 @@ SUB p5curve (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     _CLEARCOLOR tempFill~&
     IF p5Canvas.doFill THEN
         _CLEARCOLOR p5Canvas.stroke
-        FOR t# = 0 TO 1 STEP .01
+        FOR t# = 0 TO 1-s STEP s
             xt! = 0.5 * ((2 * x1!) + (-x0! + x2!) * t# + (2 * x0! - 5 * x1! + 4 * x2! - x3!) * (t# * t#) + (-x0! + 3 * x1! - 3 * x2! + x3!) * (t# * t# * t#))
             yt! = 0.5 * ((2 * y1!) + (-y0! + y2!) * t# + (2 * y0! - 5 * y1! + 4 * y2! - y3!) * (t# * t#) + (-y0! + 3 * y1! - 3 * y2! + y3!) * (t# * t# * t#))
             CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
@@ -1870,8 +1873,7 @@ FUNCTION noise! (x AS SINGLE, y AS SINGLE, z AS SINGLE)
     STATIC perlin() AS SINGLE
     STATIC PERLIN_YWRAPB AS SINGLE, PERLIN_YWRAP AS SINGLE
     STATIC PERLIN_ZWRAPB AS SINGLE, PERLIN_ZWRAP AS SINGLE
-    STATIC PERLIN_SIZE AS SINGLE, perlin_octaves AS SINGLE
-    STATIC perlin_amp_falloff AS SINGLE
+    STATIC PERLIN_SIZE AS SINGLE
 
     IF NOT p5NoiseSetup THEN
         p5NoiseSetup = true
@@ -1948,6 +1950,11 @@ FUNCTION noise! (x AS SINGLE, y AS SINGLE, z AS SINGLE)
     NEXT
     noise! = r
 END FUNCTION
+
+sub noiseDetail (lod!, falloff!)
+    if lod! > 0 then perlin_octaves = lod!
+	if falloff! > 0 then perlin_amp_falloff = falloff!
+end sub
 
 FUNCTION map! (value!, minRange!, maxRange!, newMinRange!, newMaxRange!)
     map! = ((value! - minRange!) / (maxRange! - minRange!)) * (newMaxRange! - newMinRange!) + newMinRange!
@@ -2419,7 +2426,8 @@ END FUNCTION
 
 FUNCTION colorNA~& (c$, a!)
     IF LEFT$(c$, 1) = "#" THEN
-        colorNA~& = hexToCol~&(c$)
+        c~& = hexToCol~&(c$)
+		colorNA~& = _RGBA32(_RED32(c~&), _GREEN32(c~&), _BLUE32(c~&), a!)
     ELSE
         FOR i = 1 TO UBOUND(p5Colors)
             IF LCASE$(c$) = LCASE$(RTRIM$(p5Colors(i).n)) THEN colorNA~& = _RGBA32(_RED32(p5Colors(i).c), _GREEN32(p5Colors(i).c), _BLUE32(p5Colors(i).c), a!)
