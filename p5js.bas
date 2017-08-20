@@ -27,6 +27,8 @@ CONST TAU = TWO_PI
 CONST p5POINTS = 1
 CONST p5LINES = 2
 CONST p5CLOSE = 3
+CONST ROUND = 0
+CONST SQUARE = 1
 CONST RADIANS = 4
 CONST DEGREES = 5
 CONST CORNER = 6
@@ -59,13 +61,16 @@ TYPE new_p5Canvas
     stroke AS _UNSIGNED LONG
     strokeA AS _UNSIGNED LONG
     strokeAlpha AS SINGLE
+    strokeTexture AS LONG
     fill AS _UNSIGNED LONG
     fillA AS _UNSIGNED LONG
     fillAlpha AS SINGLE
+    fillTexture AS LONG
     backColor AS _UNSIGNED LONG
     backColorA AS _UNSIGNED LONG
     backColorAlpha AS SINGLE
     strokeWeight AS SINGLE
+    strokeCap AS _BYTE
     doStroke AS _BYTE
     doFill AS _BYTE
     textAlign AS _BYTE
@@ -420,7 +425,7 @@ TIMER(p5InputTimer) ON
 createCanvas 640, 400
 _TITLE "p5js.bas - Untitled sketch"
 _ICON
-stroke 0, 0, 0
+stroke 255, 255, 255
 fill 255, 255, 255 'white
 strokeWeight 1
 backgroundB 240
@@ -447,6 +452,7 @@ LOOP
 '######################################################################################################
 '###################### 2D Rendering related methods & functions ######################################
 '######################################################################################################
+
 SUB image (img&, __x AS INTEGER, __y AS INTEGER)
     x = __x + p5Canvas.xOffset
     y = __y + p5Canvas.yOffset
@@ -548,7 +554,7 @@ SUB endShape (closed)
     'it's time to reset all varibles!!
     shapeAllow = false
     shapeType = 0
-    shapeInit = 0
+    shapeInit = false
     FirstVertex.x = 0
     FirstVertex.y = 0
     PreviousVertex.x = 0
@@ -631,9 +637,7 @@ END SUB
 
 SUB p5line (__x1 AS SINGLE, __y1 AS SINGLE, __x2 AS SINGLE, __y2 AS SINGLE)
     DIM x1 AS SINGLE, y1 AS SINGLE, x2 AS SINGLE, y2 AS SINGLE
-    DIM dx AS SINGLE, dy AS SINGLE, d AS SINGLE
-    DIM dxx AS SINGLE, dyy AS SINGLE
-    DIM i AS SINGLE
+    DIM a AS SINGLE, x0 AS SINGLE, y0 AS SINGLE
 
     IF NOT p5Canvas.doStroke THEN EXIT SUB
 
@@ -642,14 +646,20 @@ SUB p5line (__x1 AS SINGLE, __y1 AS SINGLE, __x2 AS SINGLE, __y2 AS SINGLE)
     x2 = __x2 + p5Canvas.xOffset
     y2 = __y2 + p5Canvas.xOffset
 
-    dx = x2 - x1
-    dy = y2 - y1
-    d = SQR(dx * dx + dy * dy)
-    FOR i = 0 TO d
-        CircleFill dxx + x1, dyy + y1, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
-        dxx = dxx + dx / d
-        dyy = dyy + dy / d
-    NEXT
+    a = _ATAN2(y2 - y1, x2 - x1)
+    a = a + _PI / 2
+    x0 = 0.5 * p5Canvas.strokeWeight * COS(a)
+    y0 = 0.5 * p5Canvas.strokeWeight * SIN(a)
+
+
+    _MAPTRIANGLE (0, 0)-(0, 0)-(0, 0), p5Canvas.strokeTexture TO(x1 - x0, y1 - y0)-(x1 + x0, y1 + y0)-(x2 + x0, y2 + y0), , _SMOOTH
+    _MAPTRIANGLE (0, 0)-(0, 0)-(0, 0), p5Canvas.strokeTexture TO(x1 - x0, y1 - y0)-(x2 + x0, y2 + y0)-(x2 - x0, y2 - y0), , _SMOOTH
+
+    IF p5Canvas.strokeCap = ROUND THEN
+        CircleFill x1, y1, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
+        CircleFill x2, y2, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
+    END IF
+
 END SUB
 
 SUB p5point (x AS SINGLE, y AS SINGLE)
@@ -938,7 +948,7 @@ END SUB
 'draws a quadrilateral
 SUB p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
     IF NOT p5Canvas.doStroke AND NOT p5Canvas.doFill THEN EXIT SUB
-    
+
     DIM x1!, y1!, x2!, y2!, x3!, y3!, x4!, y4!
 
     x1! = __x1! + p5Canvas.xOffset
@@ -949,7 +959,7 @@ SUB p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
     y3! = __y3! + p5Canvas.yOffset
     x4! = __x4! + p5Canvas.xOffset
     y4! = __y4! + p5Canvas.yOffset
-    
+
     IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
     IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
 
@@ -968,7 +978,7 @@ SUB p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
         internalp5line x3!, y3!, x4!, y4!, p5Canvas.strokeWeight / 2, tempColor~&
         internalp5line x4!, y4!, x1!, y1!, p5Canvas.strokeWeight / 2, tempColor~&
     END IF
-    
+
     IF p5Canvas.doFill THEN
         IF p5Canvas.doStroke THEN
             PAINT (0, 0), tempFill~&, p5Canvas.stroke
@@ -982,13 +992,13 @@ SUB p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
             PAINT (_WIDTH, _HEIGHT), tempFill~&, tempColor~&
         END IF
     END IF
-    
+
     _CLEARCOLOR tempFill~&
     _CLEARCOLOR tempColor~&
-    
+
     _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
     _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-    
+
     internalp5displayTempImage
 END SUB
 
@@ -996,33 +1006,33 @@ END SUB
 'method by Ashish
 SUB p5bezier (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     IF NOT p5Canvas.doStroke AND NOT p5Canvas.doFill THEN EXIT SUB
-    
+
     x0! = __x0! + p5Canvas.xOffset
     x1! = __x1! + p5Canvas.xOffset
     x2! = __x2! + p5Canvas.xOffset
     x3! = __x3! + p5Canvas.xOffset
-    
+
     y0! = __y0! + p5Canvas.yOffset
     y1! = __y1! + p5Canvas.yOffset
     y2! = __y2! + p5Canvas.yOffset
     y3! = __y3! + p5Canvas.yOffset
-    
+
     cx! = 3 * (x1! - x0!)
     bx! = 3 * (x2! - x1!) - cx!
     ax! = x3! - x0! - cx! - bx!
-    
+
     cy! = 3 * (y1! - y0!)
     by! = 3 * (y2! - y1!) - cy!
     ay! = y3! - y0! - cy! - by!
-    
+
     DIM s AS DOUBLE
     s = .001
-    
+
     internalp5makeTempImage
-    
+
     IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
     IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
-    
+
     IF p5Canvas.doFill THEN
         CLS , p5Canvas.fill
         IF p5Canvas.doStroke THEN LINE (x0!, y0!)-(x3!, y3!), p5Canvas.stroke ELSE LINE (x0!, y0!)-(x3!, y3!), tempColor~&
@@ -1071,23 +1081,23 @@ SUB p5bezier (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
 END SUB
 
 SUB p5curve (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
-    
+
     IF NOT p5Canvas.doStroke OR NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
-    
+
     x0! = __x0! + p5Canvas.xOffset
     x1! = __x1! + p5Canvas.xOffset
     x2! = __x2! + p5Canvas.xOffset
     x3! = __x3! + p5Canvas.xOffset
-    
+
     y0! = __y0! + p5Canvas.yOffset
     y1! = __y1! + p5Canvas.yOffset
     y2! = __y2! + p5Canvas.yOffset
     y3! = __y3! + p5Canvas.yOffset
-    
+
     internalp5makeTempImage
-    
+
     IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
-    
+
     IF p5Canvas.doFill THEN CLS , p5Canvas.fill: LINE (x1!, y1!)-(x2!, y2!), p5Canvas.stroke
     DIM s AS DOUBLE
     s = .001
@@ -1098,14 +1108,14 @@ SUB p5curve (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     NEXT
 
     IF NOT p5Canvas.doFill THEN GOTO internal_p5_curve_display
-    
+
     IF p5Canvas.doFill THEN
         PAINT (0, 0), tempFill~&, p5Canvas.stroke
         PAINT (_WIDTH, 0), tempFill~&, p5Canvas.stroke
         PAINT (0, _HEIGHT), tempFill~&, p5Canvas.stroke
         PAINT (_WIDTH, _HEIGHT), tempFill~&, p5Canvas.stroke
     END IF
-    
+
     _CLEARCOLOR tempFill~&
     IF p5Canvas.doFill THEN
         _CLEARCOLOR p5Canvas.stroke
@@ -1115,33 +1125,33 @@ SUB p5curve (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
             CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
         NEXT
     END IF
-    
+
     internal_p5_curve_display:::
-    
+
     _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
     _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-    
+
     internalp5displayTempImage
 END SUB
 
 SUB p5arc (__x!, __y!, w!, h!, start##, stp##, mode)
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
-    
+
     x! = __x! + p5Canvas.xOffset
     y! = __y! + p5Canvas.yOffset
-    
+
     IF p5Canvas.angleMode = DEGREES THEN start## = p5degrees(start##): spt## = p5degrees(spt##)
-    
+
     IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
     IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
-    
+
     x0! = x! + w! * p5cos(start##)
     y0! = y! + h! * p5sin(start##)
     x1! = x! + w! * p5cos(stp##)
     y1! = y! + h! * p5sin(stp##)
-    
+
     internalp5makeTempImage
-    
+
     IF p5Canvas.doFill THEN
         CLS , p5Canvas.fill
         IF p5Canvas.doStroke THEN
@@ -1200,11 +1210,11 @@ SUB p5arc (__x!, __y!, w!, h!, start##, stp##, mode)
             IF p5Canvas.doStroke THEN CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, tempColor~&
         NEXT
     END IF
-    
+
     internal_p5_arc_display:::
     _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
     _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-    
+
     internalp5displayTempImage
 END SUB
 
@@ -1225,6 +1235,10 @@ SUB strokeWeight (a AS SINGLE)
     ELSE
         p5Canvas.strokeWeight = a
     END IF
+END SUB
+
+SUB strokeCap (setting AS _BYTE)
+    p5Canvas.strokeCap = setting
 END SUB
 
 SUB background (r AS SINGLE, g AS SINGLE, b AS SINGLE)
@@ -1687,6 +1701,10 @@ SUB createCanvas (w AS INTEGER, h AS INTEGER)
         p5Canvas.imgHandle = _NEWIMAGE(w, h, 32)
         SCREEN p5Canvas.imgHandle
         tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
+
+        p5Canvas.strokeTexture = _NEWIMAGE(1, 1, 32)
+        p5Canvas.fillTexture = _NEWIMAGE(1, 1, 32)
+
         CanvasSetup = true
     ELSE
         DIM oldDest AS LONG
@@ -2206,11 +2224,34 @@ END SUB
 '############################ p5 Colors Related methods & functions ##################################
 '#####################################################################################################
 
+SUB p5setFillTexture
+    DIM prevDest AS LONG
+
+    prevDest = _DEST
+    _DEST p5Canvas.fillTexture
+    CLS , 0
+    PSET (0, 0), p5Canvas.fillA
+    _DEST prevDest
+END SUB
+
+SUB p5setStrokeTexture
+    DIM prevDest AS LONG
+
+    prevDest = _DEST
+    _DEST p5Canvas.strokeTexture
+    CLS , 0
+    PSET (0, 0), p5Canvas.strokeA
+    _DEST prevDest
+END SUB
+
 SUB fill (r AS SINGLE, g AS SINGLE, b AS SINGLE)
     p5Canvas.doFill = true
     IF p5Canvas.colorMode = p5HSB THEN p5Canvas.fill = hsb(r, g, b, 255) ELSE p5Canvas.fill = _RGB32(r, g, b)
     p5Canvas.fillA = p5Canvas.fill
     p5Canvas.fillAlpha = 255
+
+    p5setFillTexture
+
     COLOR , p5Canvas.fill 'fill also affects text
 END SUB
 
@@ -2220,6 +2261,9 @@ SUB fillN (c$)
     p5Canvas.fill = c~&
     p5Canvas.fillA = c~&
     p5Canvas.fillAlpha = 255
+
+    p5setFillTexture
+
     COLOR , p5Canvas.fill 'fill also affect the text
 END SUB
 
@@ -2229,6 +2273,9 @@ SUB fillNA (c$, a!)
     p5Canvas.fill = c~&
     p5Canvas.fillA = _RGBA32(_RED32(c~&), _GREEN32(c~&), _BLUE32(c~&), a!)
     p5Canvas.fillAlpha = _ALPHA32(c~&)
+
+    p5setFillTexture
+
     COLOR , p5Canvas.fillA 'fill also affect the text
 END SUB
 
@@ -2242,6 +2289,9 @@ SUB fillA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
         p5Canvas.fillA = _RGBA32(r, g, b, a)
     END IF
     p5Canvas.fillAlpha = constrain(a, 0, 255)
+
+    p5setFillTexture
+
     COLOR , p5Canvas.fillA 'fill also affects text
 END SUB
 
@@ -2250,6 +2300,9 @@ SUB fillB (b AS SINGLE)
     p5Canvas.fill = _RGB32(b, b, b)
     p5Canvas.fillA = p5Canvas.fill
     p5Canvas.fillAlpha = 255
+
+    p5setFillTexture
+
     COLOR , p5Canvas.fill 'fill also affects text
 END SUB
 
@@ -2258,6 +2311,9 @@ SUB fillBA (b AS SINGLE, a AS SINGLE)
     p5Canvas.fill = _RGB32(b, b, b)
     p5Canvas.fillA = _RGBA32(b, b, b, a)
     p5Canvas.fillAlpha = constrain(a, 0, 255)
+
+    p5setFillTexture
+
     COLOR , p5Canvas.fillA 'fill also affects text
 END SUB
 
@@ -2270,6 +2326,8 @@ SUB fillC (c AS _UNSIGNED LONG)
         p5Canvas.fill = c
     END IF
     p5Canvas.fillA = c
+
+    p5setFillTexture
 END SUB
 
 SUB stroke (r AS SINGLE, g AS SINGLE, b AS SINGLE)
@@ -2277,6 +2335,9 @@ SUB stroke (r AS SINGLE, g AS SINGLE, b AS SINGLE)
     IF p5Canvas.colorMode = p5HSB THEN p5Canvas.stroke = hsb(r, g, b, 255) ELSE p5Canvas.stroke = _RGB32(r, g, b)
     p5Canvas.strokeA = p5Canvas.stroke
     p5Canvas.strokeAlpha = 255
+
+    p5setStrokeTexture
+
     COLOR p5Canvas.stroke 'stroke also affects text
 END SUB
 
@@ -2286,6 +2347,9 @@ SUB strokeN (c$)
     p5Canvas.stroke = c~&
     p5Canvas.strokeA = c~&
     p5Canvas.strokeAlpha = 255
+
+    p5setStrokeTexture
+
     COLOR p5Canvas.stroke 'stroke also affects text
 END SUB
 
@@ -2295,6 +2359,9 @@ SUB strokeNA (c$, a!)
     p5Canvas.stroke = _RGB32(_RED32(c~&), _GREEN32(c~&), _BLUE32(c~&))
     p5Canvas.strokeA = c~&
     p5Canvas.strokeAlpha = _ALPHA32(c~&)
+
+    p5setStrokeTexture
+
     COLOR p5Canvas.strokeA 'stroke also affects text
 END SUB
 
@@ -2309,6 +2376,9 @@ SUB strokeA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
     END IF
 
     p5Canvas.strokeAlpha = constrain(a, 0, 255)
+
+    p5setStrokeTexture
+
     COLOR p5Canvas.strokeA 'stroke also affects text
 END SUB
 
@@ -2317,6 +2387,9 @@ SUB strokeB (b AS SINGLE)
     p5Canvas.stroke = _RGB32(b, b, b)
     p5Canvas.strokeA = p5Canvas.stroke
     p5Canvas.strokeAlpha = 255
+
+    p5setStrokeTexture
+
     COLOR p5Canvas.strokeA 'stroke also affects text
 END SUB
 
@@ -2325,6 +2398,9 @@ SUB strokeBA (b AS SINGLE, a AS SINGLE)
     p5Canvas.stroke = _RGB32(b, b, b)
     p5Canvas.strokeA = _RGBA32(b, b, b, a)
     p5Canvas.strokeAlpha = constrain(a, 0, 255)
+
+    p5setStrokeTexture
+
     COLOR p5Canvas.strokeA 'stroke also affects text
 END SUB
 
@@ -2337,6 +2413,8 @@ SUB strokeC (c AS _UNSIGNED LONG)
         p5Canvas.stroke = c
     END IF
     p5Canvas.strokeA = c
+
+    p5setStrokeTexture
 END SUB
 
 SUB noFill ()
@@ -2564,11 +2642,12 @@ END FUNCTION
 'uncomment these lines below to see a simple demo
 'FUNCTION p5setup ()
 '    createCanvas 400, 400
-'    strokeWeight 2
+'    strokeWeight 10
 '    fill 255, 0, 0
+'    strokeCap SQUARE
 'END FUNCTION
 
 'FUNCTION p5draw ()
 '    backgroundBA 0, 30
-'    p5ellipse _MOUSEX, _MOUSEY, 20, 20
+'    p5line 30, 30, _MOUSEX, _MOUSEY
 'END FUNCTION
