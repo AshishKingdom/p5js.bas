@@ -652,8 +652,8 @@ SUB p5line (__x1 AS SINGLE, __y1 AS SINGLE, __x2 AS SINGLE, __y2 AS SINGLE)
     y0 = 0.5 * p5Canvas.strokeWeight * SIN(a)
 
 
-    _MAPTRIANGLE (0, 0)-(0, 0)-(0, 0), p5Canvas.strokeTexture TO(x1 - x0, y1 - y0)-(x1 + x0, y1 + y0)-(x2 + x0, y2 + y0), , _SMOOTH
-    _MAPTRIANGLE (0, 0)-(0, 0)-(0, 0), p5Canvas.strokeTexture TO(x1 - x0, y1 - y0)-(x2 + x0, y2 + y0)-(x2 - x0, y2 - y0), , _SMOOTH
+    _MAPTRIANGLE _SEAMLESS(0, 0)-(0, 0)-(0, 0), p5Canvas.strokeTexture TO(x1 - x0, y1 - y0)-(x1 + x0, y1 + y0)-(x2 + x0, y2 + y0), , _SMOOTH
+    _MAPTRIANGLE _SEAMLESS(0, 0)-(0, 0)-(0, 0), p5Canvas.strokeTexture TO(x1 - x0, y1 - y0)-(x2 + x0, y2 + y0)-(x2 - x0, y2 - y0), , _SMOOTH
 
     IF p5Canvas.strokeCap = ROUND THEN
         CircleFill x1, y1, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
@@ -715,7 +715,6 @@ SUB p5ellipse (__x AS SINGLE, __y AS SINGLE, xr AS SINGLE, yr AS SINGLE)
 
 END SUB
 
-'draw a triangle by joining 3 differents location
 SUB p5triangle (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     DIM x1!, y1!, x2!, y2!, x3!, y3!
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
@@ -729,40 +728,15 @@ SUB p5triangle (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     x3! = __x3! + p5Canvas.xOffset
     y3! = __y3! + p5Canvas.yOffset
 
-    internalp5makeTempImage
+    IF p5Canvas.doFill THEN
+        _MAPTRIANGLE (0, 0)-(0, 0)-(0, 0), p5Canvas.fillTexture TO(x1!, y1!)-(x2!, y2!)-(x3!, y3!), , _SMOOTH
+    END IF
 
     IF p5Canvas.doStroke THEN
         p5line __x1!, __y1!, __x2!, __y2!
         p5line __x2!, __y2!, __x3!, __y3!
         p5line __x3!, __y3!, __x1!, __y1!
-    ELSE
-        p5Canvas.strokeA = p5Canvas.fill
-        p5Canvas.doStroke = true
-        p5line __x1!, __y1!, __x2!, __y2!
-        p5line __x2!, __y2!, __x3!, __y3!
-        p5line __x3!, __y3!, __x1!, __y1!
-        noStroke
     END IF
-
-    IF p5Canvas.doFill THEN
-        avgX! = (x1! + x2! + x3!) / 3
-        IF avgX! > _WIDTH - 1 THEN avgX! = _WIDTH - 1
-        IF avgX! < 0 THEN avgX! = 0
-
-        avgY! = (y1! + y2! + y3!) / 3
-        IF avgY! > _HEIGHT - 1 THEN avgY! = _HEIGHT - 1
-        IF avgY! < 0 THEN avgY! = 0
-
-        IF p5Canvas.doStroke THEN
-            PAINT (avgX!, avgY!), p5Canvas.fill, p5Canvas.stroke
-        ELSE
-            PAINT (avgX!, avgY!), p5Canvas.fill, p5Canvas.fill
-        END IF
-        _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-    END IF
-
-    internalp5displayTempImage
-
 END SUB
 
 SUB p5triangleB (v1 AS vector, v2 AS vector, v3 AS vector)
