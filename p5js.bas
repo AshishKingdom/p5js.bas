@@ -1218,15 +1218,36 @@ SUB p5arc (__x!, __y!, w!, h!, start##, stp##, mode)
     internalp5displayTempImage
 END SUB
 
-SUB internalp5line (x0!, y0!, x1!, y1!, s!, col~&)
-    dx! = x1! - x0!
-    dy! = y1! - y0!
-    d! = SQR(dx! * dx! + dy! * dy!)
-    FOR i = 0 TO d!
-        CircleFill x0! + dxx!, y0! + dyy!, s!, col~&
-        dxx! = dxx! + dx! / d!
-        dyy! = dyy! + dy! / d!
-    NEXT
+SUB internalp5line (__x0!, __y0!, __x1!, __y1!, s!, col~&)
+    DIM x1 AS SINGLE, y1 AS SINGLE, x2 AS SINGLE, y2 AS SINGLE
+    DIM a AS SINGLE, x0 AS SINGLE, y0 AS SINGLE
+    DIM tempTexture AS LONG, prevDest AS LONG
+
+    x1 = __x0!
+    y1 = __y0!
+    x2 = __x1!
+    y2 = __y1!
+
+    a = _ATAN2(y2 - y1, x2 - x1)
+    a = a + _PI / 2
+    x0 = 0.5 * p5Canvas.strokeWeight * COS(a)
+    y0 = 0.5 * p5Canvas.strokeWeight * SIN(a)
+
+    tempTexture = _NEWIMAGE(1, 1, 32)
+    prevDest = _DEST
+    _DEST tempTexture
+    PSET (0, 0), col~&
+    _DEST prevDest
+
+    _MAPTRIANGLE (0, 0)-(0, 0)-(0, 0), tempTexture TO(x1 - x0, y1 - y0)-(x1 + x0, y1 + y0)-(x2 + x0, y2 + y0), , _SMOOTH
+    _MAPTRIANGLE (0, 0)-(0, 0)-(0, 0), tempTexture TO(x1 - x0, y1 - y0)-(x2 + x0, y2 + y0)-(x2 - x0, y2 - y0), , _SMOOTH
+
+    IF p5Canvas.strokeCap = ROUND THEN
+        CircleFill x1, y1, s!, col~&
+        CircleFill x2, y2, s!, col~&
+    END IF
+
+    _FREEIMAGE tempTexture
 END SUB
 
 SUB strokeWeight (a AS SINGLE)
