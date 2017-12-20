@@ -536,7 +536,7 @@ END SUB
 SUB endShape (closed)
     'do we have to close it?
     IF closed = p5CLOSE AND shapeType = p5LINES THEN
-        IF NOT p5Canvas.doStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(FirstVertex.x, FirstVertex.y), p5Canvas.stroke ELSE p5line PreviousVertex.x, PreviousVertex.y, FirstVertex.x, FirstVertex.y
+        IF NOT p5Canvas.doStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(FirstVertex.x, FirstVertex.y), p5Canvas.stroke ELSE internalp5line PreviousVertex.x, PreviousVertex.y, FirstVertex.x, FirstVertex.y, p5Canvas.strokeWeight, p5Canvas.strokeA
     END IF
 
     'fill with color
