@@ -470,6 +470,11 @@ SUB internalp5makeTempImage
     IF p5previousDest = p5Canvas.imgHandle THEN
         _DEST tempShapeImage
         CLS , 0 'clear it and make it transparent
+    ELSE
+		_FREEIMAGE tempShapeImage
+		tempShapeImage = _NEWIMAGE(_WIDTH(p5previousDest), _HEIGHT(p5previousDest), 32)
+		_DEST tempShapeImage
+		CLS , 0 'clear it & make it transparent
     END IF
 END SUB
 
@@ -477,6 +482,11 @@ SUB internalp5displayTempImage
     IF p5previousDest = p5Canvas.imgHandle THEN
         _DEST p5previousDest
         _PUTIMAGE (0, 0), tempShapeImage
+    ELSE
+		_DEST p5previousDest
+		_PUTIMAGE (0,0), tempShapeImage
+		_FREEIMAGE tempShapeImage
+		tempShapeImage = _NEWIMAGE(_WIDTH(p5Canvas.imgHandle), _HEIGHT(p5Canvas.imgHandle), 32)
     END IF
 END SUB
 
@@ -682,11 +692,11 @@ SUB p5ellipse (__x AS SINGLE, __y AS SINGLE, xr AS SINGLE, yr AS SINGLE)
 
     IF p5Canvas.doStroke THEN
         IF xr <> yr THEN
-            CIRCLE (x, y), xr + p5Canvas.strokeWeight / 2, p5Canvas.stroke, , , xr / yr
+            CIRCLE (x, y), xr + p5Canvas.strokeWeight, p5Canvas.stroke, , , xr / yr
             PAINT (x, y), p5Canvas.stroke, p5Canvas.stroke
             _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
         ELSE
-            CircleFill x, y, xr + p5Canvas.strokeWeight / 2, p5Canvas.strokeA
+            CircleFill x, y, xr + p5Canvas.strokeWeight, p5Canvas.strokeA
         END IF
     END IF
 
