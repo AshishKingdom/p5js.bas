@@ -12,9 +12,9 @@ This is a rewrite of all that's possible so that the same paradigms and techniqu
 
 Definitely not. QB64 is a compiled language, so the goal is to make drawing/animation as simple as it is on the web but for Windows/Linux/macOS programs.
 ***
-## Is this backed by the Processing.js foundation?
+## Is this backed by the Processing Foundation?
 
-We're not related to the Processing.js foundation. We're fans. This is an open source adaptation of existing open source work.
+We're not related to the [Processing Foundation](https://processing.org), mantainer of [p5.js](https://p5js.org). We're fans. This is an open source adaptation of existing open source work.
 ***
 ## How many functions does it support?
 
