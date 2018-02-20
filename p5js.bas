@@ -1851,7 +1851,7 @@ END FUNCTION
 
 'Calculate the distance between two points.
 FUNCTION dist! (x1!, y1!, x2!, y2!)
-    dist! = SQR((x2! - x1!) ^ 2 + (y2! - y1!) ^ 2)
+    dist! = _HYPOT((x2! - x1!), (y2! - y1!))
 END FUNCTION
 
 FUNCTION distB! (v1 AS vector, v2 AS vector)
