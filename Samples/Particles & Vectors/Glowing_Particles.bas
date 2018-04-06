@@ -1,40 +1,40 @@
-dim shared prt&, particles(10000) as particle
+DIM SHARED prt&, particles(500) AS particle
 
-'$include:'p5js.bas'
+'$include:'../../p5js.bas'
 
-type particle
-    pos as vector
-	vel as vector
-	life as integer
-	death as integer
-end type 
+TYPE particle
+    pos AS vector
+    vel AS vector
+    life AS INTEGER
+    death AS INTEGER
+END TYPE
 
-function p5setup()
+FUNCTION p5setup ()
     title "Glowing Particles"
-    createCanvas 500,500
-	for i = 0 to ubound(particles)
-	    particles(i).pos.x = _mousex
-		particles(i).pos.y = _mousey
-		particles(i).vel.x = p5random(-2,2)
-		particles(i).vel.y = p5random(-2,3)
-		particles(i).death = p5random(50,100)
-	next
-	prt& = _loadimage("sprite.png",33)
-end function
+    createCanvas 500, 500
+    FOR i = 0 TO UBOUND(particles)
+        particles(i).pos.x = _MOUSEX
+        particles(i).pos.y = _MOUSEY
+        particles(i).vel.x = COS(p5random(-2, 2))
+        particles(i).vel.y = SIN(p5random(-2, 3))
+        particles(i).death = p5random(50, 100)
+    NEXT
+    prt& = _LOADIMAGE("sprite.png", 33)
+END FUNCTION
 
-function p5draw()
-    for i = 0 to ubound(particles)
-	    vector.add particles(i).pos, particles(i).vel
-		_putimage (particles(i).pos.x-16, particles(i).pos.y-16)-step(32,32),prt&,,,_smooth
-		particles(i).life = particles(i).life+1
-		particles(i).vel.y = particles(i).vel.y + .1
-		if particles(i).life>particles(i).death then
-		    particles(i).life = 0
-		    particles(i).pos.x = _mousex
-			particles(i).pos.y = _mousey
-			particles(i).vel.x = p5random(-2,2)
-			particles(i).vel.y = p5random(-2,3)
-			particles(i).death = p5random(100,300)
-		end if
-	next
-end function 
+FUNCTION p5draw ()
+    FOR i = 0 TO UBOUND(particles)
+        vector.add particles(i).pos, particles(i).vel
+        _PUTIMAGE (particles(i).pos.x - 16, particles(i).pos.y - 16)-STEP(32, 32), prt&
+        particles(i).life = particles(i).life + 1
+        particles(i).vel.y = particles(i).vel.y + .1
+        IF particles(i).life > particles(i).death THEN
+            particles(i).life = 0
+            particles(i).pos.x = _MOUSEX
+            particles(i).pos.y = _MOUSEY
+            particles(i).vel.x = COS(p5random(-2, 2))
+            particles(i).vel.y = SIN(p5random(-2, 3))
+            particles(i).death = p5random(100, 300)
+        END IF
+    NEXT
+END FUNCTION
