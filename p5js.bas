@@ -1,6 +1,6 @@
 'p5js.bas by Fellippe & Ashish
 'Open source - based on p5.js (https://p5js.org/)
-'Last update 5/26/2017
+'Requires QB64 1.2 or up
 
 RANDOMIZE TIMER
 
@@ -84,7 +84,6 @@ END TYPE
 
 TYPE new_SoundHandle
     handle AS LONG
-    sync AS _BYTE
 END TYPE
 
 TYPE vector
@@ -139,7 +138,7 @@ DIM SHARED p5LastRenderedCharCount AS LONG, p5LastRenderedLineWidth AS LONG
 REDIM SHARED p5ThisLineChars(0) AS LONG
 
 'sound system
-REDIM SHARED loadedSounds(0) AS new_SoundHandle
+REDIM SHARED loadedSounds(0) AS LONG
 DIM SHARED totalLoadedSounds AS LONG
 
 'noise function related variables
@@ -309,51 +308,62 @@ SUB translate (xoff AS SINGLE, yoff AS SINGLE)
     p5Canvas.yOffset = p5Canvas.yOffset + yoff
 END SUB
 
-SUB CircleFill (CX AS LONG, CY AS LONG, R AS LONG, C AS _UNSIGNED LONG)
-    'This sub from here: http://www.qb64.net/forum/index.php?topic=1848.msg17254#msg17254
-    DIM Radius AS LONG
-    DIM RadiusError AS LONG
-    DIM X AS LONG
-    DIM Y AS LONG
-
-    Radius = ABS(R)
-    RadiusError = -Radius
-    X = Radius
-    Y = 0
-
-    IF Radius = 0 THEN PSET (CX, CY), C: EXIT SUB
-
-    ' Draw the middle span here so we don't draw it twice in the main loop,
-    ' which would be a problem with blending turned on.
-    LINE (CX - X, CY)-(CX + X, CY), C, BF
-
-    WHILE X > Y
-
-        RadiusError = RadiusError + Y * 2 + 1
-
-        IF RadiusError >= 0 THEN
-
-            IF X <> Y + 1 THEN
-                LINE (CX - Y, CY - X)-(CX + Y, CY - X), C, BF
-                LINE (CX - Y, CY + X)-(CX + Y, CY + X), C, BF
-            END IF
-
-            X = X - 1
-            RadiusError = RadiusError - X * 2
-
+SUB CircleFill (x AS LONG, y AS LONG, R AS LONG, C AS _UNSIGNED LONG)
+    x0 = R
+    y0 = 0
+    e = 0
+    DO WHILE y0 < x0
+        IF e <= 0 THEN
+            y0 = y0 + 1
+            LINE (x - x0, y + y0)-(x + x0, y + y0), C, BF
+            LINE (x - x0, y - y0)-(x + x0, y - y0), C, BF
+            e = e + 2 * y0
+        ELSE
+            LINE (x - y0, y - x0)-(x + y0, y - x0), C, BF
+            LINE (x - y0, y + x0)-(x + y0, y + x0), C, BF
+            x0 = x0 - 1
+            e = e - 2 * x0
         END IF
+    LOOP
+    LINE (x - R, y)-(x + R, y), C, BF
+END SUB
 
-        Y = Y + 1
+SUB thickCircle (x AS SINGLE, y AS SINGLE, radius AS SINGLE, thickness AS SINGLE, colour AS _UNSIGNED LONG)
+    'This sub from STxAxTIC at the #qb64 chatroom on freenode.net
+    DIM rp AS SINGLE, rm AS SINGLE, rp2 AS SINGLE, rm2 AS SINGLE
+    DIM sm AS SINGLE, rpi2 AS SINGLE, rmi2 AS SINGLE, sp AS SINGLE
+    DIM i AS SINGLE
 
-        LINE (CX - X, CY - Y)-(CX + X, CY - Y), C, BF
-        LINE (CX - X, CY + Y)-(CX + X, CY + Y), C, BF
-
-    WEND
-
+    rp = radius + thickness / 2
+    rm = radius - thickness / 2
+    rp2 = rp ^ 2
+    rm2 = rm ^ 2
+    FOR i = -rp TO -rm STEP .2
+        rpi2 = rp2 - i ^ 2
+        sp = SQR(rpi2)
+        LINE (x + i, y)-(x + i, y + sp), colour, BF
+        LINE (x + i, y)-(x + i, y - sp), colour, BF
+    NEXT
+    FOR i = -rm TO 0 STEP .2
+        rpi2 = rp2 - i ^ 2
+        rmi2 = rm2 - i ^ 2
+        sm = SQR(rmi2)
+        sp = SQR(rpi2)
+        LINE (x + i, y + sm)-(x + i, y + sp), colour, BF
+        LINE (x - i, y + sm)-(x - i, y + sp), colour, BF
+        LINE (x + i, y - sm)-(x + i, y - sp), colour, BF
+        LINE (x - i, y - sm)-(x - i, y - sp), colour, BF
+    NEXT
+    FOR i = rm TO rp STEP .2
+        rpi2 = rp2 - i ^ 2
+        sp = SQR(rpi2)
+        LINE (x + i, y)-(x + i, y + sp), colour, BF
+        LINE (x + i, y)-(x + i, y - sp), colour, BF
+    NEXT
 END SUB
 
 SUB RoundRectFill (x AS SINGLE, y AS SINGLE, x1 AS SINGLE, y1 AS SINGLE, r AS SINGLE, c AS _UNSIGNED LONG)
-    'This sub from _vincent at the #qb64 chatroom on freenode.net
+    'This sub from _vince at the #qb64 chatroom on freenode.net
     LINE (x, y + r)-(x1, y1 - r), c, BF
 
     a = r
@@ -409,49 +419,38 @@ SUB p5point (x AS SINGLE, y AS SINGLE)
 END SUB
 
 SUB p5ellipse (__x AS SINGLE, __y AS SINGLE, xr AS SINGLE, yr AS SINGLE)
-    DIM i AS SINGLE
     DIM x AS SINGLE, y AS SINGLE
-    DIM xx AS SINGLE, yy AS SINGLE
 
     IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
 
     x = __x + p5Canvas.xOffset
     y = __y + p5Canvas.yOffset
 
-    internalp5makeTempImage
-
-    IF p5Canvas.doStroke THEN
-        IF xr <> yr THEN
+    IF xr <> yr THEN
+        internalp5makeTempImage
+        IF p5Canvas.doStroke THEN
             CIRCLE (x, y), xr + p5Canvas.strokeWeight, p5Canvas.stroke, , , xr / yr
             PAINT (x, y), p5Canvas.stroke, p5Canvas.stroke
             _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
-        ELSE
-            CircleFill x, y, xr + p5Canvas.strokeWeight, p5Canvas.strokeA
         END IF
-    END IF
 
-    IF p5Canvas.doFill THEN
-        IF xr <> yr THEN
+        IF p5Canvas.doFill THEN
             CIRCLE (x, y), xr - p5Canvas.strokeWeight / 2, p5Canvas.fill, , , xr / yr
             PAINT (x, y), p5Canvas.fill, p5Canvas.fill
             _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
         ELSE
-            CircleFill x, y, xr - p5Canvas.strokeWeight / 2, p5Canvas.fillA
-        END IF
-    ELSE
-        'no fill
-        DIM tempColor~&
-        IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
-        IF xr <> yr THEN
+            'no fill
+            DIM tempColor~&
+            IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
             CIRCLE (x, y), xr - p5Canvas.strokeWeight / 2, tempColor~&, , , xr / yr
             PAINT (x, y), tempColor~&, tempColor~&
-        ELSE
-            CircleFill x, y, xr - p5Canvas.strokeWeight / 2, tempColor~&
+            _CLEARCOLOR tempColor~&
         END IF
-        _CLEARCOLOR tempColor~&
+        internalp5displayTempImage
+    ELSE
+        IF p5Canvas.doFill THEN CircleFill x, y, xr, p5Canvas.fillA
+        IF p5Canvas.doStroke THEN thickCircle x, y, xr, p5Canvas.strokeWeight, p5Canvas.strokeA
     END IF
-
-    internalp5displayTempImage
 
 END SUB
 
@@ -1921,23 +1920,13 @@ END SUB
 
 FUNCTION loadSound& (file$)
     IF _FILEEXISTS(file$) = 0 THEN EXIT FUNCTION
-    DIM tempHandle&, setting$
+    DIM tempHandle&
 
-    setting$ = "vol"
-
-    SELECT CASE UCASE$(RIGHT$(file$, 4))
-        CASE ".WAV", ".OGG", ".AIF", ".RIF", ".VOC"
-            setting$ = "vol,sync,len,pause"
-        CASE ".MP3"
-            setting$ = "vol,pause,setpos"
-    END SELECT
-
-    tempHandle& = _SNDOPEN(file$, setting$)
+    tempHandle& = _SNDOPEN(file$)
     IF tempHandle& > 0 THEN
         totalLoadedSounds = totalLoadedSounds + 1
-        REDIM _PRESERVE loadedSounds(totalLoadedSounds) AS new_SoundHandle
-        loadedSounds(totalLoadedSounds).handle = tempHandle&
-        loadedSounds(totalLoadedSounds).sync = INSTR(setting$, "sync") > 0
+        REDIM _PRESERVE loadedSounds(totalLoadedSounds) AS LONG
+        loadedSounds(totalLoadedSounds) = tempHandle&
         loadSound& = tempHandle&
     END IF
 END FUNCTION
@@ -1945,12 +1934,8 @@ END FUNCTION
 SUB p5play (soundHandle&)
     DIM i AS LONG
     FOR i = 1 TO UBOUND(loadedSounds)
-        IF loadedSounds(i).handle = soundHandle& THEN
-            IF loadedSounds(i).sync THEN
-                _SNDPLAYCOPY soundHandle&
-            ELSE
-                IF NOT _SNDPLAYING(soundHandle&) THEN _SNDPLAY soundHandle&
-            END IF
+        IF loadedSounds(i) = soundHandle& THEN
+            _SNDPLAYCOPY soundHandle&
         END IF
     NEXT
 END SUB
