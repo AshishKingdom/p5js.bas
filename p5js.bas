@@ -82,10 +82,6 @@ TYPE new_p5Canvas
     angleMode AS INTEGER
 END TYPE
 
-TYPE new_SoundHandle
-    handle AS LONG
-END TYPE
-
 TYPE vector
     x AS SINGLE
     y AS SINGLE
