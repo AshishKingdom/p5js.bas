@@ -6,6 +6,7 @@ yoff = 0.0
 FUNCTION p5setup
     createCanvas 710, 400
     frameRate = 60
+    strokeWeight 1
 END FUNCTION
 
 FUNCTION p5draw

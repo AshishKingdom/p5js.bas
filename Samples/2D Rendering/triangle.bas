@@ -3,7 +3,7 @@ DIM SHARED Size
 
 FUNCTION p5setup
     createCanvas 400, 400
-    Size = 10
+    Size = 5
     stroke 255, 255, 255
     fillA 255, 200, 0, 200
 END FUNCTION
