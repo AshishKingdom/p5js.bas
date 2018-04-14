@@ -1,4 +1,5 @@
-DIM SHARED Size, round AS _BYTE
+DIM SHARED Size, isRound AS _BYTE
+
 '$include:'../../p5js.bas'
 
 FUNCTION p5setup
@@ -18,7 +19,7 @@ FUNCTION p5draw
     strokeA 255, 255, 255, 230
     fillA 255, 200, 0, 200
 
-    IF round THEN
+    IF isRound THEN
         p5rectB _MOUSEX, _MOUSEY, Size, Size / 2, 10
     ELSE
         p5rect _MOUSEX, _MOUSEY, Size, Size / 2
@@ -31,6 +32,6 @@ END FUNCTION
 
 FUNCTION mouseClicked
     IF mouseButton = LEFT THEN
-        round = NOT round
+        isRound = NOT isRound
     END IF
 END FUNCTION

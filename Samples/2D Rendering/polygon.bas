@@ -39,8 +39,10 @@ FUNCTION mouseClicked
     END IF
 END FUNCTION
 
-FUNCTION mouseWheel
-    strokeWeight p5Canvas.strokeWeight + p5mouseWheel
+FUNCTION mouseWheel STATIC
+    IF size = 0 THEN size = 2
+    size = size + p5mouseWheel
+    IF size < 2 THEN size = 2
 
-    IF p5Canvas.strokeWeight < 2 THEN strokeWeight 2
+    strokeWeight size
 END FUNCTION
