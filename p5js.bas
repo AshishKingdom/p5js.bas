@@ -303,7 +303,7 @@ SUB CircleFill (x AS LONG, y AS LONG, R AS LONG, C AS _UNSIGNED LONG)
 
     x0 = R
     y0 = 0
-    e = 0
+    e = -r
     DO WHILE y0 < x0
         IF e <= 0 THEN
             y0 = y0 + 1
