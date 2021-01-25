@@ -2690,7 +2690,7 @@ END SUB
 'FUNCTION p5setup ()
 '    createCanvas 400, 400
 '    strokeWeight 10
-'    fill 255, 0, 0
+'    stroke 255, 0, 0
 '    strokeCap SQUARE
 'END FUNCTION
 
