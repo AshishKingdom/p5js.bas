@@ -2,154 +2,154 @@
 'Open source - based on p5.js (https://p5js.org/)
 'Requires QB64 1.2 or up
 
-RANDOMIZE TIMER
+Randomize Timer
 
 'external font rendering lib
-DECLARE LIBRARY "falcon"
-    SUB uprint_extra (BYVAL x&, BYVAL y&, BYVAL chars%&, BYVAL length%&, BYVAL kern&, BYVAL do_render&, txt_width&, BYVAL charpos%&, charcount&, BYVAL colour~&, BYVAL max_width&)
-    FUNCTION uprint (BYVAL x&, BYVAL y&, chars$, BYVAL txt_len&, BYVAL colour~&, BYVAL max_width&)
-    FUNCTION uprintwidth (chars$, BYVAL txt_len&, BYVAL max_width&)
-    FUNCTION uheight& ()
-    FUNCTION falcon_uspacing& ALIAS uspacing ()
-    FUNCTION uascension& ()
-END DECLARE
+Declare Library "falcon"
+    Sub uprint_extra (ByVal x&, Byval y&, Byval chars%&, Byval length%&, Byval kern&, Byval do_render&, txt_width&, Byval charpos%&, charcount&, Byval colour~&, Byval max_width&)
+    Function uprint (ByVal x&, Byval y&, chars$, Byval txt_len&, Byval colour~&, Byval max_width&)
+    Function uprintwidth (chars$, Byval txt_len&, Byval max_width&)
+    Function uheight& ()
+    Function falcon_uspacing& Alias uspacing ()
+    Function uascension& ()
+End Declare
 
-DECLARE LIBRARY
-    FUNCTION millis~& ALIAS GetTicks
-    SUB glutSetCursor (BYVAL style&)
-END DECLARE
+Declare Library
+    Function millis~& Alias GetTicks
+    Sub glutSetCursor (ByVal style&)
+End Declare
 
 'p5 constants
-CONST TWO_PI = 6.283185307179586
-CONST HALF_PI = 1.570796326794897
-CONST QUARTER_PI = 0.785398163397448
-CONST TAU = TWO_PI
-CONST p5POINTS = 1
-CONST p5LINES = 2
-CONST p5CLOSE = 3
-CONST ROUND = 0
-CONST SQUARE = 1
-CONST RADIANS = 4
-CONST DEGREES = 5
-CONST CORNER = 6
-CONST CORNERS = 7
-CONST p5RGB = 8
-CONST p5HSB = 9
-CONST CURSOR_NORMAL = 1
-CONST CURSOR_HAND = 2
-CONST CURSOR_HELP = 4
-CONST CURSOR_CYCLE = 7
-CONST CURSOR_TEXT = 8
-CONST CURSOR_CROSSHAIR = 3
-CONST CURSOR_UP_DOWN = 10
-CONST CURSOR_LEFT_RIGHT = 11
-CONST CURSOR_LEFT_RIGHT_CORNER = 16
-CONST CURSOR_RIGHT_LEFT_CORNER = 17
-CONST CURSOR_MOVE = 5
-CONST CURSOR_NONE = 23
-CONST ARC_DEFAULT = 1
-CONST ARC_OPEN = 3
-CONST ARC_CHORD = 5
-CONST ARC_PIE = 7
+Const TWO_PI = 6.283185307179586
+Const HALF_PI = 1.570796326794897
+Const QUARTER_PI = 0.785398163397448
+Const TAU = TWO_PI
+Const p5POINTS = 1
+Const p5LINES = 2
+Const p5CLOSE = 3
+Const ROUND = 0
+Const SQUARE = 1
+Const RADIANS = 4
+Const DEGREES = 5
+Const CORNER = 6
+Const CORNERS = 7
+Const p5RGB = 8
+Const p5HSB = 9
+Const CURSOR_NORMAL = 1
+Const CURSOR_HAND = 2
+Const CURSOR_HELP = 4
+Const CURSOR_CYCLE = 7
+Const CURSOR_TEXT = 8
+Const CURSOR_CROSSHAIR = 3
+Const CURSOR_UP_DOWN = 10
+Const CURSOR_LEFT_RIGHT = 11
+Const CURSOR_LEFT_RIGHT_CORNER = 16
+Const CURSOR_RIGHT_LEFT_CORNER = 17
+Const CURSOR_MOVE = 5
+Const CURSOR_NONE = 23
+Const ARC_DEFAULT = 1
+Const ARC_OPEN = 3
+Const ARC_CHORD = 5
+Const ARC_PIE = 7
 'boolean constants
-CONST true = -1, false = NOT true
+Const true = -1, false = Not true
 
 'p5 global variables
-TYPE new_p5Canvas
-    imgHandle AS LONG
-    fontHandle AS LONG
-    stroke AS _UNSIGNED LONG
-    strokeA AS _UNSIGNED LONG
-    strokeAlpha AS SINGLE
-    strokeTexture AS LONG
-    fill AS _UNSIGNED LONG
-    fillA AS _UNSIGNED LONG
-    fillAlpha AS SINGLE
-    fillTexture AS LONG
-    backColor AS _UNSIGNED LONG
-    backColorA AS _UNSIGNED LONG
-    backColorAlpha AS SINGLE
-    strokeWeight AS SINGLE
-    strokeCap AS _BYTE
-    doStroke AS _BYTE
-    doFill AS _BYTE
-    textAlign AS _BYTE
-    encoding AS LONG
-    rectMode AS _BYTE
-    xOffset AS SINGLE
-    yOffset AS SINGLE
-    colorMode AS INTEGER
-    angleMode AS INTEGER
-END TYPE
+Type new_p5Canvas
+    imgHandle As Long
+    fontHandle As Long
+    stroke As _Unsigned Long
+    strokeA As _Unsigned Long
+    strokeAlpha As Single
+    strokeTexture As Long
+    fill As _Unsigned Long
+    fillA As _Unsigned Long
+    fillAlpha As Single
+    fillTexture As Long
+    backColor As _Unsigned Long
+    backColorA As _Unsigned Long
+    backColorAlpha As Single
+    strokeWeight As Single
+    strokeCap As _Byte
+    doStroke As _Byte
+    doFill As _Byte
+    textAlign As _Byte
+    encoding As Long
+    rectMode As _Byte
+    xOffset As Single
+    yOffset As Single
+    colorMode As Integer
+    angleMode As Integer
+End Type
 
-TYPE vector
-    x AS SINGLE
-    y AS SINGLE
-    z AS SINGLE
-END TYPE
+Type vector
+    x As Single
+    y As Single
+    z As Single
+End Type
 
-TYPE __p5Color
-    n AS STRING * 32 'name of the color
-    c AS _UNSIGNED LONG 'color value
-END TYPE
+Type __p5Color
+    n As String * 32 'name of the color
+    c As _Unsigned Long 'color value
+End Type
 
 
 'p5 colors table
-DIM SHARED p5Colors(135) AS __p5Color
+Dim Shared p5Colors(135) As __p5Color
 p5setColors
 
 'frame rate
-DIM SHARED frameRate AS SINGLE
+Dim Shared frameRate As Single
 
 'canvas settings related variables
-DIM SHARED p5Canvas AS new_p5Canvas, pushState AS LONG
-REDIM SHARED p5CanvasBackup(10) AS new_p5Canvas
+Dim Shared p5Canvas As new_p5Canvas, pushState As Long
+ReDim Shared p5CanvasBackup(10) As new_p5Canvas
 
 'begin shape related variables
-DIM SHARED FirstVertex AS vector, PreviousVertex AS vector, shapeStrokeBackup AS _UNSIGNED LONG
-DIM SHARED shapeAllow AS _BYTE, shapeType AS LONG, shapeInit AS _BYTE, shapeTempFill AS _UNSIGNED LONG
-DIM SHARED tempShapeImage AS LONG, p5previousDest AS LONG
+Dim Shared FirstVertex As vector, PreviousVertex As vector, shapeStrokeBackup As _Unsigned Long
+Dim Shared shapeAllow As _Byte, shapeType As Long, shapeInit As _Byte, shapeTempFill As _Unsigned Long
+Dim Shared tempShapeImage As Long, p5previousDest As Long
 
 'loops and NoLoops
-DIM SHARED p5Loop AS _BYTE, p5frameCount AS _UNSIGNED LONG
+Dim Shared p5Loop As _Byte, p5frameCount As _Unsigned Long
 p5Loop = true 'default is true
 
 'mouse consts and variables
-CONST LEFT = 1, RIGHT = 2, CENTER = 3
-DIM SHARED mouseIsPressed AS _BYTE, p5mouseWheel AS INTEGER
-DIM SHARED mouseButton1 AS _BYTE, mouseButton2 AS _BYTE, mouseButton3 AS _BYTE
-DIM SHARED mouseButton AS _BYTE
+Const LEFT = 1, RIGHT = 2, CENTER = 3
+Dim Shared mouseIsPressed As _Byte, p5mouseWheel As Integer
+Dim Shared mouseButton1 As _Byte, mouseButton2 As _Byte, mouseButton3 As _Byte
+Dim Shared mouseButton As _Byte
 
 'keyboard consts and variables
-DIM SHARED keyIsPressed AS _BYTE, keyCode AS LONG
-DIM SHARED lastKeyCode AS LONG, totalKeysDown AS INTEGER
-CONST BACKSPACE = 8, DELETE = 21248, ENTER = 13, TAB_KEY = 9, ESCAPE = 27
-CONST LSHIFT = 100304, RSHIFT = 100303, LCONTROL = 100306, RCONTROL = 100307
-CONST LALT = 100308, RALT = 100307
-CONST UP_ARROW = 18432, DOWN_ARROW = 20480, LEFT_ARROW = 19200, RIGHT_ARROW = 19712
+Dim Shared keyIsPressed As _Byte, keyCode As Long
+Dim Shared lastKeyCode As Long, totalKeysDown As Integer
+Const BACKSPACE = 8, DELETE = 21248, ENTER = 13, TAB_KEY = 9, ESCAPE = 27
+Const LSHIFT = 100304, RSHIFT = 100303, LCONTROL = 100306, RCONTROL = 100307
+Const LALT = 100308, RALT = 100307
+Const UP_ARROW = 18432, DOWN_ARROW = 20480, LEFT_ARROW = 19200, RIGHT_ARROW = 19712
 
 'text-related variables
-DIM SHARED loadedFontFile$, currentFontSize AS INTEGER
-DIM SHARED p5LastRenderedCharCount AS LONG, p5LastRenderedLineWidth AS LONG
-REDIM SHARED p5ThisLineChars(0) AS LONG
+Dim Shared loadedFontFile$, currentFontSize As Integer
+Dim Shared p5LastRenderedCharCount As Long, p5LastRenderedLineWidth As Long
+ReDim Shared p5ThisLineChars(0) As Long
 
 'sound system
-REDIM SHARED loadedSounds(0) AS LONG
-DIM SHARED totalLoadedSounds AS LONG
+ReDim Shared loadedSounds(0) As Long
+Dim Shared totalLoadedSounds As Long
 
 'noise function related variables
-DIM SHARED perlin_octaves AS SINGLE, perlin_amp_falloff AS SINGLE
+Dim Shared perlin_octaves As Single, perlin_amp_falloff As Single
 
 'timer used to gather input from user
-DIM SHARED p5InputTimer AS INTEGER
-p5InputTimer = _FREETIMER
-ON TIMER(p5InputTimer, .008) gatherInput
-TIMER(p5InputTimer) ON
+Dim Shared p5InputTimer As Integer
+p5InputTimer = _FreeTimer
+On Timer(p5InputTimer, .008) gatherInput
+Timer(p5InputTimer) On
 
 'default settings
 createCanvas 640, 400
-_TITLE "p5js.bas - Untitled sketch"
-_ICON
+_Title "p5js.bas - Untitled sketch"
+_Icon
 strokeB 0
 fillB 255
 strokeWeight 1
@@ -162,122 +162,122 @@ colorMode p5RGB
 angleMode RADIANS
 doLoop
 
-_DISPLAY
+_Display
 
-DIM a AS _BYTE 'dummy variable used to call functions that may not be there
+Dim a As _Byte 'dummy variable used to call functions that may not be there
 a = p5setup
-_DISPLAY
+_Display
 
-DO
-    IF frameRate THEN _LIMIT frameRate
-    IF p5Loop THEN callDrawLoop
-    _DISPLAY
-LOOP
+Do
+    If frameRate Then _Limit frameRate
+    If p5Loop Then callDrawLoop
+    _Display
+Loop
 
 '######################################################################################################
 '###################### 2D Rendering related methods & functions ######################################
 '######################################################################################################
 
-SUB image (img&, __x AS INTEGER, __y AS INTEGER)
-    DIM x AS INTEGER, y AS INTEGER
+Sub image (img&, __x As Integer, __y As Integer)
+    Dim x As Integer, y As Integer
     x = __x + p5Canvas.xOffset
     y = __y + p5Canvas.yOffset
 
-    _PUTIMAGE (x, y), img&, 0
-END SUB
+    _PutImage (x, y), img&, 0
+End Sub
 
-SUB imageB (img&, x AS INTEGER, y AS INTEGER, w AS INTEGER, h AS INTEGER, sx AS INTEGER, sy AS INTEGER, sw AS INTEGER, sh AS INTEGER)
-    _PUTIMAGE (x, y)-STEP(w, h), img&, 0, (sx, sy)-STEP(sw, sh)
-END SUB
+Sub imageB (img&, x As Integer, y As Integer, w As Integer, h As Integer, sx As Integer, sy As Integer, sw As Integer, sh As Integer)
+    _PutImage (x, y)-Step(w, h), img&, 0, (sx, sy)-Step(sw, sh)
+End Sub
 
 
-SUB internalp5makeTempImage
-    p5previousDest = _DEST
-    IF p5previousDest = p5Canvas.imgHandle THEN
-        _DEST tempShapeImage
-        CLS , 0 'clear it and make it transparent
-    ELSE
-        _FREEIMAGE tempShapeImage
-        tempShapeImage = _NEWIMAGE(_WIDTH(p5previousDest), _HEIGHT(p5previousDest), 32)
-        _DEST tempShapeImage
-        CLS , 0 'clear it & make it transparent
-    END IF
-END SUB
+Sub internalp5makeTempImage
+    p5previousDest = _Dest
+    If p5previousDest = p5Canvas.imgHandle Then
+        _Dest tempShapeImage
+        Cls , 0 'clear it and make it transparent
+    Else
+        _FreeImage tempShapeImage
+        tempShapeImage = _NewImage(_Width(p5previousDest), _Height(p5previousDest), 32)
+        _Dest tempShapeImage
+        Cls , 0 'clear it & make it transparent
+    End If
+End Sub
 
-SUB internalp5displayTempImage
-    IF p5previousDest = p5Canvas.imgHandle THEN
-        _DEST p5previousDest
-        _PUTIMAGE (0, 0), tempShapeImage
-    ELSE
-        _DEST p5previousDest
-        _PUTIMAGE (0, 0), tempShapeImage
-        _FREEIMAGE tempShapeImage
-        tempShapeImage = _NEWIMAGE(_WIDTH(p5Canvas.imgHandle), _HEIGHT(p5Canvas.imgHandle), 32)
-    END IF
-END SUB
+Sub internalp5displayTempImage
+    If p5previousDest = p5Canvas.imgHandle Then
+        _Dest p5previousDest
+        _PutImage (0, 0), tempShapeImage
+    Else
+        _Dest p5previousDest
+        _PutImage (0, 0), tempShapeImage
+        _FreeImage tempShapeImage
+        tempShapeImage = _NewImage(_Width(p5Canvas.imgHandle), _Height(p5Canvas.imgHandle), 32)
+    End If
+End Sub
 
-SUB beginShape (kind AS LONG)
+Sub beginShape (kind As Long)
     internalp5makeTempImage
-    IF p5Canvas.doFill THEN CLS , p5Canvas.fill
+    If p5Canvas.doFill Then Cls , p5Canvas.fill
     shapeAllow = true
     shapeType = kind
     shapeStrokeBackup = p5Canvas.strokeA
-    shapeTempFill = _RGB32((_RED32(p5Canvas.strokeA) + _RED32(p5Canvas.fillA)) / 2, (_GREEN32(p5Canvas.strokeA) + _GREEN32(p5Canvas.fillA)) / 2, (_BLUE32(p5Canvas.strokeA) + _BLUE32(p5Canvas.fillA)) / 2)
-END SUB
+    shapeTempFill = _RGB32((_Red32(p5Canvas.strokeA) + _Red32(p5Canvas.fillA)) / 2, (_Green32(p5Canvas.strokeA) + _Green32(p5Canvas.fillA)) / 2, (_Blue32(p5Canvas.strokeA) + _Blue32(p5Canvas.fillA)) / 2)
+End Sub
 
-SUB vertex (__x AS SINGLE, __y AS SINGLE)
+Sub vertex (__x As Single, __y As Single)
 
-    DIM x AS SINGLE, y AS SINGLE
+    Dim x As Single, y As Single
 
     x = __x + p5Canvas.xOffset
     y = __y + p5Canvas.yOffset
 
-    IF shapeInit THEN
-        IF shapeType = p5POINTS THEN
-            IF p5Canvas.doStroke THEN CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.strokeA ELSE CircleFill x, y, p5Canvas.strokeWeight / 2, shapeTempFill
-        ELSEIF shapeType = p5LINES THEN
-            IF NOT p5Canvas.doStroke THEN
-                LINE (PreviousVertex.x, PreviousVertex.y)-(x, y), p5Canvas.strokeA
-            ELSE
+    If shapeInit Then
+        If shapeType = p5POINTS Then
+            If p5Canvas.doStroke Then CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.strokeA Else CircleFill x, y, p5Canvas.strokeWeight / 2, shapeTempFill
+        ElseIf shapeType = p5LINES Then
+            If Not p5Canvas.doStroke Then
+                Line (PreviousVertex.x, PreviousVertex.y)-(x, y), p5Canvas.strokeA
+            Else
                 internalp5line PreviousVertex.x, PreviousVertex.y, x, y, p5Canvas.strokeWeight, p5Canvas.strokeA
-            END IF
-        END IF
-    END IF
-    IF shapeAllow AND NOT shapeInit THEN
+            End If
+        End If
+    End If
+    If shapeAllow And Not shapeInit Then
         FirstVertex.x = x
         FirstVertex.y = y
         shapeInit = true
-        IF shapeType = p5POINTS THEN
-            IF p5Canvas.doStroke THEN CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.strokeA ELSE CircleFill x, y, p5Canvas.strokeWeight / 2, shapeTempFill
-        END IF
+        If shapeType = p5POINTS Then
+            If p5Canvas.doStroke Then CircleFill x, y, p5Canvas.strokeWeight / 2, p5Canvas.strokeA Else CircleFill x, y, p5Canvas.strokeWeight / 2, shapeTempFill
+        End If
         FirstVertex.x = x
         FirstVertex.y = y
-    END IF
+    End If
     PreviousVertex.x = x
     PreviousVertex.y = y
-END SUB
+End Sub
 
-SUB vertexB (v AS vector)
+Sub vertexB (v As vector)
     vertex v.x, v.y
-END SUB
+End Sub
 
-SUB endShape (closed)
+Sub endShape (closed)
     'do we have to close it?
-    IF closed = p5CLOSE AND shapeType = p5LINES THEN
-        IF NOT p5Canvas.doStroke THEN LINE (PreviousVertex.x, PreviousVertex.y)-(FirstVertex.x, FirstVertex.y), p5Canvas.stroke ELSE internalp5line PreviousVertex.x, PreviousVertex.y, FirstVertex.x, FirstVertex.y, p5Canvas.strokeWeight, p5Canvas.strokeA
-    END IF
+    If closed = p5CLOSE And shapeType = p5LINES Then
+        If Not p5Canvas.doStroke Then Line (PreviousVertex.x, PreviousVertex.y)-(FirstVertex.x, FirstVertex.y), p5Canvas.stroke Else internalp5line PreviousVertex.x, PreviousVertex.y, FirstVertex.x, FirstVertex.y, p5Canvas.strokeWeight, p5Canvas.strokeA
+    End If
 
     'fill with color
-    IF p5Canvas.doFill AND shapeType = p5LINES AND closed = p5CLOSE THEN
-        _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-        _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
-        PAINT (0, 0), shapeTempFill, p5Canvas.strokeA
-        PAINT (_WIDTH - 1, 0), shapeTempFill, p5Canvas.strokeA
-        PAINT (0, _HEIGHT - 1), shapeTempFill, p5Canvas.strokeA
-        PAINT (_WIDTH - 1, _HEIGHT - 1), shapeTempFill, p5Canvas.strokeA
-        _CLEARCOLOR shapeTempFill
-        IF NOT p5Canvas.doStroke THEN _CLEARCOLOR p5Canvas.strokeA
-    END IF
+    If p5Canvas.doFill And shapeType = p5LINES And closed = p5CLOSE Then
+        _SetAlpha p5Canvas.fillAlpha, p5Canvas.fill
+        _SetAlpha p5Canvas.strokeAlpha, p5Canvas.stroke
+        Paint (0, 0), shapeTempFill, p5Canvas.strokeA
+        Paint (_Width - 1, 0), shapeTempFill, p5Canvas.strokeA
+        Paint (0, _Height - 1), shapeTempFill, p5Canvas.strokeA
+        Paint (_Width - 1, _Height - 1), shapeTempFill, p5Canvas.strokeA
+        _ClearColor shapeTempFill
+        If Not p5Canvas.doStroke Then _ClearColor p5Canvas.strokeA
+    End If
     p5Canvas.strokeA = shapeStrokeBackup
     'it's time to reset all varibles!!
     shapeAllow = false
@@ -290,176 +290,174 @@ SUB endShape (closed)
     shapeTempFill = 0
     'place shape onto main canvas
     internalp5displayTempImage
-END SUB
+End Sub
 
-SUB translate (xoff AS SINGLE, yoff AS SINGLE)
+Sub translate (xoff As Single, yoff As Single)
     p5Canvas.xOffset = p5Canvas.xOffset + xoff
     p5Canvas.yOffset = p5Canvas.yOffset + yoff
-END SUB
+End Sub
 
-SUB CircleFill (x AS LONG, y AS LONG, R AS LONG, C AS _UNSIGNED LONG)
-    DIM x0 AS SINGLE, y0 AS SINGLE
-    DIM e AS SINGLE
+Sub CircleFill (x As Long, y As Long, R As Long, C As _Unsigned Long)
+    Dim x0 As Single, y0 As Single
+    Dim e As Single
 
     x0 = R
     y0 = 0
-    e = -r
-    DO WHILE y0 < x0
-        IF e <= 0 THEN
+    e = -R
+    Do While y0 < x0
+        If e <= 0 Then
             y0 = y0 + 1
-            LINE (x - x0, y + y0)-(x + x0, y + y0), C, BF
-            LINE (x - x0, y - y0)-(x + x0, y - y0), C, BF
+            Line (x - x0, y + y0)-(x + x0, y + y0), C, BF
+            Line (x - x0, y - y0)-(x + x0, y - y0), C, BF
             e = e + 2 * y0
-        ELSE
-            LINE (x - y0, y - x0)-(x + y0, y - x0), C, BF
-            LINE (x - y0, y + x0)-(x + y0, y + x0), C, BF
+        Else
+            Line (x - y0, y - x0)-(x + y0, y - x0), C, BF
+            Line (x - y0, y + x0)-(x + y0, y + x0), C, BF
             x0 = x0 - 1
             e = e - 2 * x0
-        END IF
-    LOOP
-    LINE (x - R, y)-(x + R, y), C, BF
-END SUB
+        End If
+    Loop
+    Line (x - R, y)-(x + R, y), C, BF
+End Sub
 
-SUB thickCircle (x AS SINGLE, y AS SINGLE, radius AS SINGLE, thickness AS SINGLE, colour AS _UNSIGNED LONG)
+Sub thickCircle (x As Single, y As Single, radius As Single, thickness As Single, colour As _Unsigned Long)
     'This sub from STxAxTIC at the #qb64 chatroom on freenode.net
-    DIM rp AS SINGLE, rm AS SINGLE, rp2 AS SINGLE, rm2 AS SINGLE
-    DIM sm AS SINGLE, rpi2 AS SINGLE, rmi2 AS SINGLE, sp AS SINGLE
-    DIM i AS SINGLE
+    Dim rp As Single, rm As Single, rp2 As Single, rm2 As Single
+    Dim sm As Single, rpi2 As Single, rmi2 As Single, sp As Single
+    Dim i As Single
 
     rp = radius + thickness / 2
     rm = radius - thickness / 2
     rp2 = rp ^ 2
     rm2 = rm ^ 2
-    FOR i = -rp TO -rm STEP .2
+    For i = -rp To -rm Step .2
         rpi2 = rp2 - i ^ 2
-        sp = SQR(rpi2)
-        LINE (x + i, y)-(x + i, y + sp), colour, BF
-        LINE (x + i, y)-(x + i, y - sp), colour, BF
-    NEXT
-    FOR i = -rm TO 0 STEP .2
+        sp = Sqr(rpi2)
+        Line (x + i, y)-(x + i, y + sp), colour, BF
+        Line (x + i, y)-(x + i, y - sp), colour, BF
+    Next
+    For i = -rm To 0 Step .2
         rpi2 = rp2 - i ^ 2
         rmi2 = rm2 - i ^ 2
-        sm = SQR(rmi2)
-        sp = SQR(rpi2)
-        LINE (x + i, y + sm)-(x + i, y + sp), colour, BF
-        LINE (x - i, y + sm)-(x - i, y + sp), colour, BF
-        LINE (x + i, y - sm)-(x + i, y - sp), colour, BF
-        LINE (x - i, y - sm)-(x - i, y - sp), colour, BF
-    NEXT
-    FOR i = rm TO rp STEP .2
+        sm = Sqr(rmi2)
+        sp = Sqr(rpi2)
+        Line (x + i, y + sm)-(x + i, y + sp), colour, BF
+        Line (x - i, y + sm)-(x - i, y + sp), colour, BF
+        Line (x + i, y - sm)-(x + i, y - sp), colour, BF
+        Line (x - i, y - sm)-(x - i, y - sp), colour, BF
+    Next
+    For i = rm To rp Step .2
         rpi2 = rp2 - i ^ 2
-        sp = SQR(rpi2)
-        LINE (x + i, y)-(x + i, y + sp), colour, BF
-        LINE (x + i, y)-(x + i, y - sp), colour, BF
-    NEXT
-END SUB
+        sp = Sqr(rpi2)
+        Line (x + i, y)-(x + i, y + sp), colour, BF
+        Line (x + i, y)-(x + i, y - sp), colour, BF
+    Next
+End Sub
 
-SUB RoundRectFill (x AS SINGLE, y AS SINGLE, x1 AS SINGLE, y1 AS SINGLE, r AS SINGLE, c AS _UNSIGNED LONG)
+Sub RoundRectFill (x As Single, y As Single, x1 As Single, y1 As Single, r As Single, c As _Unsigned Long)
     'This sub from _vince at the #qb64 chatroom on freenode.net
-    LINE (x, y + r)-(x1, y1 - r), c, BF
+    Line (x, y + r)-(x1, y1 - r), c, BF
 
-    DIM a AS SINGLE, b AS SINGLE, e AS SINGLE
+    Dim a As Single, b As Single, e As Single
 
     a = r
     b = 0
     e = -a
 
-    DO WHILE a >= b
-        LINE (x + r - b, y + r - a)-(x1 - r + b, y + r - a), c, BF
-        LINE (x + r - a, y + r - b)-(x1 - r + a, y + r - b), c, BF
-        LINE (x + r - b, y1 - r + a)-(x1 - r + b, y1 - r + a), c, BF
-        LINE (x + r - a, y1 - r + b)-(x1 - r + a, y1 - r + b), c, BF
+    Do While a >= b
+        Line (x + r - b, y + r - a)-(x1 - r + b, y + r - a), c, BF
+        Line (x + r - a, y + r - b)-(x1 - r + a, y + r - b), c, BF
+        Line (x + r - b, y1 - r + a)-(x1 - r + b, y1 - r + a), c, BF
+        Line (x + r - a, y1 - r + b)-(x1 - r + a, y1 - r + b), c, BF
 
         b = b + 1
         e = e + b + b
-        IF e > 0 THEN
+        If e > 0 Then
             a = a - 1
             e = e - a - a
-        END IF
-    LOOP
-END SUB
+        End If
+    Loop
+End Sub
 
-SUB p5line (__x1 AS SINGLE, __y1 AS SINGLE, __x2 AS SINGLE, __y2 AS SINGLE)
-    DIM x1 AS SINGLE, y1 AS SINGLE, x2 AS SINGLE, y2 AS SINGLE
-    DIM a AS SINGLE, x0 AS SINGLE, y0 AS SINGLE
+Sub p5line (__x1 As Single, __y1 As Single, __x2 As Single, __y2 As Single)
+    Dim x1 As Single, y1 As Single, x2 As Single, y2 As Single
+    Dim a As Single, x0 As Single, y0 As Single
 
-    IF NOT p5Canvas.doStroke THEN EXIT SUB
+    If Not p5Canvas.doStroke Then Exit Sub
 
     x1 = __x1 + p5Canvas.xOffset
     y1 = __y1 + p5Canvas.yOffset
     x2 = __x2 + p5Canvas.xOffset
     y2 = __y2 + p5Canvas.xOffset
 
-    IF p5Canvas.strokeWeight > 1 THEN
-        a = _ATAN2(y2 - y1, x2 - x1)
-        a = a + _PI / 2
-        x0 = 0.5 * p5Canvas.strokeWeight * COS(a)
-        y0 = 0.5 * p5Canvas.strokeWeight * SIN(a)
+    If p5Canvas.strokeWeight > 1 Then
+        a = _Atan2(y2 - y1, x2 - x1)
+        a = a + _Pi / 2
+        x0 = 0.5 * p5Canvas.strokeWeight * Cos(a)
+        y0 = 0.5 * p5Canvas.strokeWeight * Sin(a)
 
 
-        _MAPTRIANGLE _SEAMLESS(0, 0)-(0, 0)-(0, 0), p5Canvas.strokeTexture TO(x1 - x0, y1 - y0)-(x1 + x0, y1 + y0)-(x2 + x0, y2 + y0), , _SMOOTH
-        _MAPTRIANGLE _SEAMLESS(0, 0)-(0, 0)-(0, 0), p5Canvas.strokeTexture TO(x1 - x0, y1 - y0)-(x2 + x0, y2 + y0)-(x2 - x0, y2 - y0), , _SMOOTH
+        _MapTriangle _Seamless(0, 0)-(0, 0)-(0, 0), p5Canvas.strokeTexture To(x1 - x0, y1 - y0)-(x1 + x0, y1 + y0)-(x2 + x0, y2 + y0), , _Smooth
+        _MapTriangle _Seamless(0, 0)-(0, 0)-(0, 0), p5Canvas.strokeTexture To(x1 - x0, y1 - y0)-(x2 + x0, y2 + y0)-(x2 - x0, y2 - y0), , _Smooth
 
-        IF p5Canvas.strokeCap = ROUND THEN
+        If p5Canvas.strokeCap = ROUND Then
             CircleFill x1, y1, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
             CircleFill x2, y2, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
-        END IF
-    ELSE
-        LINE (x1, y1)-(x2, y2), p5Canvas.strokeA
-    END IF
-END SUB
+        End If
+    Else
+        Line (x1, y1)-(x2, y2), p5Canvas.strokeA
+    End If
+End Sub
 
-SUB p5point (x AS SINGLE, y AS SINGLE)
-    IF NOT p5Canvas.doStroke THEN EXIT SUB
+Sub p5point (x As Single, y As Single)
+    If Not p5Canvas.doStroke Then Exit Sub
 
-    IF p5Canvas.strokeWeight > 1 THEN
+    If p5Canvas.strokeWeight > 1 Then
         CircleFill x + p5Canvas.xOffset, y + p5Canvas.yOffset, p5Canvas.strokeWeight / 2, p5Canvas.strokeA
-    ELSE
-        PSET (x + p5Canvas.xOffset, y + p5Canvas.yOffset), p5Canvas.strokeA
-    END IF
-END SUB
+    Else
+        PSet (x + p5Canvas.xOffset, y + p5Canvas.yOffset), p5Canvas.strokeA
+    End If
+End Sub
 
-SUB p5ellipse (__x AS SINGLE, __y AS SINGLE, xr AS SINGLE, yr AS SINGLE)
-    DIM x AS SINGLE, y AS SINGLE
+Sub p5ellipse (__x As Single, __y As Single, xr As Single, yr As Single)
+    Dim x As Single, y As Single
 
-    IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+    If Not p5Canvas.doFill And Not p5Canvas.doStroke Then Exit Sub
 
     x = __x + p5Canvas.xOffset
     y = __y + p5Canvas.yOffset
 
-    IF xr <> yr THEN
+    If xr <> yr Then
         internalp5makeTempImage
-        IF p5Canvas.doStroke THEN
-            CIRCLE (x, y), xr + p5Canvas.strokeWeight, p5Canvas.stroke, , , xr / yr
-            PAINT (x, y), p5Canvas.stroke, p5Canvas.stroke
-            _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
-        END IF
+        If p5Canvas.doStroke Then
+            Circle (x, y), xr + p5Canvas.strokeWeight, p5Canvas.stroke, , , xr / yr
+            Paint (x, y), p5Canvas.stroke, p5Canvas.stroke
+            _SetAlpha p5Canvas.strokeAlpha, p5Canvas.stroke
+        End If
 
-        IF p5Canvas.doFill THEN
-            CIRCLE (x, y), xr - p5Canvas.strokeWeight / 2, p5Canvas.fill, , , xr / yr
-            PAINT (x, y), p5Canvas.fill, p5Canvas.fill
-            _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-        ELSE
+        If p5Canvas.doFill Then
+            Circle (x, y), xr - p5Canvas.strokeWeight / 2, p5Canvas.fill, , , xr / yr
+            Paint (x, y), p5Canvas.fill, p5Canvas.fill
+            _SetAlpha p5Canvas.fillAlpha, p5Canvas.fill
+        Else
             'no fill
-            DIM tempColor~&
-            IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
-            CIRCLE (x, y), xr - p5Canvas.strokeWeight / 2, tempColor~&, , , xr / yr
-            PAINT (x, y), tempColor~&, tempColor~&
-            _CLEARCOLOR tempColor~&
-        END IF
+            Dim tempColor~&
+            If _Red32(p5Canvas.stroke) > 0 Then tempColor~& = _RGB32(_Red32(p5Canvas.stroke) - 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke)) Else tempColor~& = _RGB32(_Red32(p5Canvas.stroke) + 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke))
+            Circle (x, y), xr - p5Canvas.strokeWeight / 2, tempColor~&, , , xr / yr
+            Paint (x, y), tempColor~&, tempColor~&
+            _ClearColor tempColor~&
+        End If
         internalp5displayTempImage
-    ELSE
-        IF p5Canvas.doFill THEN CircleFill x, y, xr, p5Canvas.fillA
-        IF p5Canvas.doStroke THEN thickCircle x, y, xr, p5Canvas.strokeWeight, p5Canvas.strokeA
-    END IF
+    Else
+        If p5Canvas.doFill Then CircleFill x, y, xr, p5Canvas.fillA
+        If p5Canvas.doStroke Then thickCircle x, y, xr, p5Canvas.strokeWeight, p5Canvas.strokeA
+    End If
 
-END SUB
+End Sub
 
-SUB p5triangle (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
-    DIM x1!, y1!, x2!, y2!, x3!, y3!
-    IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
-
-    DIM bc AS _UNSIGNED LONG
+Sub p5triangle (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
+    Dim x1!, y1!, x2!, y2!, x3!, y3!
+    If Not p5Canvas.doFill And Not p5Canvas.doStroke Then Exit Sub
 
     x1! = __x1! + p5Canvas.xOffset
     y1! = __y1! + p5Canvas.yOffset
@@ -468,205 +466,205 @@ SUB p5triangle (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     x3! = __x3! + p5Canvas.xOffset
     y3! = __y3! + p5Canvas.yOffset
 
-    IF p5Canvas.doFill THEN
-        _MAPTRIANGLE (0, 0)-(0, 0)-(0, 0), p5Canvas.fillTexture TO(x1!, y1!)-(x2!, y2!)-(x3!, y3!), , _SMOOTH
-    END IF
+    If p5Canvas.doFill Then
+        _MapTriangle (0, 0)-(0, 0)-(0, 0), p5Canvas.fillTexture To(x1!, y1!)-(x2!, y2!)-(x3!, y3!), , _Smooth
+    End If
 
-    IF p5Canvas.doStroke THEN
+    If p5Canvas.doStroke Then
         p5line __x1!, __y1!, __x2!, __y2!
         p5line __x2!, __y2!, __x3!, __y3!
         p5line __x3!, __y3!, __x1!, __y1!
-    END IF
-END SUB
+    End If
+End Sub
 
-SUB p5triangleB (v1 AS vector, v2 AS vector, v3 AS vector)
+Sub p5triangleB (v1 As vector, v2 As vector, v3 As vector)
     p5triangle v1.x, v1.y, v2.x, v2.y, v3.x, v3.y
-END SUB
+End Sub
 
 'draw a triangle by joining 3 different angles from the center point with
 'a given size
-SUB p5triangleC (__centerX!, __centerY!, __ang1!, __ang2!, __ang3!, size!)
-    DIM x1!, y1!, x2!, y2!, x3!, y3!
-    DIM ang1!, ang2!, ang3!
-    DIM centerX!, centerY!
+Sub p5triangleC (__centerX!, __centerY!, __ang1!, __ang2!, __ang3!, size!)
+    Dim x1!, y1!, x2!, y2!, x3!, y3!
+    Dim ang1!, ang2!, ang3!
+    Dim centerX!, centerY!
 
     centerX! = __centerX! + p5Canvas.xOffset
     centerY! = __centerY! + p5Canvas.yOffset
 
-    IF p5Canvas.angleMode = RADIANS THEN
+    If p5Canvas.angleMode = RADIANS Then
         ang1! = __ang1!
         ang2! = __ang2!
         ang3! = __ang3!
-    ELSE
+    Else
         ang1! = _D2R(__ang1!)
         ang2! = _D2R(__ang2!)
         ang3! = _D2R(__ang3!)
-    END IF
+    End If
 
-    IF ang1! < TWO_PI THEN
-        x1! = centerX! - size! * COS(ang1!)
-        y1! = centerY! + size! * SIN(ang1!)
-    END IF
+    If ang1! < TWO_PI Then
+        x1! = centerX! - size! * Cos(ang1!)
+        y1! = centerY! + size! * Sin(ang1!)
+    End If
 
-    IF ang2! < TWO_PI THEN
-        x2! = centerX! - size! * COS(ang2!)
-        y2! = centerY! - size! * SIN(ang2!)
-    END IF
+    If ang2! < TWO_PI Then
+        x2! = centerX! - size! * Cos(ang2!)
+        y2! = centerY! - size! * Sin(ang2!)
+    End If
 
-    IF ang3! < TWO_PI THEN
-        x3! = centerX! + size! * COS(ang3!)
-        y3! = centerY! - size! * SIN(ang3!)
-    END IF
+    If ang3! < TWO_PI Then
+        x3! = centerX! + size! * Cos(ang3!)
+        y3! = centerY! - size! * Sin(ang3!)
+    End If
 
     p5triangle x1!, y1!, x2!, y2!, x3!, y3!
-END SUB
+End Sub
 
 'draws a rectangle
-SUB p5rect (x!, y!, __wi!, __he!)
-    DIM wi!, he!
-    DIM x1!, y1!
+Sub p5rect (x!, y!, __wi!, __he!)
+    Dim wi!, he!
+    Dim x1!, y1!
 
-    IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+    If Not p5Canvas.doFill And Not p5Canvas.doStroke Then Exit Sub
 
     wi! = __wi!
     he! = __he!
 
     internalp5makeTempImage
 
-    IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CORNERS THEN
+    If p5Canvas.rectMode = CORNER Or p5Canvas.rectMode = CORNERS Then
         'default mode
         x1! = x! + p5Canvas.xOffset
         y1! = y! + p5Canvas.yOffset
 
-        IF p5Canvas.rectMode = CORNERS THEN
+        If p5Canvas.rectMode = CORNERS Then
             wi! = wi! + p5Canvas.xOffset
             he! = he! + p5Canvas.yOffset
-        END IF
-    ELSEIF p5Canvas.rectMode = CENTER THEN
+        End If
+    ElseIf p5Canvas.rectMode = CENTER Then
         x1! = x! - wi! / 2 + p5Canvas.xOffset
         y1! = y! - he! / 2 + p5Canvas.yOffset
-    END IF
+    End If
 
-    DIM tempColor~&
-    IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
+    Dim tempColor~&
+    If _Red32(p5Canvas.stroke) > 0 Then tempColor~& = _RGB32(_Red32(p5Canvas.stroke) - 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke)) Else tempColor~& = _RGB32(_Red32(p5Canvas.stroke) + 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke))
 
-    IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CENTER THEN
-        IF p5Canvas.doStroke THEN
-            LINE (x1! - _CEIL(p5Canvas.strokeWeight / 2), y1! - _CEIL(p5Canvas.strokeWeight / 2))-(x1! + wi! + _CEIL(p5Canvas.strokeWeight / 2) - 1, y1! + he! + _CEIL(p5Canvas.strokeWeight / 2) - 1), p5Canvas.strokeA, BF
-            LINE (x1! + _CEIL(p5Canvas.strokeWeight / 2), y1! + _CEIL(p5Canvas.strokeWeight / 2))-(x1! + wi! - _CEIL(p5Canvas.strokeWeight / 2) - 1, y1! + he! - _CEIL(p5Canvas.strokeWeight / 2) - 1), tempColor~&, BF
-            _CLEARCOLOR tempColor~&
-        END IF
+    If p5Canvas.rectMode = CORNER Or p5Canvas.rectMode = CENTER Then
+        If p5Canvas.doStroke Then
+            Line (x1! - _Ceil(p5Canvas.strokeWeight / 2), y1! - _Ceil(p5Canvas.strokeWeight / 2))-(x1! + wi! + _Ceil(p5Canvas.strokeWeight / 2) - 1, y1! + he! + _Ceil(p5Canvas.strokeWeight / 2) - 1), p5Canvas.strokeA, BF
+            Line (x1! + _Ceil(p5Canvas.strokeWeight / 2), y1! + _Ceil(p5Canvas.strokeWeight / 2))-(x1! + wi! - _Ceil(p5Canvas.strokeWeight / 2) - 1, y1! + he! - _Ceil(p5Canvas.strokeWeight / 2) - 1), tempColor~&, BF
+            _ClearColor tempColor~&
+        End If
 
-        IF p5Canvas.doFill THEN
-            IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
-                LINE (x1!, y1!)-STEP(wi! - 1, he! - 1), tempColor~&, BF
-                _CLEARCOLOR tempColor~&
-            END IF
+        If p5Canvas.doFill Then
+            If p5Canvas.doStroke And p5Canvas.fillAlpha < 255 Then
+                Line (x1!, y1!)-Step(wi! - 1, he! - 1), tempColor~&, BF
+                _ClearColor tempColor~&
+            End If
 
-            LINE (x1!, y1!)-STEP(wi! - 1, he! - 1), p5Canvas.fillA, BF
-        END IF
-    ELSE
+            Line (x1!, y1!)-Step(wi! - 1, he! - 1), p5Canvas.fillA, BF
+        End If
+    Else
         'CORNERS - consider width and height values as coordinates instead
-        IF p5Canvas.doStroke THEN
-            LINE (x1! - _CEIL(p5Canvas.strokeWeight / 2), y1! - _CEIL(p5Canvas.strokeWeight / 2))-(wi! + _CEIL(p5Canvas.strokeWeight / 2) - 1, he! + _CEIL(p5Canvas.strokeWeight / 2) - 1), p5Canvas.strokeA, BF
-            LINE (x1! + _CEIL(p5Canvas.strokeWeight / 2), y1! + _CEIL(p5Canvas.strokeWeight / 2))-(wi! - _CEIL(p5Canvas.strokeWeight / 2) - 1, he! - _CEIL(p5Canvas.strokeWeight / 2) - 1), tempColor~&, BF
-            _CLEARCOLOR tempColor~&
-        END IF
+        If p5Canvas.doStroke Then
+            Line (x1! - _Ceil(p5Canvas.strokeWeight / 2), y1! - _Ceil(p5Canvas.strokeWeight / 2))-(wi! + _Ceil(p5Canvas.strokeWeight / 2) - 1, he! + _Ceil(p5Canvas.strokeWeight / 2) - 1), p5Canvas.strokeA, BF
+            Line (x1! + _Ceil(p5Canvas.strokeWeight / 2), y1! + _Ceil(p5Canvas.strokeWeight / 2))-(wi! - _Ceil(p5Canvas.strokeWeight / 2) - 1, he! - _Ceil(p5Canvas.strokeWeight / 2) - 1), tempColor~&, BF
+            _ClearColor tempColor~&
+        End If
 
-        IF p5Canvas.doFill THEN
-            IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
-                LINE (x1!, y1!)-(wi!, he!), tempColor~&, BF
-                _CLEARCOLOR tempColor~&
-            END IF
+        If p5Canvas.doFill Then
+            If p5Canvas.doStroke And p5Canvas.fillAlpha < 255 Then
+                Line (x1!, y1!)-(wi!, he!), tempColor~&, BF
+                _ClearColor tempColor~&
+            End If
 
-            LINE (x1!, y1!)-(wi!, he!), p5Canvas.fillA, BF
-        END IF
-    END IF
+            Line (x1!, y1!)-(wi!, he!), p5Canvas.fillA, BF
+        End If
+    End If
 
     internalp5displayTempImage
-END SUB
+End Sub
 
 'draws a rectangle with rounded corners (r! is the amount)
-SUB p5rectB (x!, y!, __wi!, __he!, r!)
-    DIM wi!, he!
-    DIM x1!, y1!
+Sub p5rectB (x!, y!, __wi!, __he!, r!)
+    Dim wi!, he!
+    Dim x1!, y1!
 
-    IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+    If Not p5Canvas.doFill And Not p5Canvas.doStroke Then Exit Sub
 
     wi! = __wi!
     he! = __he!
 
     internalp5makeTempImage
 
-    IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CORNERS THEN
+    If p5Canvas.rectMode = CORNER Or p5Canvas.rectMode = CORNERS Then
         'default mode
         x1! = x! + p5Canvas.xOffset
         y1! = y! + p5Canvas.yOffset
 
-        IF p5Canvas.rectMode = CORNERS THEN
+        If p5Canvas.rectMode = CORNERS Then
             wi! = wi! + p5Canvas.xOffset
             he! = he! + p5Canvas.yOffset
-        END IF
-    ELSEIF p5Canvas.rectMode = CENTER THEN
+        End If
+    ElseIf p5Canvas.rectMode = CENTER Then
         x1! = x! - wi! / 2 + p5Canvas.xOffset
         y1! = y! - he! / 2 + p5Canvas.yOffset
-    END IF
+    End If
 
-    DIM tempColor~&
-    IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
+    Dim tempColor~&
+    If _Red32(p5Canvas.stroke) > 0 Then tempColor~& = _RGB32(_Red32(p5Canvas.stroke) - 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke)) Else tempColor~& = _RGB32(_Red32(p5Canvas.stroke) + 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke))
 
-    IF p5Canvas.rectMode = CORNER OR p5Canvas.rectMode = CENTER THEN
-        IF p5Canvas.doStroke THEN
-            RoundRectFill x1! - _CEIL(p5Canvas.strokeWeight / 2), y1! - _CEIL(p5Canvas.strokeWeight / 2), x1! + wi! + _CEIL(p5Canvas.strokeWeight / 2), y1! + he! + _CEIL(p5Canvas.strokeWeight / 2), r!, p5Canvas.stroke
-            _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+    If p5Canvas.rectMode = CORNER Or p5Canvas.rectMode = CENTER Then
+        If p5Canvas.doStroke Then
+            RoundRectFill x1! - _Ceil(p5Canvas.strokeWeight / 2), y1! - _Ceil(p5Canvas.strokeWeight / 2), x1! + wi! + _Ceil(p5Canvas.strokeWeight / 2), y1! + he! + _Ceil(p5Canvas.strokeWeight / 2), r!, p5Canvas.stroke
+            _SetAlpha p5Canvas.strokeAlpha, p5Canvas.stroke
 
-            RoundRectFill x1! + _CEIL(p5Canvas.strokeWeight / 2), y1! + _CEIL(p5Canvas.strokeWeight / 2), x1! + wi! - _CEIL(p5Canvas.strokeWeight / 2), y1! + he! - _CEIL(p5Canvas.strokeWeight / 2), r!, tempColor~&
-            _CLEARCOLOR tempColor~&
-        END IF
+            RoundRectFill x1! + _Ceil(p5Canvas.strokeWeight / 2), y1! + _Ceil(p5Canvas.strokeWeight / 2), x1! + wi! - _Ceil(p5Canvas.strokeWeight / 2), y1! + he! - _Ceil(p5Canvas.strokeWeight / 2), r!, tempColor~&
+            _ClearColor tempColor~&
+        End If
 
-        IF p5Canvas.doFill THEN
-            IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
+        If p5Canvas.doFill Then
+            If p5Canvas.doStroke And p5Canvas.fillAlpha < 255 Then
                 RoundRectFill x1!, y1!, x1! + wi! - 1, he!, r!, tempColor~&
-                _CLEARCOLOR tempColor~&
-            END IF
+                _ClearColor tempColor~&
+            End If
 
             RoundRectFill x1!, y1!, x1! + wi! - 1, y1! + he! - 1, r!, p5Canvas.fill
-            _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-        END IF
-    ELSE
+            _SetAlpha p5Canvas.fillAlpha, p5Canvas.fill
+        End If
+    Else
         'CORNERS - consider width and height values as coordinates instead
-        IF p5Canvas.doStroke THEN
-            RoundRectFill x1! - _CEIL(p5Canvas.strokeWeight / 2), y1! - _CEIL(p5Canvas.strokeWeight / 2), wi! + _CEIL(p5Canvas.strokeWeight / 2), he! + _CEIL(p5Canvas.strokeWeight / 2), r!, p5Canvas.stroke
-            _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+        If p5Canvas.doStroke Then
+            RoundRectFill x1! - _Ceil(p5Canvas.strokeWeight / 2), y1! - _Ceil(p5Canvas.strokeWeight / 2), wi! + _Ceil(p5Canvas.strokeWeight / 2), he! + _Ceil(p5Canvas.strokeWeight / 2), r!, p5Canvas.stroke
+            _SetAlpha p5Canvas.strokeAlpha, p5Canvas.stroke
 
-            RoundRectFill x1! + _CEIL(p5Canvas.strokeWeight / 2), y1! + _CEIL(p5Canvas.strokeWeight / 2), wi! - _CEIL(p5Canvas.strokeWeight / 2), he! - _CEIL(p5Canvas.strokeWeight / 2), r!, tempColor~&
-            _CLEARCOLOR tempColor~&
-        END IF
+            RoundRectFill x1! + _Ceil(p5Canvas.strokeWeight / 2), y1! + _Ceil(p5Canvas.strokeWeight / 2), wi! - _Ceil(p5Canvas.strokeWeight / 2), he! - _Ceil(p5Canvas.strokeWeight / 2), r!, tempColor~&
+            _ClearColor tempColor~&
+        End If
 
-        IF p5Canvas.doFill THEN
-            IF p5Canvas.doStroke AND p5Canvas.fillAlpha < 255 THEN
+        If p5Canvas.doFill Then
+            If p5Canvas.doStroke And p5Canvas.fillAlpha < 255 Then
                 RoundRectFill x1!, y1!, wi!, he!, r!, tempColor~&
-                _CLEARCOLOR tempColor~&
-            END IF
+                _ClearColor tempColor~&
+            End If
 
             RoundRectFill x1!, y1!, wi!, he!, r!, p5Canvas.fill
-            _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-        END IF
-    END IF
+            _SetAlpha p5Canvas.fillAlpha, p5Canvas.fill
+        End If
+    End If
 
     internalp5displayTempImage
-END SUB
+End Sub
 
-SUB rectMode (mode AS _BYTE)
+Sub rectMode (mode As _Byte)
     p5Canvas.rectMode = mode
-END SUB
+End Sub
 
 'draws a quadrilateral
-SUB p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
-    IF NOT p5Canvas.doStroke AND NOT p5Canvas.doFill THEN EXIT SUB
+Sub p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
+    If Not p5Canvas.doStroke And Not p5Canvas.doFill Then Exit Sub
 
-    DIM x1!, y1!, x2!, y2!, x3!, y3!, x4!, y4!
-    DIM tempColor~&, tempFill~&
+    Dim x1!, y1!, x2!, y2!, x3!, y3!, x4!, y4!
+    Dim tempColor~&, tempFill~&
 
     x1! = __x1! + p5Canvas.xOffset
     y1! = __y1! + p5Canvas.yOffset
@@ -677,59 +675,59 @@ SUB p5quad (__x1!, __y1!, __x2!, __y2!, __x3!, __y3!, __x4!, __y4!)
     x4! = __x4! + p5Canvas.xOffset
     y4! = __y4! + p5Canvas.yOffset
 
-    IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
-    IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
+    If _Red32(p5Canvas.stroke) > 0 Then tempColor~& = _RGB32(_Red32(p5Canvas.stroke) - 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke)) Else tempColor~& = _RGB32(_Red32(p5Canvas.stroke) + 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke))
+    If _Red32(p5Canvas.fill) > 0 Then tempFill~& = _RGB32(_Red32(p5Canvas.fill) - 1, _Green32(p5Canvas.fill), _Blue32(p5Canvas.fill)) Else tempFill~& = _RGB32(_Red32(p5Canvas.fill) + 1, _Green32(p5Canvas.fill), _Blue32(p5Canvas.fill))
 
     internalp5makeTempImage
-    IF p5Canvas.doFill THEN
-        CLS , p5Canvas.fill
-    END IF
-    IF p5Canvas.doStroke THEN
+    If p5Canvas.doFill Then
+        Cls , p5Canvas.fill
+    End If
+    If p5Canvas.doStroke Then
         internalp5line x1!, y1!, x2!, y2!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
         internalp5line x2!, y2!, x3!, y3!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
         internalp5line x3!, y3!, x4!, y4!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
         internalp5line x4!, y4!, x1!, y1!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
-    ELSE
+    Else
         internalp5line x1!, y1!, x2!, y2!, p5Canvas.strokeWeight / 2, tempColor~&
         internalp5line x2!, y2!, x3!, y3!, p5Canvas.strokeWeight / 2, tempColor~&
         internalp5line x3!, y3!, x4!, y4!, p5Canvas.strokeWeight / 2, tempColor~&
         internalp5line x4!, y4!, x1!, y1!, p5Canvas.strokeWeight / 2, tempColor~&
-    END IF
+    End If
 
-    IF p5Canvas.doFill THEN
-        IF p5Canvas.doStroke THEN
-            PAINT (0, 0), tempFill~&, p5Canvas.stroke
-            PAINT (_WIDTH, 0), tempFill~&, p5Canvas.stroke
-            PAINT (0, _HEIGHT), tempFill~&, p5Canvas.stroke
-            PAINT (_WIDTH, _HEIGHT), tempFill~&, p5Canvas.stroke
-        ELSE
-            PAINT (0, 0), tempFill~&, tempColor~&
-            PAINT (_WIDTH, 0), tempFill~&, tempColor~&
-            PAINT (0, _HEIGHT), tempFill~&, tempColor~&
-            PAINT (_WIDTH, _HEIGHT), tempFill~&, tempColor~&
-        END IF
-    END IF
+    If p5Canvas.doFill Then
+        If p5Canvas.doStroke Then
+            Paint (0, 0), tempFill~&, p5Canvas.stroke
+            Paint (_Width, 0), tempFill~&, p5Canvas.stroke
+            Paint (0, _Height), tempFill~&, p5Canvas.stroke
+            Paint (_Width, _Height), tempFill~&, p5Canvas.stroke
+        Else
+            Paint (0, 0), tempFill~&, tempColor~&
+            Paint (_Width, 0), tempFill~&, tempColor~&
+            Paint (0, _Height), tempFill~&, tempColor~&
+            Paint (_Width, _Height), tempFill~&, tempColor~&
+        End If
+    End If
 
-    _CLEARCOLOR tempFill~&
-    _CLEARCOLOR tempColor~&
+    _ClearColor tempFill~&
+    _ClearColor tempColor~&
 
-    _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
-    _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+    _SetAlpha p5Canvas.strokeAlpha, p5Canvas.stroke
+    _SetAlpha p5Canvas.fillAlpha, p5Canvas.fill
 
     internalp5displayTempImage
-END SUB
+End Sub
 
 'draws a bezier curve
 'method by Ashish
-SUB p5bezier (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
-    IF NOT p5Canvas.doStroke AND NOT p5Canvas.doFill THEN EXIT SUB
+Sub p5bezier (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
+    If Not p5Canvas.doStroke And Not p5Canvas.doFill Then Exit Sub
 
-    DIM x0!, x1!, x2!, x3!
-    DIM y0!, y1!, y2!, y3!
-    DIM cx!, ax!, bx!
-    DIM cy!, ay!, by!
-    DIM tempColor~&, tempFill~&
-    DIM t#, xt!, yt!
+    Dim x0!, x1!, x2!, x3!
+    Dim y0!, y1!, y2!, y3!
+    Dim cx!, ax!, bx!
+    Dim cy!, ay!, by!
+    Dim tempColor~&, tempFill~&
+    Dim t#, xt!, yt!
 
     x0! = __x0! + p5Canvas.xOffset
     x1! = __x1! + p5Canvas.xOffset
@@ -749,69 +747,69 @@ SUB p5bezier (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
     by! = 3 * (y2! - y1!) - cy!
     ay! = y3! - y0! - cy! - by!
 
-    DIM s AS DOUBLE
+    Dim s As Double
     s = .001
 
     internalp5makeTempImage
 
-    IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
-    IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
+    If _Red32(p5Canvas.stroke) > 0 Then tempColor~& = _RGB32(_Red32(p5Canvas.stroke) - 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke)) Else tempColor~& = _RGB32(_Red32(p5Canvas.stroke) + 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke))
+    If _Red32(p5Canvas.fill) > 0 Then tempFill~& = _RGB32(_Red32(p5Canvas.fill) - 1, _Green32(p5Canvas.fill), _Blue32(p5Canvas.fill)) Else tempFill~& = _RGB32(_Red32(p5Canvas.fill) + 1, _Green32(p5Canvas.fill), _Blue32(p5Canvas.fill))
 
-    IF p5Canvas.doFill THEN
-        CLS , p5Canvas.fill
-        IF p5Canvas.doStroke THEN LINE (x0!, y0!)-(x3!, y3!), p5Canvas.stroke ELSE LINE (x0!, y0!)-(x3!, y3!), tempColor~&
-    END IF
+    If p5Canvas.doFill Then
+        Cls , p5Canvas.fill
+        If p5Canvas.doStroke Then Line (x0!, y0!)-(x3!, y3!), p5Canvas.stroke Else Line (x0!, y0!)-(x3!, y3!), tempColor~&
+    End If
 
-    FOR t# = 0 TO 1 - s STEP s
+    For t# = 0 To 1 - s Step s
         xt! = ax! * (t# * t# * t#) + bx! * (t# * t#) + cx! * t# + x0!
         yt! = ay! * (t# * t# * t#) + by! * (t# * t#) + cy! * t# + y0!
-        IF p5Canvas.doStroke THEN CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, tempColor~&
-    NEXT
+        If p5Canvas.doStroke Then CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke Else CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, tempColor~&
+    Next
 
-    IF p5Canvas.doFill THEN
-        IF p5Canvas.doStroke THEN
-            PAINT (0, 0), tempFill~&, p5Canvas.stroke
-            PAINT (_WIDTH, 0), tempFill~&, p5Canvas.stroke
-            PAINT (0, _HEIGHT), tempFill~&, p5Canvas.stroke
-            PAINT (_WIDTH, _HEIGHT), tempFill~&, p5Canvas.stroke
-        ELSE
-            PAINT (0, 0), tempFill~&, tempColor~&
-            PAINT (_WIDTH, 0), tempFill~&, tempColor~&
-            PAINT (0, _HEIGHT), tempFill~&, tempColor~&
-            PAINT (_WIDTH, _HEIGHT), tempFill~&, tempColor~&
-        END IF
-    END IF
+    If p5Canvas.doFill Then
+        If p5Canvas.doStroke Then
+            Paint (0, 0), tempFill~&, p5Canvas.stroke
+            Paint (_Width, 0), tempFill~&, p5Canvas.stroke
+            Paint (0, _Height), tempFill~&, p5Canvas.stroke
+            Paint (_Width, _Height), tempFill~&, p5Canvas.stroke
+        Else
+            Paint (0, 0), tempFill~&, tempColor~&
+            Paint (_Width, 0), tempFill~&, tempColor~&
+            Paint (0, _Height), tempFill~&, tempColor~&
+            Paint (_Width, _Height), tempFill~&, tempColor~&
+        End If
+    End If
 
-    _CLEARCOLOR tempFill~&
+    _ClearColor tempFill~&
 
-    IF NOT p5Canvas.doStroke THEN _CLEARCOLOR tempColor~&: GOTO internal_p5_bezier_display
+    If Not p5Canvas.doStroke Then _ClearColor tempColor~&: GoTo internal_p5_bezier_display
 
-    IF p5Canvas.doFill THEN
-        IF p5Canvas.doStroke THEN _CLEARCOLOR p5Canvas.stroke ELSE _CLEARCOLOR tempColor~&
-        FOR t# = 0 TO 1 - s STEP s
+    If p5Canvas.doFill Then
+        If p5Canvas.doStroke Then _ClearColor p5Canvas.stroke Else _ClearColor tempColor~&
+        For t# = 0 To 1 - s Step s
             xt! = ax! * (t# * t# * t#) + bx! * (t# * t#) + cx! * t# + x0!
             yt! = ay! * (t# * t# * t#) + by! * (t# * t#) + cy! * t# + y0!
-            IF p5Canvas.doStroke THEN CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, tempColor~&
-        NEXT
-    END IF
+            If p5Canvas.doStroke Then CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke Else CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, tempColor~&
+        Next
+    End If
 
     internal_p5_bezier_display:::
 
-    _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
-    _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
+    _SetAlpha p5Canvas.fillAlpha, p5Canvas.fill
+    _SetAlpha p5Canvas.strokeAlpha, p5Canvas.stroke
 
     internalp5displayTempImage
 
-END SUB
+End Sub
 
-SUB p5curve (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
+Sub p5curve (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
 
-    IF NOT p5Canvas.doStroke OR NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+    If Not p5Canvas.doStroke Or Not p5Canvas.doFill And Not p5Canvas.doStroke Then Exit Sub
 
-    DIM x0!, x1!, x2!, x3!
-    DIM y0!, y1!, y2!, y3!
-    DIM tempColor~&, tempFill~&
-    DIM t#, xt!, yt!
+    Dim x0!, x1!, x2!, x3!
+    Dim y0!, y1!, y2!, y3!
+    Dim tempFill~&
+    Dim t#, xt!, yt!
 
     x0! = __x0! + p5Canvas.xOffset
     x1! = __x1! + p5Canvas.xOffset
@@ -825,60 +823,60 @@ SUB p5curve (__x0!, __y0!, __x1!, __y1!, __x2!, __y2!, __x3!, __y3!)
 
     internalp5makeTempImage
 
-    IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
+    If _Red32(p5Canvas.fill) > 0 Then tempFill~& = _RGB32(_Red32(p5Canvas.fill) - 1, _Green32(p5Canvas.fill), _Blue32(p5Canvas.fill)) Else tempFill~& = _RGB32(_Red32(p5Canvas.fill) + 1, _Green32(p5Canvas.fill), _Blue32(p5Canvas.fill))
 
-    IF p5Canvas.doFill THEN CLS , p5Canvas.fill: LINE (x1!, y1!)-(x2!, y2!), p5Canvas.stroke
-    DIM s AS DOUBLE
+    If p5Canvas.doFill Then Cls , p5Canvas.fill: Line (x1!, y1!)-(x2!, y2!), p5Canvas.stroke
+    Dim s As Double
     s = .001
-    FOR t# = 0 TO 1 - s STEP s
+    For t# = 0 To 1 - s Step s
         xt! = 0.5 * ((2 * x1!) + (-x0! + x2!) * t# + (2 * x0! - 5 * x1! + 4 * x2! - x3!) * (t# * t#) + (-x0! + 3 * x1! - 3 * x2! + x3!) * (t# * t# * t#))
         yt! = 0.5 * ((2 * y1!) + (-y0! + y2!) * t# + (2 * y0! - 5 * y1! + 4 * y2! - y3!) * (t# * t#) + (-y0! + 3 * y1! - 3 * y2! + y3!) * (t# * t# * t#))
         CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
-    NEXT
+    Next
 
-    IF NOT p5Canvas.doFill THEN GOTO internal_p5_curve_display
+    If Not p5Canvas.doFill Then GoTo internal_p5_curve_display
 
-    IF p5Canvas.doFill THEN
-        PAINT (0, 0), tempFill~&, p5Canvas.stroke
-        PAINT (_WIDTH, 0), tempFill~&, p5Canvas.stroke
-        PAINT (0, _HEIGHT), tempFill~&, p5Canvas.stroke
-        PAINT (_WIDTH, _HEIGHT), tempFill~&, p5Canvas.stroke
-    END IF
+    If p5Canvas.doFill Then
+        Paint (0, 0), tempFill~&, p5Canvas.stroke
+        Paint (_Width, 0), tempFill~&, p5Canvas.stroke
+        Paint (0, _Height), tempFill~&, p5Canvas.stroke
+        Paint (_Width, _Height), tempFill~&, p5Canvas.stroke
+    End If
 
-    _CLEARCOLOR tempFill~&
-    IF p5Canvas.doFill THEN
-        _CLEARCOLOR p5Canvas.stroke
-        FOR t# = 0 TO 1 - s STEP s
+    _ClearColor tempFill~&
+    If p5Canvas.doFill Then
+        _ClearColor p5Canvas.stroke
+        For t# = 0 To 1 - s Step s
             xt! = 0.5 * ((2 * x1!) + (-x0! + x2!) * t# + (2 * x0! - 5 * x1! + 4 * x2! - x3!) * (t# * t#) + (-x0! + 3 * x1! - 3 * x2! + x3!) * (t# * t# * t#))
             yt! = 0.5 * ((2 * y1!) + (-y0! + y2!) * t# + (2 * y0! - 5 * y1! + 4 * y2! - y3!) * (t# * t#) + (-y0! + 3 * y1! - 3 * y2! + y3!) * (t# * t# * t#))
             CircleFill xt!, yt!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
-        NEXT
-    END IF
+        Next
+    End If
 
     internal_p5_curve_display:::
 
-    _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
-    _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+    _SetAlpha p5Canvas.strokeAlpha, p5Canvas.stroke
+    _SetAlpha p5Canvas.fillAlpha, p5Canvas.fill
 
     internalp5displayTempImage
-END SUB
+End Sub
 
-SUB p5arc (__x!, __y!, w!, h!, start##, stp##, mode)
-    IF NOT p5Canvas.doFill AND NOT p5Canvas.doStroke THEN EXIT SUB
+Sub p5arc (__x!, __y!, w!, h!, start##, stp##, mode)
+    If Not p5Canvas.doFill And Not p5Canvas.doStroke Then Exit Sub
 
-    DIM x!, y!, spt##
-    DIM x0!, y0!, x1!, y1!
-    DIM xx!, yy!
-    DIM i##
-    DIM tempColor~&, tempFill~&
+    Dim x!, y!, spt##
+    Dim x0!, y0!, x1!, y1!
+    Dim xx!, yy!
+    Dim i##
+    Dim tempColor~&, tempFill~&
 
     x! = __x! + p5Canvas.xOffset
     y! = __y! + p5Canvas.yOffset
 
-    IF p5Canvas.angleMode = DEGREES THEN start## = p5degrees(start##): spt## = p5degrees(spt##)
+    If p5Canvas.angleMode = DEGREES Then start## = p5degrees(start##): spt## = p5degrees(spt##)
 
-    IF _RED32(p5Canvas.stroke) > 0 THEN tempColor~& = _RGB32(_RED32(p5Canvas.stroke) - 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke)) ELSE tempColor~& = _RGB32(_RED32(p5Canvas.stroke) + 1, _GREEN32(p5Canvas.stroke), _BLUE32(p5Canvas.stroke))
-    IF _RED32(p5Canvas.fill) > 0 THEN tempFill~& = _RGB32(_RED32(p5Canvas.fill) - 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill)) ELSE tempFill~& = _RGB32(_RED32(p5Canvas.fill) + 1, _GREEN32(p5Canvas.fill), _BLUE32(p5Canvas.fill))
+    If _Red32(p5Canvas.stroke) > 0 Then tempColor~& = _RGB32(_Red32(p5Canvas.stroke) - 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke)) Else tempColor~& = _RGB32(_Red32(p5Canvas.stroke) + 1, _Green32(p5Canvas.stroke), _Blue32(p5Canvas.stroke))
+    If _Red32(p5Canvas.fill) > 0 Then tempFill~& = _RGB32(_Red32(p5Canvas.fill) - 1, _Green32(p5Canvas.fill), _Blue32(p5Canvas.fill)) Else tempFill~& = _RGB32(_Red32(p5Canvas.fill) + 1, _Green32(p5Canvas.fill), _Blue32(p5Canvas.fill))
 
     x0! = x! + w! * p5cos(start##)
     y0! = y! + h! * p5sin(start##)
@@ -887,637 +885,637 @@ SUB p5arc (__x!, __y!, w!, h!, start##, stp##, mode)
 
     internalp5makeTempImage
 
-    IF p5Canvas.doFill THEN
-        CLS , p5Canvas.fill
-        IF p5Canvas.doStroke THEN
-            IF mode = ARC_DEFAULT OR mode = ARC_PIE THEN
-                LINE (x!, y!)-(x0!, y0!), p5Canvas.stroke
-                LINE (x!, y!)-(x1!, y1!), p5Canvas.stroke
-            ELSEIF mode = ARC_OPEN OR mode = ARC_CHORD THEN
-                LINE (x0!, y0!)-(x1!, y1!), p5Canvas.stroke
-            END IF
-        ELSE
-            IF mode = ARC_DEFAULT OR mode = ARC_PIE THEN
-                LINE (x!, y!)-(x0!, y0!), tempColor~&
-                LINE (x!, y!)-(x1!, y1!), tempColor~&
-            ELSEIF mode = ARC_OPEN OR mode = ARC_CHORD THEN
-                LINE (x0!, y0!)-(x1!, y1!), tempColor~&
-            END IF
-        END IF
-    END IF
+    If p5Canvas.doFill Then
+        Cls , p5Canvas.fill
+        If p5Canvas.doStroke Then
+            If mode = ARC_DEFAULT Or mode = ARC_PIE Then
+                Line (x!, y!)-(x0!, y0!), p5Canvas.stroke
+                Line (x!, y!)-(x1!, y1!), p5Canvas.stroke
+            ElseIf mode = ARC_OPEN Or mode = ARC_CHORD Then
+                Line (x0!, y0!)-(x1!, y1!), p5Canvas.stroke
+            End If
+        Else
+            If mode = ARC_DEFAULT Or mode = ARC_PIE Then
+                Line (x!, y!)-(x0!, y0!), tempColor~&
+                Line (x!, y!)-(x1!, y1!), tempColor~&
+            ElseIf mode = ARC_OPEN Or mode = ARC_CHORD Then
+                Line (x0!, y0!)-(x1!, y1!), tempColor~&
+            End If
+        End If
+    End If
 
-    FOR i## = start## TO stp## STEP .001
+    For i## = start## To stp## Step .001
         xx! = x! + w! * p5cos(i##)
         yy! = y! + h! * p5sin(i##)
-        IF p5Canvas.doStroke THEN CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, tempColor~&
-    NEXT
+        If p5Canvas.doStroke Then CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, p5Canvas.stroke Else CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, tempColor~&
+    Next
 
-    IF p5Canvas.doFill THEN
-        IF p5Canvas.doStroke THEN
-            PAINT (0, 0), tempFill~&, p5Canvas.stroke
-            PAINT (_WIDTH, 0), tempFill~&, p5Canvas.stroke
-            PAINT (0, _HEIGHT), tempFill~&, p5Canvas.stroke
-            PAINT (_WIDTH, _HEIGHT), tempFill~&, p5Canvas.stroke
-        ELSE
-            PAINT (0, 0), tempFill~&, tempColor~&
-            PAINT (_WIDTH, 0), tempFill~&, tempColor~&
-            PAINT (0, _HEIGHT), tempFill~&, tempColor~&
-            PAINT (_WIDTH, _HEIGHT), tempFill~&, tempColor~&
-        END IF
-    END IF
-    _CLEARCOLOR tempFill~&
+    If p5Canvas.doFill Then
+        If p5Canvas.doStroke Then
+            Paint (0, 0), tempFill~&, p5Canvas.stroke
+            Paint (_Width, 0), tempFill~&, p5Canvas.stroke
+            Paint (0, _Height), tempFill~&, p5Canvas.stroke
+            Paint (_Width, _Height), tempFill~&, p5Canvas.stroke
+        Else
+            Paint (0, 0), tempFill~&, tempColor~&
+            Paint (_Width, 0), tempFill~&, tempColor~&
+            Paint (0, _Height), tempFill~&, tempColor~&
+            Paint (_Width, _Height), tempFill~&, tempColor~&
+        End If
+    End If
+    _ClearColor tempFill~&
 
-    IF p5Canvas.doStroke THEN
-        IF mode = ARC_CHORD THEN internalp5line x0!, y0!, x1!, y1!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
-        IF mode = ARC_PIE THEN internalp5line x0!, y0!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke: internalp5line x1!, y1!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
-    END IF
+    If p5Canvas.doStroke Then
+        If mode = ARC_CHORD Then internalp5line x0!, y0!, x1!, y1!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+        If mode = ARC_PIE Then internalp5line x0!, y0!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke: internalp5line x1!, y1!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+    End If
 
-    IF p5Canvas.doFill THEN
-        IF p5Canvas.doStroke THEN _CLEARCOLOR p5Canvas.stroke ELSE _CLEARCOLOR tempColor~&
-        IF p5Canvas.doStroke THEN
-            IF mode = ARC_CHORD THEN internalp5line x0!, y0!, x1!, y1!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
-            IF mode = ARC_PIE THEN internalp5line x0!, y0!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke: internalp5line x1!, y1!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
-        END IF
-        IF NOT p5Canvas.doStroke THEN GOTO internal_p5_arc_display
-        FOR i## = start## TO stp## STEP .001
+    If p5Canvas.doFill Then
+        If p5Canvas.doStroke Then _ClearColor p5Canvas.stroke Else _ClearColor tempColor~&
+        If p5Canvas.doStroke Then
+            If mode = ARC_CHORD Then internalp5line x0!, y0!, x1!, y1!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+            If mode = ARC_PIE Then internalp5line x0!, y0!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke: internalp5line x1!, y1!, x!, y!, p5Canvas.strokeWeight / 2, p5Canvas.stroke
+        End If
+        If Not p5Canvas.doStroke Then GoTo internal_p5_arc_display
+        For i## = start## To stp## Step .001
             xx! = x! + w! * p5cos(i##)
             yy! = y! + h! * p5sin(i##)
-            IF p5Canvas.doStroke THEN CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, p5Canvas.stroke ELSE CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, tempColor~&
-        NEXT
-    END IF
+            If p5Canvas.doStroke Then CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, p5Canvas.stroke Else CircleFill xx!, yy!, p5Canvas.strokeWeight / 2, tempColor~&
+        Next
+    End If
 
     internal_p5_arc_display:::
-    _SETALPHA p5Canvas.strokeAlpha, p5Canvas.stroke
-    _SETALPHA p5Canvas.fillAlpha, p5Canvas.fill
+    _SetAlpha p5Canvas.strokeAlpha, p5Canvas.stroke
+    _SetAlpha p5Canvas.fillAlpha, p5Canvas.fill
 
     internalp5displayTempImage
-END SUB
+End Sub
 
-SUB internalp5line (__x0!, __y0!, __x1!, __y1!, s!, col~&)
-    DIM x1 AS SINGLE, y1 AS SINGLE, x2 AS SINGLE, y2 AS SINGLE
-    DIM a AS SINGLE, x0 AS SINGLE, y0 AS SINGLE
-    DIM tempTexture AS LONG, prevDest AS LONG
+Sub internalp5line (__x0!, __y0!, __x1!, __y1!, s!, col~&)
+    Dim x1 As Single, y1 As Single, x2 As Single, y2 As Single
+    Dim a As Single, x0 As Single, y0 As Single
+    Dim tempTexture As Long, prevDest As Long
 
     x1 = __x0!
     y1 = __y0!
     x2 = __x1!
     y2 = __y1!
 
-    a = _ATAN2(y2 - y1, x2 - x1)
-    a = a + _PI / 2
-    x0 = 0.5 * p5Canvas.strokeWeight * COS(a)
-    y0 = 0.5 * p5Canvas.strokeWeight * SIN(a)
+    a = _Atan2(y2 - y1, x2 - x1)
+    a = a + _Pi / 2
+    x0 = 0.5 * p5Canvas.strokeWeight * Cos(a)
+    y0 = 0.5 * p5Canvas.strokeWeight * Sin(a)
 
-    tempTexture = _NEWIMAGE(1, 1, 32)
-    prevDest = _DEST
-    _DEST tempTexture
-    PSET (0, 0), col~&
-    _DEST prevDest
+    tempTexture = _NewImage(1, 1, 32)
+    prevDest = _Dest
+    _Dest tempTexture
+    PSet (0, 0), col~&
+    _Dest prevDest
 
-    _MAPTRIANGLE (0, 0)-(0, 0)-(0, 0), tempTexture TO(x1 - x0, y1 - y0)-(x1 + x0, y1 + y0)-(x2 + x0, y2 + y0), , _SMOOTH
-    _MAPTRIANGLE (0, 0)-(0, 0)-(0, 0), tempTexture TO(x1 - x0, y1 - y0)-(x2 + x0, y2 + y0)-(x2 - x0, y2 - y0), , _SMOOTH
+    _MapTriangle (0, 0)-(0, 0)-(0, 0), tempTexture To(x1 - x0, y1 - y0)-(x1 + x0, y1 + y0)-(x2 + x0, y2 + y0), , _Smooth
+    _MapTriangle (0, 0)-(0, 0)-(0, 0), tempTexture To(x1 - x0, y1 - y0)-(x2 + x0, y2 + y0)-(x2 - x0, y2 - y0), , _Smooth
 
-    IF p5Canvas.strokeCap = ROUND THEN
+    If p5Canvas.strokeCap = ROUND Then
         CircleFill x1, y1, s! / 2, col~&
         CircleFill x2, y2, s! / 2, col~&
-    END IF
+    End If
 
-    _FREEIMAGE tempTexture
-END SUB
+    _FreeImage tempTexture
+End Sub
 
-SUB strokeWeight (a AS SINGLE)
-    IF a = 0 THEN
+Sub strokeWeight (a As Single)
+    If a = 0 Then
         noStroke
-    ELSE
+    Else
         p5Canvas.strokeWeight = a
-    END IF
-END SUB
+    End If
+End Sub
 
-SUB strokeCap (setting AS _BYTE)
+Sub strokeCap (setting As _Byte)
     p5Canvas.strokeCap = setting
-END SUB
+End Sub
 
-SUB background (r AS SINGLE, g AS SINGLE, b AS SINGLE)
-    IF p5Canvas.colorMode = p5HSB THEN p5Canvas.backColor = hsb(r, g, b, 255) ELSE p5Canvas.backColor = _RGB32(r, g, b)
+Sub background (r As Single, g As Single, b As Single)
+    If p5Canvas.colorMode = p5HSB Then p5Canvas.backColor = hsb(r, g, b, 255) Else p5Canvas.backColor = _RGB32(r, g, b)
     p5Canvas.backColorAlpha = 255
-    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColor, BF
-END SUB
+    Line (0, 0)-(_Width, _Height), p5Canvas.backColor, BF
+End Sub
 
-SUB backgroundA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
-    IF p5Canvas.colorMode = p5HSB THEN
+Sub backgroundA (r As Single, g As Single, b As Single, a As Single)
+    If p5Canvas.colorMode = p5HSB Then
         p5Canvas.backColor = hsb(r, g, b, a)
         p5Canvas.backColorA = hsb(r, g, b, a)
-    ELSE
+    Else
         p5Canvas.backColor = _RGB32(r, g, b)
         p5Canvas.backColorA = _RGBA32(r, g, b, a)
-    END IF
+    End If
     p5Canvas.backColorAlpha = constrain(a, 0, 255)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
-END SUB
+    Line (0, 0)-(_Width, _Height), p5Canvas.backColorA, BF
+End Sub
 
-SUB backgroundN (c$)
-    DIM c~&
+Sub backgroundN (c$)
+    Dim c~&
     c~& = colorN(c$)
     p5Canvas.backColor = c~&
     p5Canvas.backColorA = c~&
     p5Canvas.backColorAlpha = 255
-    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
-END SUB
+    Line (0, 0)-(_Width, _Height), p5Canvas.backColorA, BF
+End Sub
 
-SUB backgroundNA (c$, a!)
-    DIM c~&
+Sub backgroundNA (c$, a!)
+    Dim c~&
     c~& = colorNA(c$, a!)
-    p5Canvas.backColor = _RGB32(_RED32(c~&), _GREEN32(c~&), _BLUE32(c~&))
+    p5Canvas.backColor = _RGB32(_Red32(c~&), _Green32(c~&), _Blue32(c~&))
     p5Canvas.backColorA = c~&
-    p5Canvas.backColorAlpha = _ALPHA32(c~&)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
-END SUB
+    p5Canvas.backColorAlpha = _Alpha32(c~&)
+    Line (0, 0)-(_Width, _Height), p5Canvas.backColorA, BF
+End Sub
 
-SUB backgroundB (b AS SINGLE)
+Sub backgroundB (b As Single)
     p5Canvas.backColor = _RGB32(b, b, b)
     p5Canvas.backColorAlpha = 255
-    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColor, BF
-END SUB
+    Line (0, 0)-(_Width, _Height), p5Canvas.backColor, BF
+End Sub
 
-SUB backgroundBA (b AS SINGLE, a AS SINGLE)
+Sub backgroundBA (b As Single, a As Single)
     p5Canvas.backColor = _RGB32(b, b, b)
     p5Canvas.backColorA = _RGBA32(b, b, b, a)
     p5Canvas.backColorAlpha = constrain(a, 0, 255)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
-END SUB
+    Line (0, 0)-(_Width, _Height), p5Canvas.backColorA, BF
+End Sub
 
-SUB backgroundC (col~&)
-    p5Canvas.backColor = _RGB32(_RED32(col~&), _GREEN32(col~&), _BLUE32(col~&))
-    p5Canvas.backColorA = _RGBA32(_RED32(col~&), _GREEN32(col~&), _BLUE32(col~&), _ALPHA32(col~&))
-    p5Canvas.backColorAlpha = constrain(_ALPHA32(col~&), 0, 255)
-    LINE (0, 0)-(_WIDTH, _HEIGHT), p5Canvas.backColorA, BF
-END SUB
+Sub backgroundC (col~&)
+    p5Canvas.backColor = _RGB32(_Red32(col~&), _Green32(col~&), _Blue32(col~&))
+    p5Canvas.backColorA = _RGBA32(_Red32(col~&), _Green32(col~&), _Blue32(col~&), _Alpha32(col~&))
+    p5Canvas.backColorAlpha = constrain(_Alpha32(col~&), 0, 255)
+    Line (0, 0)-(_Width, _Height), p5Canvas.backColorA, BF
+End Sub
 '#####################################################################################################
 '########################## Text Rendering Related methods & functions ###############################
 '#####################################################################################################
 
-SUB textAlign (position AS _BYTE)
+Sub textAlign (position As _Byte)
     p5Canvas.textAlign = position
-END SUB
+End Sub
 
-SUB textFont (font$)
-    DIM tempFontHandle AS LONG
+Sub textFont (font$)
+    Dim tempFontHandle As Long
 
-    IF currentFontSize = 0 THEN currentFontSize = 16
+    If currentFontSize = 0 Then currentFontSize = 16
 
-    IF font$ <> loadedFontFile$ THEN
-        tempFontHandle = _LOADFONT(font$, currentFontSize)
+    If font$ <> loadedFontFile$ Then
+        tempFontHandle = _LoadFont(font$, currentFontSize)
 
-        IF tempFontHandle > 0 THEN
+        If tempFontHandle > 0 Then
             'loading successful
-            _FONT tempFontHandle
-            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
+            _Font tempFontHandle
+            If p5Canvas.fontHandle > 0 And (p5Canvas.fontHandle <> 8 And p5Canvas.fontHandle <> 16) Then _FreeFont p5Canvas.fontHandle
             p5Canvas.fontHandle = tempFontHandle
 
             loadedFontFile$ = font$
-        ELSE
+        Else
             loadedFontFile$ = ""
             'built-in fonts
-            IF currentFontSize >= 16 THEN
-                _FONT 16
-            ELSEIF currentFontSize < 16 THEN
-                _FONT 8
-            END IF
+            If currentFontSize >= 16 Then
+                _Font 16
+            ElseIf currentFontSize < 16 Then
+                _Font 8
+            End If
 
-            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
-            p5Canvas.fontHandle = _FONT
-        END IF
-    END IF
-END SUB
+            If p5Canvas.fontHandle > 0 And (p5Canvas.fontHandle <> 8 And p5Canvas.fontHandle <> 16) Then _FreeFont p5Canvas.fontHandle
+            p5Canvas.fontHandle = _Font
+        End If
+    End If
+End Sub
 
-SUB textSize (size%)
-    DIM tempFontHandle AS LONG
+Sub textSize (size%)
+    Dim tempFontHandle As Long
 
-    IF size% = currentFontSize OR size% <= 0 THEN EXIT SUB
+    If size% = currentFontSize Or size% <= 0 Then Exit Sub
 
-    IF loadedFontFile$ = "" THEN
+    If loadedFontFile$ = "" Then
         'built-in fonts
-        IF size% >= 16 THEN
-            _FONT 16
+        If size% >= 16 Then
+            _Font 16
             p5Canvas.fontHandle = 16
-        ELSEIF size% < 16 THEN
-            _FONT 8
+        ElseIf size% < 16 Then
+            _Font 8
             p5Canvas.fontHandle = 8
-        END IF
-    ELSE
-        tempFontHandle = _LOADFONT(loadedFontFile$, size%)
+        End If
+    Else
+        tempFontHandle = _LoadFont(loadedFontFile$, size%)
 
-        IF tempFontHandle > 0 THEN
+        If tempFontHandle > 0 Then
             'loading successful
-            _FONT tempFontHandle
-            IF p5Canvas.fontHandle > 0 AND (p5Canvas.fontHandle <> 8 AND p5Canvas.fontHandle <> 16) THEN _FREEFONT p5Canvas.fontHandle
+            _Font tempFontHandle
+            If p5Canvas.fontHandle > 0 And (p5Canvas.fontHandle <> 8 And p5Canvas.fontHandle <> 16) Then _FreeFont p5Canvas.fontHandle
             p5Canvas.fontHandle = tempFontHandle
 
             currentFontSize = size%
-        END IF
-    END IF
-END SUB
+        End If
+    End If
+End Sub
 
-SUB text (t$, __x AS SINGLE, __y AS SINGLE)
-    DIM x AS SINGLE, y AS SINGLE
+Sub text (t$, __x As Single, __y As Single)
+    Dim x As Single, y As Single
 
     x = __x + p5Canvas.xOffset
     y = __y + p5Canvas.yOffset
 
-    SELECT CASE p5Canvas.textAlign
-        CASE LEFT
+    Select Case p5Canvas.textAlign
+        Case LEFT
             p5PrintString x, y, t$
-        CASE CENTER
+        Case CENTER
             p5PrintString x - PrintWidth(t$) / 2, y - uheight / 2, t$
-        CASE RIGHT
+        Case RIGHT
             p5PrintString x - PrintWidth(t$), y, t$
-    END SELECT
-END SUB
+    End Select
+End Sub
 
-SUB p5PrintString (Left AS INTEGER, Top AS INTEGER, theText$)
-    DIM Utf$
+Sub p5PrintString (Left As Integer, Top As Integer, theText$)
+    Dim Utf$
 
-    IF p5Canvas.encoding = 1252 THEN
+    If p5Canvas.encoding = 1252 Then
         Utf$ = FromCP1252$(theText$)
-    ELSE 'Default to 437
+    Else 'Default to 437
         Utf$ = FromCP437$(theText$)
-    END IF
+    End If
 
-    REDIM p5ThisLineChars(LEN(Utf$)) AS LONG
-    uprint_extra Left, Top, _OFFSET(Utf$), LEN(Utf$), true, true, p5LastRenderedLineWidth, _OFFSET(p5ThisLineChars()), p5LastRenderedCharCount, p5Canvas.strokeA, 0
-    REDIM _PRESERVE p5ThisLineChars(p5LastRenderedCharCount) AS LONG
-END SUB
+    ReDim p5ThisLineChars(Len(Utf$)) As Long
+    uprint_extra Left, Top, _Offset(Utf$), Len(Utf$), true, true, p5LastRenderedLineWidth, _Offset(p5ThisLineChars()), p5LastRenderedCharCount, p5Canvas.strokeA, 0
+    ReDim _Preserve p5ThisLineChars(p5LastRenderedCharCount) As Long
+End Sub
 
-FUNCTION PrintWidth& (theText$)
-    PrintWidth& = uprintwidth(theText$, LEN(theText$), 0)
-END FUNCTION
+Function PrintWidth& (theText$)
+    PrintWidth& = uprintwidth(theText$, Len(theText$), 0)
+End Function
 
-FUNCTION textWidth& (theText$)
+Function textWidth& (theText$)
     textWidth& = PrintWidth&(theText$)
-END FUNCTION
+End Function
 
-FUNCTION textHeight&
+Function textHeight&
     textHeight& = uheight
-END FUNCTION
+End Function
 
 '---------------------------------------------------------------------------------
 'UTF conversion functions courtesy of Luke Ceddia.
 'http://www.qb64.net/forum/index.php?topic=13981.msg121324#msg121324
-FUNCTION FromCP437$ (source$)
-    STATIC init&, table$(255)
-    IF init& = 0 THEN
-        DIM i&
-        FOR i& = 0 TO 127
-            table$(i&) = CHR$(i&)
-        NEXT i&
-        table$(7) = CHR$(226) + CHR$(151) + CHR$(143) 'UTF-8 e2978f
-        table$(128) = CHR$(&HE2) + CHR$(&H82) + CHR$(&HAC)
-        table$(128) = CHR$(&HC3) + CHR$(&H87)
-        table$(129) = CHR$(&HC3) + CHR$(&HBC)
-        table$(130) = CHR$(&HC3) + CHR$(&HA9)
-        table$(131) = CHR$(&HC3) + CHR$(&HA2)
-        table$(132) = CHR$(&HC3) + CHR$(&HA4)
-        table$(133) = CHR$(&HC3) + CHR$(&HA0)
-        table$(134) = CHR$(&HC3) + CHR$(&HA5)
-        table$(135) = CHR$(&HC3) + CHR$(&HA7)
-        table$(136) = CHR$(&HC3) + CHR$(&HAA)
-        table$(137) = CHR$(&HC3) + CHR$(&HAB)
-        table$(138) = CHR$(&HC3) + CHR$(&HA8)
-        table$(139) = CHR$(&HC3) + CHR$(&HAF)
-        table$(140) = CHR$(&HC3) + CHR$(&HAE)
-        table$(141) = CHR$(&HC3) + CHR$(&HAC)
-        table$(142) = CHR$(&HC3) + CHR$(&H84)
-        table$(143) = CHR$(&HC3) + CHR$(&H85)
-        table$(144) = CHR$(&HC3) + CHR$(&H89)
-        table$(145) = CHR$(&HC3) + CHR$(&HA6)
-        table$(146) = CHR$(&HC3) + CHR$(&H86)
-        table$(147) = CHR$(&HC3) + CHR$(&HB4)
-        table$(148) = CHR$(&HC3) + CHR$(&HB6)
-        table$(149) = CHR$(&HC3) + CHR$(&HB2)
-        table$(150) = CHR$(&HC3) + CHR$(&HBB)
-        table$(151) = CHR$(&HC3) + CHR$(&HB9)
-        table$(152) = CHR$(&HC3) + CHR$(&HBF)
-        table$(153) = CHR$(&HC3) + CHR$(&H96)
-        table$(154) = CHR$(&HC3) + CHR$(&H9C)
-        table$(155) = CHR$(&HC2) + CHR$(&HA2)
-        table$(156) = CHR$(&HC2) + CHR$(&HA3)
-        table$(157) = CHR$(&HC2) + CHR$(&HA5)
-        table$(158) = CHR$(&HE2) + CHR$(&H82) + CHR$(&HA7)
-        table$(159) = CHR$(&HC6) + CHR$(&H92)
-        table$(160) = CHR$(&HC3) + CHR$(&HA1)
-        table$(161) = CHR$(&HC3) + CHR$(&HAD)
-        table$(162) = CHR$(&HC3) + CHR$(&HB3)
-        table$(163) = CHR$(&HC3) + CHR$(&HBA)
-        table$(164) = CHR$(&HC3) + CHR$(&HB1)
-        table$(165) = CHR$(&HC3) + CHR$(&H91)
-        table$(166) = CHR$(&HC2) + CHR$(&HAA)
-        table$(167) = CHR$(&HC2) + CHR$(&HBA)
-        table$(168) = CHR$(&HC2) + CHR$(&HBF)
-        table$(169) = CHR$(&HE2) + CHR$(&H8C) + CHR$(&H90)
-        table$(170) = CHR$(&HC2) + CHR$(&HAC)
-        table$(171) = CHR$(&HC2) + CHR$(&HBD)
-        table$(172) = CHR$(&HC2) + CHR$(&HBC)
-        table$(173) = CHR$(&HC2) + CHR$(&HA1)
-        table$(174) = CHR$(&HC2) + CHR$(&HAB)
-        table$(175) = CHR$(&HC2) + CHR$(&HBB)
-        table$(176) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H91)
-        table$(177) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H92)
-        table$(178) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H93)
-        table$(179) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H82)
-        table$(180) = CHR$(&HE2) + CHR$(&H94) + CHR$(&HA4)
-        table$(181) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA1)
-        table$(182) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA2)
-        table$(183) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H96)
-        table$(184) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H95)
-        table$(185) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA3)
-        table$(186) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H91)
-        table$(187) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H97)
-        table$(188) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9D)
-        table$(189) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9C)
-        table$(190) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9B)
-        table$(191) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H90)
-        table$(192) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H94)
-        table$(193) = CHR$(&HE2) + CHR$(&H94) + CHR$(&HB4)
-        table$(194) = CHR$(&HE2) + CHR$(&H94) + CHR$(&HAC)
-        table$(195) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H9C)
-        table$(196) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H80)
-        table$(197) = CHR$(&HE2) + CHR$(&H94) + CHR$(&HBC)
-        table$(198) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9E)
-        table$(199) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9F)
-        table$(200) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H9A)
-        table$(201) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H94)
-        table$(202) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA9)
-        table$(203) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA6)
-        table$(204) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA0)
-        table$(205) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H90)
-        table$(206) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HAC)
-        table$(207) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA7)
-        table$(208) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA8)
-        table$(209) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA4)
-        table$(210) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HA5)
-        table$(211) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H99)
-        table$(212) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H98)
-        table$(213) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H92)
-        table$(214) = CHR$(&HE2) + CHR$(&H95) + CHR$(&H93)
-        table$(215) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HAB)
-        table$(216) = CHR$(&HE2) + CHR$(&H95) + CHR$(&HAA)
-        table$(217) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H98)
-        table$(218) = CHR$(&HE2) + CHR$(&H94) + CHR$(&H8C)
-        table$(219) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H88)
-        table$(220) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H84)
-        table$(221) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H8C)
-        table$(222) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H90)
-        table$(223) = CHR$(&HE2) + CHR$(&H96) + CHR$(&H80)
-        table$(224) = CHR$(&HCE) + CHR$(&HB1)
-        table$(225) = CHR$(&HC3) + CHR$(&H9F)
-        table$(226) = CHR$(&HCE) + CHR$(&H93)
-        table$(227) = CHR$(&HCF) + CHR$(&H80)
-        table$(228) = CHR$(&HCE) + CHR$(&HA3)
-        table$(229) = CHR$(&HCF) + CHR$(&H83)
-        table$(230) = CHR$(&HC2) + CHR$(&HB5)
-        table$(231) = CHR$(&HCF) + CHR$(&H84)
-        table$(232) = CHR$(&HCE) + CHR$(&HA6)
-        table$(233) = CHR$(&HCE) + CHR$(&H98)
-        table$(234) = CHR$(&HCE) + CHR$(&HA9)
-        table$(235) = CHR$(&HCE) + CHR$(&HB4)
-        table$(236) = CHR$(&HE2) + CHR$(&H88) + CHR$(&H9E)
-        table$(237) = CHR$(&HCF) + CHR$(&H86)
-        table$(238) = CHR$(&HCE) + CHR$(&HB5)
-        table$(239) = CHR$(&HE2) + CHR$(&H88) + CHR$(&HA9)
-        table$(240) = CHR$(&HE2) + CHR$(&H89) + CHR$(&HA1)
-        table$(241) = CHR$(&HC2) + CHR$(&HB1)
-        table$(242) = CHR$(&HE2) + CHR$(&H89) + CHR$(&HA5)
-        table$(243) = CHR$(&HE2) + CHR$(&H89) + CHR$(&HA4)
-        table$(244) = CHR$(&HE2) + CHR$(&H8C) + CHR$(&HA0)
-        table$(245) = CHR$(&HE2) + CHR$(&H8C) + CHR$(&HA1)
-        table$(246) = CHR$(&HC3) + CHR$(&HB7)
-        table$(247) = CHR$(&HE2) + CHR$(&H89) + CHR$(&H88)
-        table$(248) = CHR$(&HC2) + CHR$(&HB0)
-        table$(249) = CHR$(&HE2) + CHR$(&H88) + CHR$(&H99)
-        table$(250) = CHR$(&HC2) + CHR$(&HB7)
-        table$(251) = CHR$(&HE2) + CHR$(&H88) + CHR$(&H9A)
-        table$(252) = CHR$(&HE2) + CHR$(&H81) + CHR$(&HBF)
-        table$(253) = CHR$(&HC2) + CHR$(&HB2)
-        table$(254) = CHR$(&HE2) + CHR$(&H96) + CHR$(&HA0)
-        table$(255) = CHR$(&HC2) + CHR$(&HA0)
+Function FromCP437$ (source$)
+    Static init&, table$(255)
+    If init& = 0 Then
+        Dim i&
+        For i& = 0 To 127
+            table$(i&) = Chr$(i&)
+        Next i&
+        table$(7) = Chr$(226) + Chr$(151) + Chr$(143) 'UTF-8 e2978f
+        table$(128) = Chr$(&HE2) + Chr$(&H82) + Chr$(&HAC)
+        table$(128) = Chr$(&HC3) + Chr$(&H87)
+        table$(129) = Chr$(&HC3) + Chr$(&HBC)
+        table$(130) = Chr$(&HC3) + Chr$(&HA9)
+        table$(131) = Chr$(&HC3) + Chr$(&HA2)
+        table$(132) = Chr$(&HC3) + Chr$(&HA4)
+        table$(133) = Chr$(&HC3) + Chr$(&HA0)
+        table$(134) = Chr$(&HC3) + Chr$(&HA5)
+        table$(135) = Chr$(&HC3) + Chr$(&HA7)
+        table$(136) = Chr$(&HC3) + Chr$(&HAA)
+        table$(137) = Chr$(&HC3) + Chr$(&HAB)
+        table$(138) = Chr$(&HC3) + Chr$(&HA8)
+        table$(139) = Chr$(&HC3) + Chr$(&HAF)
+        table$(140) = Chr$(&HC3) + Chr$(&HAE)
+        table$(141) = Chr$(&HC3) + Chr$(&HAC)
+        table$(142) = Chr$(&HC3) + Chr$(&H84)
+        table$(143) = Chr$(&HC3) + Chr$(&H85)
+        table$(144) = Chr$(&HC3) + Chr$(&H89)
+        table$(145) = Chr$(&HC3) + Chr$(&HA6)
+        table$(146) = Chr$(&HC3) + Chr$(&H86)
+        table$(147) = Chr$(&HC3) + Chr$(&HB4)
+        table$(148) = Chr$(&HC3) + Chr$(&HB6)
+        table$(149) = Chr$(&HC3) + Chr$(&HB2)
+        table$(150) = Chr$(&HC3) + Chr$(&HBB)
+        table$(151) = Chr$(&HC3) + Chr$(&HB9)
+        table$(152) = Chr$(&HC3) + Chr$(&HBF)
+        table$(153) = Chr$(&HC3) + Chr$(&H96)
+        table$(154) = Chr$(&HC3) + Chr$(&H9C)
+        table$(155) = Chr$(&HC2) + Chr$(&HA2)
+        table$(156) = Chr$(&HC2) + Chr$(&HA3)
+        table$(157) = Chr$(&HC2) + Chr$(&HA5)
+        table$(158) = Chr$(&HE2) + Chr$(&H82) + Chr$(&HA7)
+        table$(159) = Chr$(&HC6) + Chr$(&H92)
+        table$(160) = Chr$(&HC3) + Chr$(&HA1)
+        table$(161) = Chr$(&HC3) + Chr$(&HAD)
+        table$(162) = Chr$(&HC3) + Chr$(&HB3)
+        table$(163) = Chr$(&HC3) + Chr$(&HBA)
+        table$(164) = Chr$(&HC3) + Chr$(&HB1)
+        table$(165) = Chr$(&HC3) + Chr$(&H91)
+        table$(166) = Chr$(&HC2) + Chr$(&HAA)
+        table$(167) = Chr$(&HC2) + Chr$(&HBA)
+        table$(168) = Chr$(&HC2) + Chr$(&HBF)
+        table$(169) = Chr$(&HE2) + Chr$(&H8C) + Chr$(&H90)
+        table$(170) = Chr$(&HC2) + Chr$(&HAC)
+        table$(171) = Chr$(&HC2) + Chr$(&HBD)
+        table$(172) = Chr$(&HC2) + Chr$(&HBC)
+        table$(173) = Chr$(&HC2) + Chr$(&HA1)
+        table$(174) = Chr$(&HC2) + Chr$(&HAB)
+        table$(175) = Chr$(&HC2) + Chr$(&HBB)
+        table$(176) = Chr$(&HE2) + Chr$(&H96) + Chr$(&H91)
+        table$(177) = Chr$(&HE2) + Chr$(&H96) + Chr$(&H92)
+        table$(178) = Chr$(&HE2) + Chr$(&H96) + Chr$(&H93)
+        table$(179) = Chr$(&HE2) + Chr$(&H94) + Chr$(&H82)
+        table$(180) = Chr$(&HE2) + Chr$(&H94) + Chr$(&HA4)
+        table$(181) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HA1)
+        table$(182) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HA2)
+        table$(183) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H96)
+        table$(184) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H95)
+        table$(185) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HA3)
+        table$(186) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H91)
+        table$(187) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H97)
+        table$(188) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H9D)
+        table$(189) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H9C)
+        table$(190) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H9B)
+        table$(191) = Chr$(&HE2) + Chr$(&H94) + Chr$(&H90)
+        table$(192) = Chr$(&HE2) + Chr$(&H94) + Chr$(&H94)
+        table$(193) = Chr$(&HE2) + Chr$(&H94) + Chr$(&HB4)
+        table$(194) = Chr$(&HE2) + Chr$(&H94) + Chr$(&HAC)
+        table$(195) = Chr$(&HE2) + Chr$(&H94) + Chr$(&H9C)
+        table$(196) = Chr$(&HE2) + Chr$(&H94) + Chr$(&H80)
+        table$(197) = Chr$(&HE2) + Chr$(&H94) + Chr$(&HBC)
+        table$(198) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H9E)
+        table$(199) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H9F)
+        table$(200) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H9A)
+        table$(201) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H94)
+        table$(202) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HA9)
+        table$(203) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HA6)
+        table$(204) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HA0)
+        table$(205) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H90)
+        table$(206) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HAC)
+        table$(207) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HA7)
+        table$(208) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HA8)
+        table$(209) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HA4)
+        table$(210) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HA5)
+        table$(211) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H99)
+        table$(212) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H98)
+        table$(213) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H92)
+        table$(214) = Chr$(&HE2) + Chr$(&H95) + Chr$(&H93)
+        table$(215) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HAB)
+        table$(216) = Chr$(&HE2) + Chr$(&H95) + Chr$(&HAA)
+        table$(217) = Chr$(&HE2) + Chr$(&H94) + Chr$(&H98)
+        table$(218) = Chr$(&HE2) + Chr$(&H94) + Chr$(&H8C)
+        table$(219) = Chr$(&HE2) + Chr$(&H96) + Chr$(&H88)
+        table$(220) = Chr$(&HE2) + Chr$(&H96) + Chr$(&H84)
+        table$(221) = Chr$(&HE2) + Chr$(&H96) + Chr$(&H8C)
+        table$(222) = Chr$(&HE2) + Chr$(&H96) + Chr$(&H90)
+        table$(223) = Chr$(&HE2) + Chr$(&H96) + Chr$(&H80)
+        table$(224) = Chr$(&HCE) + Chr$(&HB1)
+        table$(225) = Chr$(&HC3) + Chr$(&H9F)
+        table$(226) = Chr$(&HCE) + Chr$(&H93)
+        table$(227) = Chr$(&HCF) + Chr$(&H80)
+        table$(228) = Chr$(&HCE) + Chr$(&HA3)
+        table$(229) = Chr$(&HCF) + Chr$(&H83)
+        table$(230) = Chr$(&HC2) + Chr$(&HB5)
+        table$(231) = Chr$(&HCF) + Chr$(&H84)
+        table$(232) = Chr$(&HCE) + Chr$(&HA6)
+        table$(233) = Chr$(&HCE) + Chr$(&H98)
+        table$(234) = Chr$(&HCE) + Chr$(&HA9)
+        table$(235) = Chr$(&HCE) + Chr$(&HB4)
+        table$(236) = Chr$(&HE2) + Chr$(&H88) + Chr$(&H9E)
+        table$(237) = Chr$(&HCF) + Chr$(&H86)
+        table$(238) = Chr$(&HCE) + Chr$(&HB5)
+        table$(239) = Chr$(&HE2) + Chr$(&H88) + Chr$(&HA9)
+        table$(240) = Chr$(&HE2) + Chr$(&H89) + Chr$(&HA1)
+        table$(241) = Chr$(&HC2) + Chr$(&HB1)
+        table$(242) = Chr$(&HE2) + Chr$(&H89) + Chr$(&HA5)
+        table$(243) = Chr$(&HE2) + Chr$(&H89) + Chr$(&HA4)
+        table$(244) = Chr$(&HE2) + Chr$(&H8C) + Chr$(&HA0)
+        table$(245) = Chr$(&HE2) + Chr$(&H8C) + Chr$(&HA1)
+        table$(246) = Chr$(&HC3) + Chr$(&HB7)
+        table$(247) = Chr$(&HE2) + Chr$(&H89) + Chr$(&H88)
+        table$(248) = Chr$(&HC2) + Chr$(&HB0)
+        table$(249) = Chr$(&HE2) + Chr$(&H88) + Chr$(&H99)
+        table$(250) = Chr$(&HC2) + Chr$(&HB7)
+        table$(251) = Chr$(&HE2) + Chr$(&H88) + Chr$(&H9A)
+        table$(252) = Chr$(&HE2) + Chr$(&H81) + Chr$(&HBF)
+        table$(253) = Chr$(&HC2) + Chr$(&HB2)
+        table$(254) = Chr$(&HE2) + Chr$(&H96) + Chr$(&HA0)
+        table$(255) = Chr$(&HC2) + Chr$(&HA0)
         init& = -1
-    END IF
+    End If
     FromCP437$ = UTF8$(source$, table$())
-END FUNCTION
+End Function
 
-FUNCTION FromCP1252$ (source$)
-    STATIC init&, table$(255)
-    IF init& = 0 THEN
-        DIM i&
-        FOR i& = 0 TO 127
-            table$(i&) = CHR$(i&)
-        NEXT i&
-        table$(7) = CHR$(226) + CHR$(151) + CHR$(143) 'UTF-8 e2978f
-        table$(128) = CHR$(&HE2) + CHR$(&H82) + CHR$(&HAC)
-        table$(130) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H9A)
-        table$(131) = CHR$(&HC6) + CHR$(&H92)
-        table$(132) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H9E)
-        table$(133) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HA6)
-        table$(134) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HA0)
-        table$(135) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HA1)
-        table$(136) = CHR$(&HCB) + CHR$(&H86)
-        table$(137) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HB0)
-        table$(138) = CHR$(&HC5) + CHR$(&HA0)
-        table$(139) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HB9)
-        table$(140) = CHR$(&HC5) + CHR$(&H92)
-        table$(142) = CHR$(&HC5) + CHR$(&HBD)
-        table$(145) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H98)
-        table$(146) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H99)
-        table$(147) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H9C)
-        table$(148) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H9D)
-        table$(149) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HA2)
-        table$(150) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H93)
-        table$(151) = CHR$(&HE2) + CHR$(&H80) + CHR$(&H94)
-        table$(152) = CHR$(&HCB) + CHR$(&H9C)
-        table$(153) = CHR$(&HE2) + CHR$(&H84) + CHR$(&HA2)
-        table$(154) = CHR$(&HC5) + CHR$(&HA1)
-        table$(155) = CHR$(&HE2) + CHR$(&H80) + CHR$(&HBA)
-        table$(156) = CHR$(&HC5) + CHR$(&H93)
-        table$(158) = CHR$(&HC5) + CHR$(&HBE)
-        table$(159) = CHR$(&HC5) + CHR$(&HB8)
-        table$(160) = CHR$(&HC2) + CHR$(&HA0)
-        table$(161) = CHR$(&HC2) + CHR$(&HA1)
-        table$(162) = CHR$(&HC2) + CHR$(&HA2)
-        table$(163) = CHR$(&HC2) + CHR$(&HA3)
-        table$(164) = CHR$(&HC2) + CHR$(&HA4)
-        table$(165) = CHR$(&HC2) + CHR$(&HA5)
-        table$(166) = CHR$(&HC2) + CHR$(&HA6)
-        table$(167) = CHR$(&HC2) + CHR$(&HA7)
-        table$(168) = CHR$(&HC2) + CHR$(&HA8)
-        table$(169) = CHR$(&HC2) + CHR$(&HA9)
-        table$(170) = CHR$(&HC2) + CHR$(&HAA)
-        table$(171) = CHR$(&HC2) + CHR$(&HAB)
-        table$(172) = CHR$(&HC2) + CHR$(&HAC)
-        table$(173) = CHR$(&HC2) + CHR$(&HAD)
-        table$(174) = CHR$(&HC2) + CHR$(&HAE)
-        table$(175) = CHR$(&HC2) + CHR$(&HAF)
-        table$(176) = CHR$(&HC2) + CHR$(&HB0)
-        table$(177) = CHR$(&HC2) + CHR$(&HB1)
-        table$(178) = CHR$(&HC2) + CHR$(&HB2)
-        table$(179) = CHR$(&HC2) + CHR$(&HB3)
-        table$(180) = CHR$(&HC2) + CHR$(&HB4)
-        table$(181) = CHR$(&HC2) + CHR$(&HB5)
-        table$(182) = CHR$(&HC2) + CHR$(&HB6)
-        table$(183) = CHR$(&HC2) + CHR$(&HB7)
-        table$(184) = CHR$(&HC2) + CHR$(&HB8)
-        table$(185) = CHR$(&HC2) + CHR$(&HB9)
-        table$(186) = CHR$(&HC2) + CHR$(&HBA)
-        table$(187) = CHR$(&HC2) + CHR$(&HBB)
-        table$(188) = CHR$(&HC2) + CHR$(&HBC)
-        table$(189) = CHR$(&HC2) + CHR$(&HBD)
-        table$(190) = CHR$(&HC2) + CHR$(&HBE)
-        table$(191) = CHR$(&HC2) + CHR$(&HBF)
-        table$(192) = CHR$(&HC3) + CHR$(&H80)
-        table$(193) = CHR$(&HC3) + CHR$(&H81)
-        table$(194) = CHR$(&HC3) + CHR$(&H82)
-        table$(195) = CHR$(&HC3) + CHR$(&H83)
-        table$(196) = CHR$(&HC3) + CHR$(&H84)
-        table$(197) = CHR$(&HC3) + CHR$(&H85)
-        table$(198) = CHR$(&HC3) + CHR$(&H86)
-        table$(199) = CHR$(&HC3) + CHR$(&H87)
-        table$(200) = CHR$(&HC3) + CHR$(&H88)
-        table$(201) = CHR$(&HC3) + CHR$(&H89)
-        table$(202) = CHR$(&HC3) + CHR$(&H8A)
-        table$(203) = CHR$(&HC3) + CHR$(&H8B)
-        table$(204) = CHR$(&HC3) + CHR$(&H8C)
-        table$(205) = CHR$(&HC3) + CHR$(&H8D)
-        table$(206) = CHR$(&HC3) + CHR$(&H8E)
-        table$(207) = CHR$(&HC3) + CHR$(&H8F)
-        table$(208) = CHR$(&HC3) + CHR$(&H90)
-        table$(209) = CHR$(&HC3) + CHR$(&H91)
-        table$(210) = CHR$(&HC3) + CHR$(&H92)
-        table$(211) = CHR$(&HC3) + CHR$(&H93)
-        table$(212) = CHR$(&HC3) + CHR$(&H94)
-        table$(213) = CHR$(&HC3) + CHR$(&H95)
-        table$(214) = CHR$(&HC3) + CHR$(&H96)
-        table$(215) = CHR$(&HC3) + CHR$(&H97)
-        table$(216) = CHR$(&HC3) + CHR$(&H98)
-        table$(217) = CHR$(&HC3) + CHR$(&H99)
-        table$(218) = CHR$(&HC3) + CHR$(&H9A)
-        table$(219) = CHR$(&HC3) + CHR$(&H9B)
-        table$(220) = CHR$(&HC3) + CHR$(&H9C)
-        table$(221) = CHR$(&HC3) + CHR$(&H9D)
-        table$(222) = CHR$(&HC3) + CHR$(&H9E)
-        table$(223) = CHR$(&HC3) + CHR$(&H9F)
-        table$(224) = CHR$(&HC3) + CHR$(&HA0)
-        table$(225) = CHR$(&HC3) + CHR$(&HA1)
-        table$(226) = CHR$(&HC3) + CHR$(&HA2)
-        table$(227) = CHR$(&HC3) + CHR$(&HA3)
-        table$(228) = CHR$(&HC3) + CHR$(&HA4)
-        table$(229) = CHR$(&HC3) + CHR$(&HA5)
-        table$(230) = CHR$(&HC3) + CHR$(&HA6)
-        table$(231) = CHR$(&HC3) + CHR$(&HA7)
-        table$(232) = CHR$(&HC3) + CHR$(&HA8)
-        table$(233) = CHR$(&HC3) + CHR$(&HA9)
-        table$(234) = CHR$(&HC3) + CHR$(&HAA)
-        table$(235) = CHR$(&HC3) + CHR$(&HAB)
-        table$(236) = CHR$(&HC3) + CHR$(&HAC)
-        table$(237) = CHR$(&HC3) + CHR$(&HAD)
-        table$(238) = CHR$(&HC3) + CHR$(&HAE)
-        table$(239) = CHR$(&HC3) + CHR$(&HAF)
-        table$(240) = CHR$(&HC3) + CHR$(&HB0)
-        table$(241) = CHR$(&HC3) + CHR$(&HB1)
-        table$(242) = CHR$(&HC3) + CHR$(&HB2)
-        table$(243) = CHR$(&HC3) + CHR$(&HB3)
-        table$(244) = CHR$(&HC3) + CHR$(&HB4)
-        table$(245) = CHR$(&HC3) + CHR$(&HB5)
-        table$(246) = CHR$(&HC3) + CHR$(&HB6)
-        table$(247) = CHR$(&HC3) + CHR$(&HB7)
-        table$(248) = CHR$(&HC3) + CHR$(&HB8)
-        table$(249) = CHR$(&HC3) + CHR$(&HB9)
-        table$(250) = CHR$(&HC3) + CHR$(&HBA)
-        table$(251) = CHR$(&HC3) + CHR$(&HBB)
-        table$(252) = CHR$(&HC3) + CHR$(&HBC)
-        table$(253) = CHR$(&HC3) + CHR$(&HBD)
-        table$(254) = CHR$(&HC3) + CHR$(&HBE)
-        table$(255) = CHR$(&HC3) + CHR$(&HBF)
+Function FromCP1252$ (source$)
+    Static init&, table$(255)
+    If init& = 0 Then
+        Dim i&
+        For i& = 0 To 127
+            table$(i&) = Chr$(i&)
+        Next i&
+        table$(7) = Chr$(226) + Chr$(151) + Chr$(143) 'UTF-8 e2978f
+        table$(128) = Chr$(&HE2) + Chr$(&H82) + Chr$(&HAC)
+        table$(130) = Chr$(&HE2) + Chr$(&H80) + Chr$(&H9A)
+        table$(131) = Chr$(&HC6) + Chr$(&H92)
+        table$(132) = Chr$(&HE2) + Chr$(&H80) + Chr$(&H9E)
+        table$(133) = Chr$(&HE2) + Chr$(&H80) + Chr$(&HA6)
+        table$(134) = Chr$(&HE2) + Chr$(&H80) + Chr$(&HA0)
+        table$(135) = Chr$(&HE2) + Chr$(&H80) + Chr$(&HA1)
+        table$(136) = Chr$(&HCB) + Chr$(&H86)
+        table$(137) = Chr$(&HE2) + Chr$(&H80) + Chr$(&HB0)
+        table$(138) = Chr$(&HC5) + Chr$(&HA0)
+        table$(139) = Chr$(&HE2) + Chr$(&H80) + Chr$(&HB9)
+        table$(140) = Chr$(&HC5) + Chr$(&H92)
+        table$(142) = Chr$(&HC5) + Chr$(&HBD)
+        table$(145) = Chr$(&HE2) + Chr$(&H80) + Chr$(&H98)
+        table$(146) = Chr$(&HE2) + Chr$(&H80) + Chr$(&H99)
+        table$(147) = Chr$(&HE2) + Chr$(&H80) + Chr$(&H9C)
+        table$(148) = Chr$(&HE2) + Chr$(&H80) + Chr$(&H9D)
+        table$(149) = Chr$(&HE2) + Chr$(&H80) + Chr$(&HA2)
+        table$(150) = Chr$(&HE2) + Chr$(&H80) + Chr$(&H93)
+        table$(151) = Chr$(&HE2) + Chr$(&H80) + Chr$(&H94)
+        table$(152) = Chr$(&HCB) + Chr$(&H9C)
+        table$(153) = Chr$(&HE2) + Chr$(&H84) + Chr$(&HA2)
+        table$(154) = Chr$(&HC5) + Chr$(&HA1)
+        table$(155) = Chr$(&HE2) + Chr$(&H80) + Chr$(&HBA)
+        table$(156) = Chr$(&HC5) + Chr$(&H93)
+        table$(158) = Chr$(&HC5) + Chr$(&HBE)
+        table$(159) = Chr$(&HC5) + Chr$(&HB8)
+        table$(160) = Chr$(&HC2) + Chr$(&HA0)
+        table$(161) = Chr$(&HC2) + Chr$(&HA1)
+        table$(162) = Chr$(&HC2) + Chr$(&HA2)
+        table$(163) = Chr$(&HC2) + Chr$(&HA3)
+        table$(164) = Chr$(&HC2) + Chr$(&HA4)
+        table$(165) = Chr$(&HC2) + Chr$(&HA5)
+        table$(166) = Chr$(&HC2) + Chr$(&HA6)
+        table$(167) = Chr$(&HC2) + Chr$(&HA7)
+        table$(168) = Chr$(&HC2) + Chr$(&HA8)
+        table$(169) = Chr$(&HC2) + Chr$(&HA9)
+        table$(170) = Chr$(&HC2) + Chr$(&HAA)
+        table$(171) = Chr$(&HC2) + Chr$(&HAB)
+        table$(172) = Chr$(&HC2) + Chr$(&HAC)
+        table$(173) = Chr$(&HC2) + Chr$(&HAD)
+        table$(174) = Chr$(&HC2) + Chr$(&HAE)
+        table$(175) = Chr$(&HC2) + Chr$(&HAF)
+        table$(176) = Chr$(&HC2) + Chr$(&HB0)
+        table$(177) = Chr$(&HC2) + Chr$(&HB1)
+        table$(178) = Chr$(&HC2) + Chr$(&HB2)
+        table$(179) = Chr$(&HC2) + Chr$(&HB3)
+        table$(180) = Chr$(&HC2) + Chr$(&HB4)
+        table$(181) = Chr$(&HC2) + Chr$(&HB5)
+        table$(182) = Chr$(&HC2) + Chr$(&HB6)
+        table$(183) = Chr$(&HC2) + Chr$(&HB7)
+        table$(184) = Chr$(&HC2) + Chr$(&HB8)
+        table$(185) = Chr$(&HC2) + Chr$(&HB9)
+        table$(186) = Chr$(&HC2) + Chr$(&HBA)
+        table$(187) = Chr$(&HC2) + Chr$(&HBB)
+        table$(188) = Chr$(&HC2) + Chr$(&HBC)
+        table$(189) = Chr$(&HC2) + Chr$(&HBD)
+        table$(190) = Chr$(&HC2) + Chr$(&HBE)
+        table$(191) = Chr$(&HC2) + Chr$(&HBF)
+        table$(192) = Chr$(&HC3) + Chr$(&H80)
+        table$(193) = Chr$(&HC3) + Chr$(&H81)
+        table$(194) = Chr$(&HC3) + Chr$(&H82)
+        table$(195) = Chr$(&HC3) + Chr$(&H83)
+        table$(196) = Chr$(&HC3) + Chr$(&H84)
+        table$(197) = Chr$(&HC3) + Chr$(&H85)
+        table$(198) = Chr$(&HC3) + Chr$(&H86)
+        table$(199) = Chr$(&HC3) + Chr$(&H87)
+        table$(200) = Chr$(&HC3) + Chr$(&H88)
+        table$(201) = Chr$(&HC3) + Chr$(&H89)
+        table$(202) = Chr$(&HC3) + Chr$(&H8A)
+        table$(203) = Chr$(&HC3) + Chr$(&H8B)
+        table$(204) = Chr$(&HC3) + Chr$(&H8C)
+        table$(205) = Chr$(&HC3) + Chr$(&H8D)
+        table$(206) = Chr$(&HC3) + Chr$(&H8E)
+        table$(207) = Chr$(&HC3) + Chr$(&H8F)
+        table$(208) = Chr$(&HC3) + Chr$(&H90)
+        table$(209) = Chr$(&HC3) + Chr$(&H91)
+        table$(210) = Chr$(&HC3) + Chr$(&H92)
+        table$(211) = Chr$(&HC3) + Chr$(&H93)
+        table$(212) = Chr$(&HC3) + Chr$(&H94)
+        table$(213) = Chr$(&HC3) + Chr$(&H95)
+        table$(214) = Chr$(&HC3) + Chr$(&H96)
+        table$(215) = Chr$(&HC3) + Chr$(&H97)
+        table$(216) = Chr$(&HC3) + Chr$(&H98)
+        table$(217) = Chr$(&HC3) + Chr$(&H99)
+        table$(218) = Chr$(&HC3) + Chr$(&H9A)
+        table$(219) = Chr$(&HC3) + Chr$(&H9B)
+        table$(220) = Chr$(&HC3) + Chr$(&H9C)
+        table$(221) = Chr$(&HC3) + Chr$(&H9D)
+        table$(222) = Chr$(&HC3) + Chr$(&H9E)
+        table$(223) = Chr$(&HC3) + Chr$(&H9F)
+        table$(224) = Chr$(&HC3) + Chr$(&HA0)
+        table$(225) = Chr$(&HC3) + Chr$(&HA1)
+        table$(226) = Chr$(&HC3) + Chr$(&HA2)
+        table$(227) = Chr$(&HC3) + Chr$(&HA3)
+        table$(228) = Chr$(&HC3) + Chr$(&HA4)
+        table$(229) = Chr$(&HC3) + Chr$(&HA5)
+        table$(230) = Chr$(&HC3) + Chr$(&HA6)
+        table$(231) = Chr$(&HC3) + Chr$(&HA7)
+        table$(232) = Chr$(&HC3) + Chr$(&HA8)
+        table$(233) = Chr$(&HC3) + Chr$(&HA9)
+        table$(234) = Chr$(&HC3) + Chr$(&HAA)
+        table$(235) = Chr$(&HC3) + Chr$(&HAB)
+        table$(236) = Chr$(&HC3) + Chr$(&HAC)
+        table$(237) = Chr$(&HC3) + Chr$(&HAD)
+        table$(238) = Chr$(&HC3) + Chr$(&HAE)
+        table$(239) = Chr$(&HC3) + Chr$(&HAF)
+        table$(240) = Chr$(&HC3) + Chr$(&HB0)
+        table$(241) = Chr$(&HC3) + Chr$(&HB1)
+        table$(242) = Chr$(&HC3) + Chr$(&HB2)
+        table$(243) = Chr$(&HC3) + Chr$(&HB3)
+        table$(244) = Chr$(&HC3) + Chr$(&HB4)
+        table$(245) = Chr$(&HC3) + Chr$(&HB5)
+        table$(246) = Chr$(&HC3) + Chr$(&HB6)
+        table$(247) = Chr$(&HC3) + Chr$(&HB7)
+        table$(248) = Chr$(&HC3) + Chr$(&HB8)
+        table$(249) = Chr$(&HC3) + Chr$(&HB9)
+        table$(250) = Chr$(&HC3) + Chr$(&HBA)
+        table$(251) = Chr$(&HC3) + Chr$(&HBB)
+        table$(252) = Chr$(&HC3) + Chr$(&HBC)
+        table$(253) = Chr$(&HC3) + Chr$(&HBD)
+        table$(254) = Chr$(&HC3) + Chr$(&HBE)
+        table$(255) = Chr$(&HC3) + Chr$(&HBF)
         init& = -1
-    END IF
+    End If
     FromCP1252$ = UTF8$(source$, table$())
-END FUNCTION
+End Function
 
-FUNCTION UTF8$ (source$, table$())
-    DIM i AS LONG, dest$
-    FOR i = 1 TO LEN(source$)
-        dest$ = dest$ + table$(ASC(source$, i))
-    NEXT i
+Function UTF8$ (source$, table$())
+    Dim i As Long, dest$
+    For i = 1 To Len(source$)
+        dest$ = dest$ + table$(Asc(source$, i))
+    Next i
     UTF8$ = dest$
-END FUNCTION
+End Function
 
 '#####################################################################################################
 '########################### p5 Environment Related methods & functions ##############################
 '#####################################################################################################
-SUB createCanvas (w AS INTEGER, h AS INTEGER)
-    STATIC CanvasSetup AS _BYTE
+Sub createCanvas (w As Integer, h As Integer)
+    Static CanvasSetup As _Byte
 
-    IF NOT CanvasSetup THEN
-        p5Canvas.imgHandle = _NEWIMAGE(w, h, 32)
-        SCREEN p5Canvas.imgHandle
-        tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
+    If Not CanvasSetup Then
+        p5Canvas.imgHandle = _NewImage(w, h, 32)
+        Screen p5Canvas.imgHandle
+        tempShapeImage = _NewImage(_Width, _Height, 32)
 
-        p5Canvas.strokeTexture = _NEWIMAGE(1, 1, 32)
-        p5Canvas.fillTexture = _NEWIMAGE(1, 1, 32)
+        p5Canvas.strokeTexture = _NewImage(1, 1, 32)
+        p5Canvas.fillTexture = _NewImage(1, 1, 32)
 
         CanvasSetup = true
-    ELSE
-        DIM oldDest AS LONG
+    Else
+        Dim oldDest As Long
         oldDest = p5Canvas.imgHandle
-        p5Canvas.imgHandle = _NEWIMAGE(w, h, 32)
-        SCREEN p5Canvas.imgHandle
-        _FREEIMAGE oldDest
+        p5Canvas.imgHandle = _NewImage(w, h, 32)
+        Screen p5Canvas.imgHandle
+        _FreeImage oldDest
 
-        IF tempShapeImage THEN
-            _FREEIMAGE tempShapeImage
-            tempShapeImage = _NEWIMAGE(_WIDTH, _HEIGHT, 32)
-        END IF
-    END IF
-END SUB
+        If tempShapeImage Then
+            _FreeImage tempShapeImage
+            tempShapeImage = _NewImage(_Width, _Height, 32)
+        End If
+    End If
+End Sub
 
-FUNCTION createImage& (w AS INTEGER, h AS INTEGER)
-    createImage& = _NEWIMAGE(w, h, 32)
-END FUNCTION
+Function createImage& (w As Integer, h As Integer)
+    createImage& = _NewImage(w, h, 32)
+End Function
 
-FUNCTION width&
-    width& = _WIDTH
-END FUNCTION
+Function width&
+    width& = _Width
+End Function
 
-FUNCTION height&
-    height& = _HEIGHT
-END FUNCTION
+Function height&
+    height& = _Height
+End Function
 
-SUB title (t$)
-    _TITLE t$
-END SUB
+Sub title (t$)
+    _Title t$
+End Sub
 
-SUB titleB (v!)
-    _TITLE STR$(v!)
-END SUB
+Sub titleB (v!)
+    _Title Str$(v!)
+End Sub
 
 
-SUB push
+Sub push
     pushState = pushState + 1
-    IF pushState > UBOUND(p5CanvasBackup) THEN
-        REDIM _PRESERVE p5CanvasBackup(pushState + 9) AS new_p5Canvas
-    END IF
+    If pushState > UBound(p5CanvasBackup) Then
+        ReDim _Preserve p5CanvasBackup(pushState + 9) As new_p5Canvas
+    End If
     p5CanvasBackup(pushState) = p5Canvas
-END SUB
+End Sub
 
-SUB pop
+Sub pop
     p5Canvas = p5CanvasBackup(pushState)
     pushState = pushState - 1
-END SUB
+End Sub
 
-SUB redraw
+Sub redraw
     callDrawLoop
-END SUB
+End Sub
 
-SUB callDrawLoop
-    DIM a AS _BYTE, xOffsetBackup AS SINGLE, yOffsetBackup AS SINGLE
+Sub callDrawLoop
+    Dim a As _Byte, xOffsetBackup As Single, yOffsetBackup As Single
 
     p5frameCount = p5frameCount + 1
 
@@ -1529,488 +1527,488 @@ SUB callDrawLoop
 
     p5Canvas.xOffset = xOffsetBackup
     p5Canvas.yOffset = yOffsetBackup
-END SUB
+End Sub
 
-FUNCTION frameCount~&
+Function frameCount~&
     frameCount~& = p5frameCount
-END FUNCTION
+End Function
 
-SUB gatherInput ()
-    DIM a AS _BYTE
+Sub gatherInput ()
+    Dim a As _Byte
 
     'Keyboard input:
-    keyCode = _KEYHIT
-    IF keyCode > 0 AND keyCode <> lastKeyCode THEN
+    keyCode = _KeyHit
+    If keyCode > 0 And keyCode <> lastKeyCode Then
         lastKeyCode = keyCode
         a = keyPressed
         totalKeysDown = totalKeysDown + 1
-    ELSEIF keyCode < 0 THEN
+    ElseIf keyCode < 0 Then
         totalKeysDown = totalKeysDown - 1
-        IF totalKeysDown <= 0 THEN
+        If totalKeysDown <= 0 Then
             totalKeysDown = 0
-            keyCode = ABS(keyCode)
+            keyCode = Abs(keyCode)
             a = keyReleased
             lastKeyCode = 0
-        END IF
-    END IF
+        End If
+    End If
 
     keyIsPressed = totalKeysDown > 0
 
     'Mouse input (optimization by Luke Ceddia):
     p5mouseWheel = 0
 
-    IF _MOUSEINPUT THEN
-        p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
-        IF _MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 AND _MOUSEBUTTON(3) = mouseButton3 THEN
-            DO WHILE _MOUSEINPUT
-                p5mouseWheel = p5mouseWheel + _MOUSEWHEEL
-                IF NOT (_MOUSEBUTTON(1) = mouseButton1 AND _MOUSEBUTTON(2) = mouseButton2 AND _MOUSEBUTTON(3) = mouseButton3) THEN EXIT DO
-            LOOP
-        END IF
-        mouseButton1 = _MOUSEBUTTON(1)
-        mouseButton2 = _MOUSEBUTTON(2)
-        mouseButton3 = _MOUSEBUTTON(3)
-    END IF
+    If _MouseInput Then
+        p5mouseWheel = p5mouseWheel + _MouseWheel
+        If _MouseButton(1) = mouseButton1 And _MouseButton(2) = mouseButton2 And _MouseButton(3) = mouseButton3 Then
+            Do While _MouseInput
+                p5mouseWheel = p5mouseWheel + _MouseWheel
+                If Not (_MouseButton(1) = mouseButton1 And _MouseButton(2) = mouseButton2 And _MouseButton(3) = mouseButton3) Then Exit Do
+            Loop
+        End If
+        mouseButton1 = _MouseButton(1)
+        mouseButton2 = _MouseButton(2)
+        mouseButton3 = _MouseButton(3)
+    End If
 
-    WHILE _MOUSEINPUT: WEND
+    While _MouseInput: Wend
 
-    IF p5mouseWheel THEN
+    If p5mouseWheel Then
         a = mouseWheel
-    END IF
+    End If
 
-    IF mouseButton1 THEN
+    If mouseButton1 Then
         mouseButton = LEFT
-        IF NOT mouseIsPressed THEN
+        If Not mouseIsPressed Then
             mouseIsPressed = true
             a = mousePressed
-        ELSE
+        Else
             a = mouseDragged
-        END IF
-    ELSE
-        IF mouseIsPressed AND mouseButton = LEFT THEN
+        End If
+    Else
+        If mouseIsPressed And mouseButton = LEFT Then
             mouseIsPressed = false
             a = mouseReleased
             a = mouseClicked
-        END IF
-    END IF
+        End If
+    End If
 
-    IF mouseButton2 THEN
+    If mouseButton2 Then
         mouseButton = RIGHT
-        IF NOT mouseIsPressed THEN
+        If Not mouseIsPressed Then
             mouseIsPressed = true
             a = mousePressed
-        ELSE
+        Else
             a = mouseDragged
-        END IF
-    ELSE
-        IF mouseIsPressed AND mouseButton = RIGHT THEN
+        End If
+    Else
+        If mouseIsPressed And mouseButton = RIGHT Then
             mouseIsPressed = false
             a = mouseReleased
             a = mouseClicked
-        END IF
-    END IF
+        End If
+    End If
 
-    IF mouseButton3 THEN
+    If mouseButton3 Then
         mouseButton = CENTER
-        IF NOT mouseIsPressed THEN
+        If Not mouseIsPressed Then
             mouseIsPressed = true
             a = mousePressed
-        ELSE
+        Else
             a = mouseDragged
-        END IF
-    ELSE
-        IF mouseIsPressed AND mouseButton = CENTER THEN
+        End If
+    Else
+        If mouseIsPressed And mouseButton = CENTER Then
             mouseIsPressed = false
             a = mouseReleased
             a = mouseClicked
-        END IF
-    END IF
+        End If
+    End If
 
-END SUB
+End Sub
                                 
-SUB doLoop ()
+Sub doLoop ()
     p5Loop = true
-END SUB
+End Sub
 
-SUB noLoop ()
+Sub noLoop ()
     p5Loop = false
-END SUB
+End Sub
 
-SUB cursor (kind)
-    IF kind = CURSOR_NONE THEN _MOUSEHIDE ELSE glutSetCursor kind
-END SUB
+Sub cursor (kind)
+    If kind = CURSOR_NONE Then _MouseHide Else glutSetCursor kind
+End Sub
 
 '#####################################################################################################
 '############################# p5 Maths & Vectors Related functions ##################################
 '#####################################################################################################
 
-FUNCTION noise! (x AS SINGLE, y AS SINGLE, z AS SINGLE)
-    STATIC p5NoiseSetup AS _BYTE
-    STATIC perlin() AS SINGLE
-    STATIC PERLIN_YWRAPB AS SINGLE, PERLIN_YWRAP AS SINGLE
-    STATIC PERLIN_ZWRAPB AS SINGLE, PERLIN_ZWRAP AS SINGLE
-    STATIC PERLIN_SIZE AS SINGLE
+Function noise! (x As Single, y As Single, z As Single)
+    Static p5NoiseSetup As _Byte
+    Static perlin() As Single
+    Static PERLIN_YWRAPB As Single, PERLIN_YWRAP As Single
+    Static PERLIN_ZWRAPB As Single, PERLIN_ZWRAP As Single
+    Static PERLIN_SIZE As Single
 
-    IF NOT p5NoiseSetup THEN
+    If Not p5NoiseSetup Then
         p5NoiseSetup = true
 
         PERLIN_YWRAPB = 4
-        PERLIN_YWRAP = INT(1 * (2 ^ PERLIN_YWRAPB))
+        PERLIN_YWRAP = Int(1 * (2 ^ PERLIN_YWRAPB))
         PERLIN_ZWRAPB = 8
-        PERLIN_ZWRAP = INT(1 * (2 ^ PERLIN_ZWRAPB))
+        PERLIN_ZWRAP = Int(1 * (2 ^ PERLIN_ZWRAPB))
         PERLIN_SIZE = 4095
 
         perlin_octaves = 4
         perlin_amp_falloff = 0.5
 
-        REDIM perlin(PERLIN_SIZE + 1) AS SINGLE
-        DIM i AS SINGLE
-        FOR i = 0 TO PERLIN_SIZE + 1
-            perlin(i) = RND
-        NEXT
-    END IF
+        ReDim perlin(PERLIN_SIZE + 1) As Single
+        Dim i As Single
+        For i = 0 To PERLIN_SIZE + 1
+            perlin(i) = Rnd
+        Next
+    End If
 
-    x = ABS(x)
-    y = ABS(y)
-    z = ABS(z)
+    x = Abs(x)
+    y = Abs(y)
+    z = Abs(z)
 
-    DIM xi AS SINGLE, yi AS SINGLE, zi AS SINGLE
-    xi = INT(x)
-    yi = INT(y)
-    zi = INT(z)
+    Dim xi As Single, yi As Single, zi As Single
+    xi = Int(x)
+    yi = Int(y)
+    zi = Int(z)
 
-    DIM xf AS SINGLE, yf AS SINGLE, zf AS SINGLE
+    Dim xf As Single, yf As Single, zf As Single
     xf = x - xi
     yf = y - yi
     zf = z - zi
 
-    DIM r AS SINGLE, ampl AS SINGLE, o AS SINGLE
+    Dim r As Single, ampl As Single, o As Single
     r = 0
     ampl = .5
 
-    FOR o = 1 TO perlin_octaves
-        DIM of AS SINGLE, rxf AS SINGLE
-        DIM ryf AS SINGLE, n1 AS SINGLE, n2 AS SINGLE, n3 AS SINGLE
-        of = xi + INT(yi * (2 ^ PERLIN_YWRAPB)) + INT(zi * (2 ^ PERLIN_ZWRAPB))
+    For o = 1 To perlin_octaves
+        Dim of As Single, rxf As Single
+        Dim ryf As Single, n1 As Single, n2 As Single, n3 As Single
+        of = xi + Int(yi * (2 ^ PERLIN_YWRAPB)) + Int(zi * (2 ^ PERLIN_ZWRAPB))
 
-        rxf = 0.5 * (1.0 - COS(xf * _PI))
-        ryf = 0.5 * (1.0 - COS(yf * _PI))
+        rxf = 0.5 * (1.0 - Cos(xf * _Pi))
+        ryf = 0.5 * (1.0 - Cos(yf * _Pi))
 
-        n1 = perlin(of AND PERLIN_SIZE)
-        n1 = n1 + rxf * (perlin((of + 1) AND PERLIN_SIZE) - n1)
-        n2 = perlin((of + PERLIN_YWRAP) AND PERLIN_SIZE)
-        n2 = n2 + rxf * (perlin((of + PERLIN_YWRAP + 1) AND PERLIN_SIZE) - n2)
+        n1 = perlin(of And PERLIN_SIZE)
+        n1 = n1 + rxf * (perlin((of + 1) And PERLIN_SIZE) - n1)
+        n2 = perlin((of + PERLIN_YWRAP) And PERLIN_SIZE)
+        n2 = n2 + rxf * (perlin((of + PERLIN_YWRAP + 1) And PERLIN_SIZE) - n2)
         n1 = n1 + ryf * (n2 - n1)
 
         of = of + PERLIN_ZWRAP
-        n2 = perlin(of AND PERLIN_SIZE)
-        n2 = n2 + rxf * (perlin((of + 1) AND PERLIN_SIZE) - n2)
-        n3 = perlin((of + PERLIN_YWRAP) AND PERLIN_SIZE)
-        n3 = n3 + rxf * (perlin((of + PERLIN_YWRAP + 1) AND PERLIN_SIZE) - n3)
+        n2 = perlin(of And PERLIN_SIZE)
+        n2 = n2 + rxf * (perlin((of + 1) And PERLIN_SIZE) - n2)
+        n3 = perlin((of + PERLIN_YWRAP) And PERLIN_SIZE)
+        n3 = n3 + rxf * (perlin((of + PERLIN_YWRAP + 1) And PERLIN_SIZE) - n3)
         n2 = n2 + ryf * (n3 - n2)
 
-        n1 = n1 + (0.5 * (1.0 - COS(zf * _PI))) * (n2 - n1)
+        n1 = n1 + (0.5 * (1.0 - Cos(zf * _Pi))) * (n2 - n1)
 
         r = r + n1 * ampl
         ampl = ampl * perlin_amp_falloff
-        xi = INT(xi * (2 ^ 1))
+        xi = Int(xi * (2 ^ 1))
         xf = xf * 2
-        yi = INT(yi * (2 ^ 1))
+        yi = Int(yi * (2 ^ 1))
         yf = yf * 2
-        zi = INT(zi * (2 ^ 1))
+        zi = Int(zi * (2 ^ 1))
         zf = zf * 2
 
-        IF xf >= 1.0 THEN xi = xi + 1: xf = xf - 1
-        IF yf >= 1.0 THEN yi = yi + 1: yf = yf - 1
-        IF zf >= 1.0 THEN zi = zi + 1: zf = zf - 1
-    NEXT
+        If xf >= 1.0 Then xi = xi + 1: xf = xf - 1
+        If yf >= 1.0 Then yi = yi + 1: yf = yf - 1
+        If zf >= 1.0 Then zi = zi + 1: zf = zf - 1
+    Next
     noise! = r
-END FUNCTION
+End Function
 
-SUB noiseDetail (lod!, falloff!)
-    IF lod! > 0 THEN perlin_octaves = lod!
-    IF falloff! > 0 THEN perlin_amp_falloff = falloff!
-END SUB
+Sub noiseDetail (lod!, falloff!)
+    If lod! > 0 Then perlin_octaves = lod!
+    If falloff! > 0 Then perlin_amp_falloff = falloff!
+End Sub
 
-FUNCTION map! (value!, minRange!, maxRange!, newMinRange!, newMaxRange!)
+Function map! (value!, minRange!, maxRange!, newMinRange!, newMaxRange!)
     map! = ((value! - minRange!) / (maxRange! - minRange!)) * (newMaxRange! - newMinRange!) + newMinRange!
-END FUNCTION
+End Function
 
-SUB createVector (v AS vector, x AS SINGLE, y AS SINGLE)
+Sub createVector (v As vector, x As Single, y As Single)
     v.x = x
     v.y = y
-END SUB
+End Sub
 
-SUB vector.add (v1 AS vector, v2 AS vector)
+Sub vector.add (v1 As vector, v2 As vector)
     v1.x = v1.x + v2.x
     v1.y = v1.y + v2.y
     v1.z = v1.z + v2.z
-END SUB
+End Sub
 
-SUB vector.addB (v1 AS vector, x2 AS SINGLE, y2 AS SINGLE, z2 AS SINGLE)
+Sub vector.addB (v1 As vector, x2 As Single, y2 As Single, z2 As Single)
     v1.x = v1.x + x2
     v1.y = v1.y + y2
     v1.z = v1.z + z2
-END SUB
+End Sub
 
-SUB vector.sub (v1 AS vector, v2 AS vector)
+Sub vector.sub (v1 As vector, v2 As vector)
     v1.x = v1.x - v2.x
     v1.y = v1.y - v2.y
     v1.z = v1.z - v2.z
-END SUB
+End Sub
 
-SUB vector.subB (v1 AS vector, x2 AS SINGLE, y2 AS SINGLE, z2 AS SINGLE)
+Sub vector.subB (v1 As vector, x2 As Single, y2 As Single, z2 As Single)
     v1.x = v1.x - x2
     v1.y = v1.y - y2
     v1.z = v1.z - z2
-END SUB
+End Sub
 
-SUB vector.limit (v AS vector, __max!)
-    DIM mSq AS SINGLE
+Sub vector.limit (v As vector, __max!)
+    Dim mSq As Single
 
     mSq = vector.magSq(v)
-    IF mSq > __max! * __max! THEN
-        vector.div v, SQR(mSq)
+    If mSq > __max! * __max! Then
+        vector.div v, Sqr(mSq)
         vector.mult v, __max!
-    END IF
-END SUB
+    End If
+End Sub
 
-FUNCTION vector.magSq! (v AS vector)
+Function vector.magSq! (v As vector)
     vector.magSq! = v.x * v.x + v.y * v.y + v.z * v.z
-END FUNCTION
+End Function
 
-SUB vector.fromAngle (v AS vector, __angle!)
-    DIM angle!
+Sub vector.fromAngle (v As vector, __angle!)
+    Dim angle!
 
-    IF p5Canvas.angleMode = DEGREES THEN angle! = _D2R(__angle!) ELSE angle! = __angle!
+    If p5Canvas.angleMode = DEGREES Then angle! = _D2R(__angle!) Else angle! = __angle!
 
-    v.x = COS(angle!)
-    v.y = SIN(angle!)
-END SUB
+    v.x = Cos(angle!)
+    v.y = Sin(angle!)
+End Sub
 
-FUNCTION vector.mag! (v AS vector)
-    DIM x AS SINGLE, y AS SINGLE, z AS SINGLE
-    DIM magSq AS SINGLE
+Function vector.mag! (v As vector)
+    Dim x As Single, y As Single, z As Single
+    Dim magSq As Single
 
     x = v.x
     y = v.y
     z = v.z
 
     magSq = x * x + y * y + z * z
-    vector.mag! = SQR(magSq)
-END FUNCTION
+    vector.mag! = Sqr(magSq)
+End Function
 
-SUB vector.setMag (v AS vector, n AS SINGLE)
+Sub vector.setMag (v As vector, n As Single)
     vector.normalize v
     vector.mult v, n
-END SUB
+End Sub
 
-SUB vector.normalize (v AS vector)
-    DIM theMag!
+Sub vector.normalize (v As vector)
+    Dim theMag!
 
     theMag! = vector.mag(v)
-    IF theMag! = 0 THEN EXIT SUB
+    If theMag! = 0 Then Exit Sub
 
     vector.div v, theMag!
-END SUB
+End Sub
 
-SUB vector.div (v AS vector, n AS SINGLE)
+Sub vector.div (v As vector, n As Single)
     v.x = v.x / n
     v.y = v.y / n
     v.z = v.z / n
-END SUB
+End Sub
 
-SUB vector.mult (v AS vector, n AS SINGLE)
+Sub vector.mult (v As vector, n As Single)
     v.x = v.x * n
     v.y = v.y * n
     v.z = v.z * n
-END SUB
+End Sub
 
-SUB vector.random2d (v AS vector)
-    DIM angle AS SINGLE
+Sub vector.random2d (v As vector)
+    Dim angle As Single
 
-    IF p5Canvas.angleMode = DEGREES THEN
+    If p5Canvas.angleMode = DEGREES Then
         angle = p5random(0, 360)
-    ELSE
+    Else
         angle = p5random(0, TWO_PI)
-    END IF
+    End If
 
     vector.fromAngle v, angle
-END SUB
+End Sub
 
-FUNCTION p5degrees! (r!)
+Function p5degrees! (r!)
     p5degrees! = _R2D(r!)
-END FUNCTION
+End Function
 
-FUNCTION p5radians! (d!)
+Function p5radians! (d!)
     p5radians! = _D2R(d!)
-END FUNCTION
+End Function
 
-FUNCTION p5sin! (angle!)
-    IF p5Canvas.angleMode = RADIANS THEN
-        p5sin! = SIN(angle!)
-    ELSE
-        p5sin! = SIN(_D2R(angle!))
-    END IF
-END FUNCTION
+Function p5sin! (angle!)
+    If p5Canvas.angleMode = RADIANS Then
+        p5sin! = Sin(angle!)
+    Else
+        p5sin! = Sin(_D2R(angle!))
+    End If
+End Function
 
-FUNCTION p5cos! (angle!)
-    IF p5Canvas.angleMode = RADIANS THEN
-        p5cos! = COS(angle!)
-    ELSE
-        p5cos! = COS(_D2R(angle!))
-    END IF
-END FUNCTION
+Function p5cos! (angle!)
+    If p5Canvas.angleMode = RADIANS Then
+        p5cos! = Cos(angle!)
+    Else
+        p5cos! = Cos(_D2R(angle!))
+    End If
+End Function
 
-SUB angleMode (kind)
+Sub angleMode (kind)
     p5Canvas.angleMode = kind
-END SUB
+End Sub
 
 'Calculate minimum value between two values
-FUNCTION min! (a!, b!)
-    IF a! < b! THEN min! = a! ELSE min! = b!
-END FUNCTION
+Function min! (a!, b!)
+    If a! < b! Then min! = a! Else min! = b!
+End Function
 
 'Calculate maximum value between two values
-FUNCTION max! (a!, b!)
-    IF a! > b! THEN max! = a! ELSE max! = b!
-END FUNCTION
+Function max! (a!, b!)
+    If a! > b! Then max! = a! Else max! = b!
+End Function
 
 'Constrain a value between a minimum and maximum value.
-FUNCTION constrain! (n!, low!, high!)
+Function constrain! (n!, low!, high!)
     constrain! = max(min(n!, high!), low!)
-END FUNCTION
+End Function
 
 'Calculate the distance between two points.
-FUNCTION dist! (x1!, y1!, x2!, y2!)
-    dist! = _HYPOT((x2! - x1!), (y2! - y1!))
-END FUNCTION
+Function dist! (x1!, y1!, x2!, y2!)
+    dist! = _Hypot((x2! - x1!), (y2! - y1!))
+End Function
 
-FUNCTION distB! (v1 AS vector, v2 AS vector)
+Function distB! (v1 As vector, v2 As vector)
     distB! = dist!(v1.x, v1.y, v2.x, v2.y)
-END FUNCTION
+End Function
 
-FUNCTION lerp! (start!, stp!, amt!)
+Function lerp! (start!, stp!, amt!)
     lerp! = amt! * (stp! - start!) + start!
-END FUNCTION
+End Function
 
-FUNCTION mag! (x!, y!)
-    mag! = _HYPOT(x!, y!)
-END FUNCTION
+Function mag! (x!, y!)
+    mag! = _Hypot(x!, y!)
+End Function
 
-FUNCTION sq! (n!)
+Function sq! (n!)
     sq! = n! * n!
-END FUNCTION
+End Function
 
-FUNCTION pow! (n!, p!)
+Function pow! (n!, p!)
     pow! = n! ^ p!
-END FUNCTION
+End Function
 
-FUNCTION p5random! (mn!, mx!)
-    IF mn! > mx! THEN
-        SWAP mn!, mx!
-    END IF
-    p5random! = RND * (mx! - mn!) + mn!
-END FUNCTION
+Function p5random! (mn!, mx!)
+    If mn! > mx! Then
+        Swap mn!, mx!
+    End If
+    p5random! = Rnd * (mx! - mn!) + mn!
+End Function
 
-FUNCTION join$ (str_array$(), sep$)
-    DIM i AS LONG
-    FOR i = LBOUND(str_array$) TO UBOUND(str_array$)
+Function join$ (str_array$(), sep$)
+    Dim i As Long
+    For i = LBound(str_array$) To UBound(str_array$)
         join$ = join$ + str_array$(i) + sep$
-    NEXT
-END FUNCTION
+    Next
+End Function
 
 '#####################################################################################################
 '######################## p5 Date & Time Related functions ###########################################
 '#####################################################################################################
 
-FUNCTION month& ()
-    month& = VAL(LEFT$(DATE$, 2))
-END FUNCTION
+Function month& ()
+    month& = Val(Left$(Date$, 2))
+End Function
 
-FUNCTION day& ()
-    day& = VAL(MID$(DATE$, 4, 2))
-END FUNCTION
+Function day& ()
+    day& = Val(Mid$(Date$, 4, 2))
+End Function
 
-FUNCTION year& ()
-    year& = VAL(RIGHT$(DATE$, 4))
-END FUNCTION
+Function year& ()
+    year& = Val(Right$(Date$, 4))
+End Function
 
-FUNCTION hour& ()
-    hour& = VAL(LEFT$(TIME$, 2))
-END FUNCTION
+Function hour& ()
+    hour& = Val(Left$(Time$, 2))
+End Function
 
-FUNCTION minute& ()
-    minute& = VAL(MID$(TIME$, 4, 2))
-END FUNCTION
+Function minute& ()
+    minute& = Val(Mid$(Time$, 4, 2))
+End Function
 
-FUNCTION seconds& ()
-    seconds& = VAL(RIGHT$(TIME$, 2))
-END SUB
+Function seconds& ()
+    seconds& = Val(Right$(Time$, 2))
+End Function
 
 '#####################################################################################################
 '############################ p5 Sound Related methods &  functions ##################################
 '#####################################################################################################
 
-FUNCTION loadSound& (file$)
-    IF _FILEEXISTS(file$) = 0 THEN EXIT FUNCTION
-    DIM tempHandle&
+Function loadSound& (file$)
+    If _FileExists(file$) = 0 Then Exit Function
+    Dim tempHandle&
 
-    tempHandle& = _SNDOPEN(file$)
-    IF tempHandle& > 0 THEN
+    tempHandle& = _SndOpen(file$)
+    If tempHandle& > 0 Then
         totalLoadedSounds = totalLoadedSounds + 1
-        REDIM _PRESERVE loadedSounds(totalLoadedSounds) AS LONG
+        ReDim _Preserve loadedSounds(totalLoadedSounds) As Long
         loadedSounds(totalLoadedSounds) = tempHandle&
         loadSound& = tempHandle&
-    END IF
-END FUNCTION
+    End If
+End Function
 
-SUB p5play (soundHandle&)
-    DIM i AS LONG
-    FOR i = 1 TO UBOUND(loadedSounds)
-        IF loadedSounds(i) = soundHandle& THEN
-            _SNDPLAYCOPY soundHandle&
-        END IF
-    NEXT
-END SUB
+Sub p5play (soundHandle&)
+    Dim i As Long
+    For i = 1 To UBound(loadedSounds)
+        If loadedSounds(i) = soundHandle& Then
+            _SndPlayCopy soundHandle&
+        End If
+    Next
+End Sub
 
 '#####################################################################################################
 '############################ p5 Colors Related methods & functions ##################################
 '#####################################################################################################
 
-SUB p5setFillTexture
-    DIM prevDest AS LONG
+Sub p5setFillTexture
+    Dim prevDest As Long
 
-    prevDest = _DEST
-    _DEST p5Canvas.fillTexture
-    CLS , 0
-    PSET (0, 0), p5Canvas.fillA
-    _DEST prevDest
-END SUB
+    prevDest = _Dest
+    _Dest p5Canvas.fillTexture
+    Cls , 0
+    PSet (0, 0), p5Canvas.fillA
+    _Dest prevDest
+End Sub
 
-SUB p5setStrokeTexture
-    DIM prevDest AS LONG
+Sub p5setStrokeTexture
+    Dim prevDest As Long
 
-    prevDest = _DEST
-    _DEST p5Canvas.strokeTexture
-    CLS , 0
-    PSET (0, 0), p5Canvas.strokeA
-    _DEST prevDest
-END SUB
+    prevDest = _Dest
+    _Dest p5Canvas.strokeTexture
+    Cls , 0
+    PSet (0, 0), p5Canvas.strokeA
+    _Dest prevDest
+End Sub
 
-SUB fill (r AS SINGLE, g AS SINGLE, b AS SINGLE)
+Sub fill (r As Single, g As Single, b As Single)
     p5Canvas.doFill = true
-    IF p5Canvas.colorMode = p5HSB THEN p5Canvas.fill = hsb(r, g, b, 255) ELSE p5Canvas.fill = _RGB32(r, g, b)
+    If p5Canvas.colorMode = p5HSB Then p5Canvas.fill = hsb(r, g, b, 255) Else p5Canvas.fill = _RGB32(r, g, b)
     p5Canvas.fillA = p5Canvas.fill
     p5Canvas.fillAlpha = 255
 
     p5setFillTexture
 
-    COLOR , p5Canvas.fill 'fill also affects text
-END SUB
+    Color , p5Canvas.fill 'fill also affects text
+End Sub
 
-SUB fillN (c$)
-    DIM c~&
+Sub fillN (c$)
+    Dim c~&
 
     p5Canvas.doFill = true
     c~& = colorN(c$)
@@ -2020,40 +2018,40 @@ SUB fillN (c$)
 
     p5setFillTexture
 
-    COLOR , p5Canvas.fill 'fill also affect the text
-END SUB
+    Color , p5Canvas.fill 'fill also affect the text
+End Sub
 
-SUB fillNA (c$, a!)
-    DIM c~&
+Sub fillNA (c$, a!)
+    Dim c~&
 
     p5Canvas.doFill = true
     c~& = colorNA(c$, a!)
     p5Canvas.fill = c~&
-    p5Canvas.fillA = _RGBA32(_RED32(c~&), _GREEN32(c~&), _BLUE32(c~&), a!)
-    p5Canvas.fillAlpha = _ALPHA32(c~&)
+    p5Canvas.fillA = _RGBA32(_Red32(c~&), _Green32(c~&), _Blue32(c~&), a!)
+    p5Canvas.fillAlpha = _Alpha32(c~&)
 
     p5setFillTexture
 
-    COLOR , p5Canvas.fillA 'fill also affect the text
-END SUB
+    Color , p5Canvas.fillA 'fill also affect the text
+End Sub
 
-SUB fillA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
+Sub fillA (r As Single, g As Single, b As Single, a As Single)
     p5Canvas.doFill = true
-    IF p5Canvas.colorMode = p5HSB THEN
+    If p5Canvas.colorMode = p5HSB Then
         p5Canvas.fill = hsb(r, g, b, a)
         p5Canvas.fillA = hsb(r, g, b, a)
-    ELSE
+    Else
         p5Canvas.fill = _RGB32(r, g, b)
         p5Canvas.fillA = _RGBA32(r, g, b, a)
-    END IF
+    End If
     p5Canvas.fillAlpha = constrain(a, 0, 255)
 
     p5setFillTexture
 
-    COLOR , p5Canvas.fillA 'fill also affects text
-END SUB
+    Color , p5Canvas.fillA 'fill also affects text
+End Sub
 
-SUB fillB (b AS SINGLE)
+Sub fillB (b As Single)
     p5Canvas.doFill = true
     p5Canvas.fill = _RGB32(b, b, b)
     p5Canvas.fillA = p5Canvas.fill
@@ -2061,10 +2059,10 @@ SUB fillB (b AS SINGLE)
 
     p5setFillTexture
 
-    COLOR , p5Canvas.fill 'fill also affects text
-END SUB
+    Color , p5Canvas.fill 'fill also affects text
+End Sub
 
-SUB fillBA (b AS SINGLE, a AS SINGLE)
+Sub fillBA (b As Single, a As Single)
     p5Canvas.doFill = true
     p5Canvas.fill = _RGB32(b, b, b)
     p5Canvas.fillA = _RGBA32(b, b, b, a)
@@ -2072,35 +2070,35 @@ SUB fillBA (b AS SINGLE, a AS SINGLE)
 
     p5setFillTexture
 
-    COLOR , p5Canvas.fillA 'fill also affects text
-END SUB
+    Color , p5Canvas.fillA 'fill also affects text
+End Sub
 
-SUB fillC (c AS _UNSIGNED LONG)
+Sub fillC (c As _Unsigned Long)
     p5Canvas.doFill = true
-    p5Canvas.fillAlpha = _ALPHA(c)
-    IF p5Canvas.fillAlpha < 255 THEN
-        p5Canvas.fill = _RGB32(_RED32(c), _GREEN32(c), _BLUE32(c))
-    ELSE
+    p5Canvas.fillAlpha = _Alpha(c)
+    If p5Canvas.fillAlpha < 255 Then
+        p5Canvas.fill = _RGB32(_Red32(c), _Green32(c), _Blue32(c))
+    Else
         p5Canvas.fill = c
-    END IF
+    End If
     p5Canvas.fillA = c
 
     p5setFillTexture
-END SUB
+End Sub
 
-SUB stroke (r AS SINGLE, g AS SINGLE, b AS SINGLE)
+Sub stroke (r As Single, g As Single, b As Single)
     p5Canvas.doStroke = true
-    IF p5Canvas.colorMode = p5HSB THEN p5Canvas.stroke = hsb(r, g, b, 255) ELSE p5Canvas.stroke = _RGB32(r, g, b)
+    If p5Canvas.colorMode = p5HSB Then p5Canvas.stroke = hsb(r, g, b, 255) Else p5Canvas.stroke = _RGB32(r, g, b)
     p5Canvas.strokeA = p5Canvas.stroke
     p5Canvas.strokeAlpha = 255
 
     p5setStrokeTexture
 
-    COLOR p5Canvas.stroke 'stroke also affects text
-END SUB
+    Color p5Canvas.stroke 'stroke also affects text
+End Sub
 
-SUB strokeN (c$)
-    DIM c~&
+Sub strokeN (c$)
+    Dim c~&
 
     p5Canvas.doStroke = true
     c~& = colorN(c$)
@@ -2110,41 +2108,41 @@ SUB strokeN (c$)
 
     p5setStrokeTexture
 
-    COLOR p5Canvas.stroke 'stroke also affects text
-END SUB
+    Color p5Canvas.stroke 'stroke also affects text
+End Sub
 
-SUB strokeNA (c$, a!)
-    DIM c~&
+Sub strokeNA (c$, a!)
+    Dim c~&
 
     p5Canvas.doStroke = true
     c~& = colorNA(c$, a!)
-    p5Canvas.stroke = _RGB32(_RED32(c~&), _GREEN32(c~&), _BLUE32(c~&))
+    p5Canvas.stroke = _RGB32(_Red32(c~&), _Green32(c~&), _Blue32(c~&))
     p5Canvas.strokeA = c~&
-    p5Canvas.strokeAlpha = _ALPHA32(c~&)
+    p5Canvas.strokeAlpha = _Alpha32(c~&)
 
     p5setStrokeTexture
 
-    COLOR p5Canvas.strokeA 'stroke also affects text
-END SUB
+    Color p5Canvas.strokeA 'stroke also affects text
+End Sub
 
-SUB strokeA (r AS SINGLE, g AS SINGLE, b AS SINGLE, a AS SINGLE)
+Sub strokeA (r As Single, g As Single, b As Single, a As Single)
     p5Canvas.doStroke = true
-    IF p5Canvas.colorMode = p5HSB THEN
+    If p5Canvas.colorMode = p5HSB Then
         p5Canvas.stroke = hsb(r, g, b, 255)
         p5Canvas.strokeA = hsb(r, g, b, a)
-    ELSE
+    Else
         p5Canvas.stroke = _RGB32(r, g, b)
         p5Canvas.strokeA = _RGBA32(r, g, b, a)
-    END IF
+    End If
 
     p5Canvas.strokeAlpha = constrain(a, 0, 255)
 
     p5setStrokeTexture
 
-    COLOR p5Canvas.strokeA 'stroke also affects text
-END SUB
+    Color p5Canvas.strokeA 'stroke also affects text
+End Sub
 
-SUB strokeB (b AS SINGLE)
+Sub strokeB (b As Single)
     p5Canvas.doStroke = true
     p5Canvas.stroke = _RGB32(b, b, b)
     p5Canvas.strokeA = p5Canvas.stroke
@@ -2152,10 +2150,10 @@ SUB strokeB (b AS SINGLE)
 
     p5setStrokeTexture
 
-    COLOR p5Canvas.strokeA 'stroke also affects text
-END SUB
+    Color p5Canvas.strokeA 'stroke also affects text
+End Sub
 
-SUB strokeBA (b AS SINGLE, a AS SINGLE)
+Sub strokeBA (b As Single, a As Single)
     p5Canvas.doStroke = true
     p5Canvas.stroke = _RGB32(b, b, b)
     p5Canvas.strokeA = _RGBA32(b, b, b, a)
@@ -2163,256 +2161,256 @@ SUB strokeBA (b AS SINGLE, a AS SINGLE)
 
     p5setStrokeTexture
 
-    COLOR p5Canvas.strokeA 'stroke also affects text
-END SUB
+    Color p5Canvas.strokeA 'stroke also affects text
+End Sub
 
-SUB strokeC (c AS _UNSIGNED LONG)
+Sub strokeC (c As _Unsigned Long)
     p5Canvas.doStroke = true
-    p5Canvas.strokeAlpha = _ALPHA(c)
-    IF p5Canvas.strokeAlpha < 255 THEN
-        p5Canvas.stroke = _RGB32(_RED32(c), _GREEN32(c), _BLUE32(c))
-    ELSE
+    p5Canvas.strokeAlpha = _Alpha(c)
+    If p5Canvas.strokeAlpha < 255 Then
+        p5Canvas.stroke = _RGB32(_Red32(c), _Green32(c), _Blue32(c))
+    Else
         p5Canvas.stroke = c
-    END IF
+    End If
     p5Canvas.strokeA = c
 
     p5setStrokeTexture
-END SUB
+End Sub
 
-SUB noFill ()
+Sub noFill ()
     p5Canvas.doFill = false
-    COLOR , 0 'fill also affects text
-END SUB
+    Color , 0 'fill also affects text
+End Sub
 
-SUB noStroke ()
+Sub noStroke ()
     p5Canvas.doStroke = false
-    COLOR 0 'stroke also affects text
-END SUB
+    Color 0 'stroke also affects text
+End Sub
 
-FUNCTION lerpColor~& (c1 AS _UNSIGNED LONG, c2 AS _UNSIGNED LONG, __v!)
-    DIM v!
+Function lerpColor~& (c1 As _Unsigned Long, c2 As _Unsigned Long, __v!)
+    Dim v!
     v! = constrain(__v!, 0, 1)
 
-    IF p5Canvas.colorMode = p5RGB THEN
-        DIM r1 AS SINGLE, g1 AS SINGLE, b1 AS SINGLE
-        DIM r2 AS SINGLE, g2 AS SINGLE, b2 AS SINGLE
-        DIM rstep AS SINGLE, gstep AS SINGLE, bstep AS SINGLE
+    If p5Canvas.colorMode = p5RGB Then
+        Dim r1 As Single, g1 As Single, b1 As Single
+        Dim r2 As Single, g2 As Single, b2 As Single
+        Dim rstep As Single, gstep As Single, bstep As Single
 
-        r1 = _RED32(c1)
-        g1 = _GREEN32(c1)
-        b1 = _BLUE32(c1)
+        r1 = _Red32(c1)
+        g1 = _Green32(c1)
+        b1 = _Blue32(c1)
 
-        r2 = _RED32(c2)
-        g2 = _GREEN32(c2)
-        b2 = _BLUE32(c2)
+        r2 = _Red32(c2)
+        g2 = _Green32(c2)
+        b2 = _Blue32(c2)
 
         rstep = map(v!, 0, 1, r1, r2)
         gstep = map(v!, 0, 1, g1, g2)
         bstep = map(v!, 0, 1, b1, b2)
 
         lerpColor~& = _RGB32(rstep, gstep, bstep)
-    ELSE
+    Else
         'p5HSB lerpColor not yet available; return either
         'of the original colors that's closer to v!
-        IF v! < .5 THEN
+        If v! < .5 Then
             lerpColor~& = c1
-        ELSE
+        Else
             lerpColor~& = c2
-        END IF
-    END IF
-END FUNCTION
+        End If
+    End If
+End Function
 
-FUNCTION color~& (v1 AS SINGLE, v2 AS SINGLE, v3 AS SINGLE)
-    IF p5Canvas.colorMode = p5RGB THEN
+Function color~& (v1 As Single, v2 As Single, v3 As Single)
+    If p5Canvas.colorMode = p5RGB Then
         color~& = _RGB32(v1, v2, v3)
-    ELSEIF p5Canvas.colorMode = p5HSB THEN
+    ElseIf p5Canvas.colorMode = p5HSB Then
         color~& = hsb(v1, v2, v3, 255)
-    END IF
-END FUNCTION
+    End If
+End Function
 
-FUNCTION colorA~& (v1 AS SINGLE, v2 AS SINGLE, v3 AS SINGLE, a AS SINGLE)
-    IF p5Canvas.colorMode = p5RGB THEN
+Function colorA~& (v1 As Single, v2 As Single, v3 As Single, a As Single)
+    If p5Canvas.colorMode = p5RGB Then
         colorA~& = _RGBA32(v1, v2, v3, a)
-    ELSEIF p5Canvas.colorMode = p5HSB THEN
+    ElseIf p5Canvas.colorMode = p5HSB Then
         colorA~& = hsb(v1, v2, v3, a)
-    END IF
-END FUNCTION
+    End If
+End Function
 
-FUNCTION colorB~& (v1 AS SINGLE)
-    IF p5Canvas.colorMode = p5RGB THEN
+Function colorB~& (v1 As Single)
+    If p5Canvas.colorMode = p5RGB Then
         colorB~& = _RGB32(v1, v1, v1)
-    ELSEIF p5Canvas.colorMode = p5HSB THEN
+    ElseIf p5Canvas.colorMode = p5HSB Then
         colorB~& = hsb(0, 0, v1, 255)
-    END IF
-END FUNCTION
+    End If
+End Function
 
-FUNCTION colorBA~& (v1 AS SINGLE, a AS SINGLE)
-    IF p5Canvas.colorMode = p5RGB THEN
+Function colorBA~& (v1 As Single, a As Single)
+    If p5Canvas.colorMode = p5RGB Then
         colorBA~& = _RGBA32(v1, v1, v1, a)
-    ELSEIF p5Canvas.colorMode = p5HSB THEN
+    ElseIf p5Canvas.colorMode = p5HSB Then
         colorBA~& = hsb(0, 0, v1, a)
-    END IF
-END FUNCTION
+    End If
+End Function
 
-FUNCTION colorN~& (c$)
-    DIM i AS LONG
-    IF LEFT$(c$, 1) = "#" THEN
+Function colorN~& (c$)
+    Dim i As Long
+    If Left$(c$, 1) = "#" Then
         colorN~& = hexToCol~&(c$)
-    ELSE
-        FOR i = 1 TO UBOUND(p5Colors)
-            IF LCASE$(c$) = LCASE$(RTRIM$(p5Colors(i).n)) THEN colorN~& = p5Colors(i).c: EXIT FOR
-        NEXT
-    END IF
-END FUNCTION
+    Else
+        For i = 1 To UBound(p5Colors)
+            If LCase$(c$) = LCase$(RTrim$(p5Colors(i).n)) Then colorN~& = p5Colors(i).c: Exit For
+        Next
+    End If
+End Function
 
-FUNCTION colorNA~& (c$, a!)
-    DIM c~&, i AS LONG
+Function colorNA~& (c$, a!)
+    Dim c~&, i As Long
 
-    IF LEFT$(c$, 1) = "#" THEN
+    If Left$(c$, 1) = "#" Then
         c~& = hexToCol~&(c$)
-        colorNA~& = _RGBA32(_RED32(c~&), _GREEN32(c~&), _BLUE32(c~&), a!)
-    ELSE
-        FOR i = 1 TO UBOUND(p5Colors)
-            IF LCASE$(c$) = LCASE$(RTRIM$(p5Colors(i).n)) THEN colorNA~& = _RGBA32(_RED32(p5Colors(i).c), _GREEN32(p5Colors(i).c), _BLUE32(p5Colors(i).c), a!)
-        NEXT
-    END IF
-END FUNCTION
+        colorNA~& = _RGBA32(_Red32(c~&), _Green32(c~&), _Blue32(c~&), a!)
+    Else
+        For i = 1 To UBound(p5Colors)
+            If LCase$(c$) = LCase$(RTrim$(p5Colors(i).n)) Then colorNA~& = _RGBA32(_Red32(p5Colors(i).c), _Green32(p5Colors(i).c), _Blue32(p5Colors(i).c), a!)
+        Next
+    End If
+End Function
 'method adapted form http://stackoverflow.com/questions/4106363/converting-rgb-to-hsb-colors
-FUNCTION hsb~& (__H AS _FLOAT, __S AS _FLOAT, __B AS _FLOAT, A AS _FLOAT)
-    DIM H AS _FLOAT, S AS _FLOAT, B AS _FLOAT
+Function hsb~& (__H As _Float, __S As _Float, __B As _Float, A As _Float)
+    Dim H As _Float, S As _Float, B As _Float
 
     H = map(__H, 0, 255, 0, 360)
     S = map(__S, 0, 255, 0, 1)
     B = map(__B, 0, 255, 0, 1)
 
-    IF S = 0 THEN
+    If S = 0 Then
         hsb~& = _RGBA32(B * 255, B * 255, B * 255, A)
-        EXIT FUNCTION
-    END IF
+        Exit Function
+    End If
 
-    DIM fmx AS _FLOAT, fmn AS _FLOAT
-    DIM fmd AS _FLOAT, iSextant AS INTEGER
-    DIM imx AS INTEGER, imd AS INTEGER, imn AS INTEGER
+    Dim fmx As _Float, fmn As _Float
+    Dim fmd As _Float, iSextant As Integer
+    Dim imx As Integer, imd As Integer, imn As Integer
 
-    IF B > .5 THEN
+    If B > .5 Then
         fmx = B - (B * S) + S
         fmn = B + (B * S) - S
-    ELSE
+    Else
         fmx = B + (B * S)
         fmn = B - (B * S)
-    END IF
+    End If
 
-    iSextant = INT(H / 60)
+    iSextant = Int(H / 60)
 
-    IF H >= 300 THEN
+    If H >= 300 Then
         H = H - 360
-    END IF
+    End If
 
     H = H / 60
-    H = H - (2 * INT(((iSextant + 1) MOD 6) / 2))
+    H = H - (2 * Int(((iSextant + 1) Mod 6) / 2))
 
-    IF iSextant MOD 2 = 0 THEN
+    If iSextant Mod 2 = 0 Then
         fmd = (H * (fmx - fmn)) + fmn
-    ELSE
+    Else
         fmd = fmn - (H * (fmx - fmn))
-    END IF
+    End If
 
-    imx = _ROUND(fmx * 255)
-    imd = _ROUND(fmd * 255)
-    imn = _ROUND(fmn * 255)
+    imx = _Round(fmx * 255)
+    imd = _Round(fmd * 255)
+    imn = _Round(fmn * 255)
 
-    SELECT CASE INT(iSextant)
-        CASE 1
+    Select Case Int(iSextant)
+        Case 1
             hsb~& = _RGBA32(imd, imx, imn, A)
-        CASE 2
+        Case 2
             hsb~& = _RGBA32(imn, imx, imd, A)
-        CASE 3
+        Case 3
             hsb~& = _RGBA32(imn, imd, imx, A)
-        CASE 4
+        Case 4
             hsb~& = _RGBA32(imd, imn, imx, A)
-        CASE 5
+        Case 5
             hsb~& = _RGBA32(imx, imn, imd, A)
-        CASE ELSE
+        Case Else
             hsb~& = _RGBA32(imx, imd, imn, A)
-    END SELECT
+    End Select
 
-END FUNCTION
+End Function
 
-FUNCTION brightness! (col~&)
-    DIM r AS INTEGER, g AS INTEGER, b AS INTEGER
-    DIM a AS INTEGER
+Function brightness! (col~&)
+    Dim r As Integer, g As Integer, b As Integer
+    Dim a As Integer
 
-    r = _RED32(col~&)
-    g = _GREEN32(col~&)
-    b = _BLUE32(col~&)
-    a = _ALPHA32(col~&)
+    r = _Red32(col~&)
+    g = _Green32(col~&)
+    b = _Blue32(col~&)
+    a = _Alpha32(col~&)
     brightness! = ((r + g + b + a) / (255 * 4)) * 255
-END FUNCTION
+End Function
 
-SUB colorMode (kind AS INTEGER)
+Sub colorMode (kind As Integer)
     p5Canvas.colorMode = kind
-END SUB
+End Sub
 
-FUNCTION hue! (col~&)
-    DIM r!, g!, b!, mx!, mn!, delta!
+Function hue! (col~&)
+    Dim r!, g!, b!, mx!, mn!, delta!
 
-    r! = _RED32(col~&)
-    g! = _GREEN32(col~&)
-    b! = _BLUE32(col~&)
+    r! = _Red32(col~&)
+    g! = _Green32(col~&)
+    b! = _Blue32(col~&)
     mx! = max(max(r!, g!), b!)
     mn! = min(min(r!, g!), b!)
     delta! = mx! - mn!
-    IF delta! <> 0 THEN
-        IF r! = mx! THEN
+    If delta! <> 0 Then
+        If r! = mx! Then
             hue! = (g - b) / delta!
-        ELSEIF g! = mx! THEN
+        ElseIf g! = mx! Then
             hue! = 2 + ((b - r) / delta!)
-        ELSEIF b! = mx! THEN
+        ElseIf b! = mx! Then
             hue! = 4 + ((r - g) / delta!)
-        END IF
-    ELSE
+        End If
+    Else
         hue! = 0
-    END IF
+    End If
     hue! = 60 * hue!
-    IF hue! < 0 THEN hue! = hue! + 360
+    If hue! < 0 Then hue! = hue! + 360
     hue! = map(hue!, 0, 360, 0, 255)
-END FUNCTION
+End Function
 
-FUNCTION saturation! (col~&)
-    DIM r!, g!, b!, mx!, mn!, delta!
+Function saturation! (col~&)
+    Dim r!, g!, b!, mx!, mn!, delta!
 
-    r! = _RED32(col~&)
-    g! = _GREEN32(col~&)
-    b! = _BLUE32(col~&)
+    r! = _Red32(col~&)
+    g! = _Green32(col~&)
+    b! = _Blue32(col~&)
     mx! = max(max(r!, g!), b!)
     mn! = min(min(r!, g!), b!)
     delta! = mx! - mn!
-    IF mx! <> 0 THEN
+    If mx! <> 0 Then
         saturation! = delta! / mx!
-    ELSE
+    Else
         saturation! = 0
-    END IF
+    End If
     saturation! = map(saturation!, 0, 1, 0, 255)
-END FUNCTION
+End Function
 
-FUNCTION lightness! (col~&)
-    DIM r!, g!, b!, mx!
-    r! = _RED32(col~&)
-    g! = _GREEN32(col~&)
-    b! = _BLUE32(col~&)
+Function lightness! (col~&)
+    Dim r!, g!, b!, mx!
+    r! = _Red32(col~&)
+    g! = _Green32(col~&)
+    b! = _Blue32(col~&)
     mx! = max(max(r!, g!), b!)
     lightness! = mx!
-END FUNCTION
+End Function
  
 'can convert hexadecimal colors value to rgb one
 'usage col~&  = hexToRgb~&("#ffdf00")
-FUNCTION hexToCol~& (h$)
-    IF LEN(h$) <> 7 OR LEN(h$) = 0 THEN EXIT FUNCTION
-    h$ = RIGHT$(h$, LEN(h$) - 1)
-    IF p5Canvas.colorMode = p5HSB THEN hexToCol~& = hsb(VAL("&h" + LEFT$(h$, 2)), VAL("&h" + MID$(h$, 3, 2)), VAL("&h" + RIGHT$(h$, 2)), 255) ELSE hexToCol~& = _RGB32(VAL("&h" + LEFT$(h$, 2)), VAL("&h" + MID$(h$, 3, 2)), VAL("&h" + RIGHT$(h$, 2)))
-END FUNCTION
+Function hexToCol~& (h$)
+    If Len(h$) <> 7 Or Len(h$) = 0 Then Exit Function
+    h$ = Right$(h$, Len(h$) - 1)
+    If p5Canvas.colorMode = p5HSB Then hexToCol~& = hsb(Val("&h" + Left$(h$, 2)), Val("&h" + Mid$(h$, 3, 2)), Val("&h" + Right$(h$, 2)), 255) Else hexToCol~& = _RGB32(Val("&h" + Left$(h$, 2)), Val("&h" + Mid$(h$, 3, 2)), Val("&h" + Right$(h$, 2)))
+End Function
 
-SUB p5setColors
+Sub p5setColors
     'supports all the colors listed at http://www.rapidtables.com/web/color/RGB_Color.htm
     p5Colors(1).n = "black"
     p5Colors(1).c = _RGB32(0, 0, 0)
@@ -2684,7 +2682,7 @@ SUB p5setColors
     p5Colors(134).c = _RGB32(220, 220, 220)
     p5Colors(135).n = "white smoke"
     p5Colors(135).c = _RGB32(245, 245, 245)
-END SUB
+End Sub
 
 'uncomment the lines below to see a simple demo
 'FUNCTION p5setup ()
