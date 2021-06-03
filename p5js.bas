@@ -419,6 +419,10 @@ Sub p5point (x As Single, y As Single)
     End If
 End Sub
 
+Sub p5circle (__x As Single, __y As Single, r As Single)
+    p5ellipse __x, __y, r, r
+End Sub
+
 Sub p5ellipse (__x As Single, __y As Single, xr As Single, yr As Single)
     Dim x As Single, y As Single
 
