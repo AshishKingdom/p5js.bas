@@ -1916,10 +1916,11 @@ Function p5random! (mn!, mx!)
 End Function
 
 Function join$ (str_array$(), sep$)
-    Dim i As Long
+    Dim i As Long, temp$
     For i = LBound(str_array$) To UBound(str_array$)
-        join$ = join$ + str_array$(i) + sep$
+        temp$ = temp$ + str_array$(i) + sep$
     Next
+    join$ = temp$
 End Function
 
 '#####################################################################################################
@@ -2356,7 +2357,7 @@ Sub colorMode (kind As Integer)
 End Sub
 
 Function hue! (col~&)
-    Dim r!, g!, b!, mx!, mn!, delta!
+    Dim r!, g!, b!, mx!, mn!, delta!, temp!
 
     r! = _Red32(col~&)
     g! = _Green32(col~&)
@@ -2366,22 +2367,22 @@ Function hue! (col~&)
     delta! = mx! - mn!
     If delta! <> 0 Then
         If r! = mx! Then
-            hue! = (g - b) / delta!
+            temp! = (g - b) / delta!
         ElseIf g! = mx! Then
-            hue! = 2 + ((b - r) / delta!)
+            temp! = 2 + ((b - r) / delta!)
         ElseIf b! = mx! Then
-            hue! = 4 + ((r - g) / delta!)
+            temp! = 4 + ((r - g) / delta!)
         End If
     Else
-        hue! = 0
+        temp! = 0
     End If
-    hue! = 60 * hue!
-    If hue! < 0 Then hue! = hue! + 360
-    hue! = map(hue!, 0, 360, 0, 255)
+    temp! = 60 * temp!
+    If temp! < 0 Then temp! = temp! + 360
+    hue! = map(temp!, 0, 360, 0, 255)
 End Function
 
 Function saturation! (col~&)
-    Dim r!, g!, b!, mx!, mn!, delta!
+    Dim r!, g!, b!, mx!, mn!, delta!, temp!
 
     r! = _Red32(col~&)
     g! = _Green32(col~&)
@@ -2390,11 +2391,11 @@ Function saturation! (col~&)
     mn! = min(min(r!, g!), b!)
     delta! = mx! - mn!
     If mx! <> 0 Then
-        saturation! = delta! / mx!
+        temp! = delta! / mx!
     Else
-        saturation! = 0
+        temp! = 0
     End If
-    saturation! = map(saturation!, 0, 1, 0, 255)
+    saturation! = map(temp!, 0, 1, 0, 255)
 End Function
 
 Function lightness! (col~&)
